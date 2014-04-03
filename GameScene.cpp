@@ -113,6 +113,7 @@ void GameScene::createScore() {
 }
 // 残機カウンターを生成
 void GameScene::createLifeCounter() {
+	// ooooo
 	// 画像ファイルをバッチノード化
 	CCSpriteBatchNode* pLifeCounterBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hit1.png");
 	this->addChild(pLifeCounterBatchNode, kZOrder_Label, kTag_LifeCounter);			// タグとノードを関連づけ
