@@ -1,13 +1,15 @@
 #include "AppDelegate.h"
-#include "AppMacros.h"		// マルチレゾリューション対応マクロ
+#include "AppMacros.h"
 #include "GameScene.h"
 
 USING_NS_CC;
 
 AppDelegate::AppDelegate() {
+
 }
 
-AppDelegate::~AppDelegate() {
+AppDelegate::~AppDelegate()
+{
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
@@ -23,15 +25,20 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     std::vector<std::string> searchPath;
 
-    if (frameSize.height > mediumResource.size.height) {
+    if (frameSize.height > mediumResource.size.height)
+    {
         // 「L」ディレクトリのリソースを使用する
         searchPath.push_back(largeResource.directory);
         pDirector->setContentScaleFactor(MIN(largeResource.size.height / designResolutionSize.height, largeResource.size.width / designResolutionSize.width));
-    } else if (frameSize.height > smallResource.size.height) {
+    }
+    else if (frameSize.height > smallResource.size.height)
+    {
         // 「M」ディレクトリのリソースを使用する
         searchPath.push_back(mediumResource.directory);
         pDirector->setContentScaleFactor(MIN(mediumResource.size.height / designResolutionSize.height, mediumResource.size.width / designResolutionSize.width));
-    } else {
+    }
+    else
+    {
         // 「S」ディレクトリのリソースを使用する
         searchPath.push_back(smallResource.directory);
         pDirector->setContentScaleFactor(MIN(smallResource.size.height / designResolutionSize.height, smallResource.size.width / designResolutionSize.width));
@@ -42,7 +49,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     pDirector->setDisplayStats(true);
     pDirector->setAnimationInterval(1.0 / 60);
 
-    CCScene* pScene = GameScene::scene();		// 最初に呼び出すクラスを設定(GameScene)
+    CCScene* pScene = GameScene::scene();
     pDirector->runWithScene(pScene);
 
     return true;

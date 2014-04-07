@@ -4,7 +4,10 @@
 PhysicsSprite::PhysicsSprite()
 : m_pBody(NULL) {
 }
-
+PhysicsSprite::PhysicsSprite(int hp)
+: m_pBody(NULL) {
+	this->hp = hp;
+}
 void PhysicsSprite::setPhysicsBody(b2Body*  body) {
     m_pBody = body;
 }

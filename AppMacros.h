@@ -1,21 +1,13 @@
-/*
- * マルチレゾリューションに対応させるためのマクロ
- * (各画像サイズと対応画面サイズを定義)
- */
 #ifndef __APPMACROS_H__
 #define __APPMACROS_H__
 
 #include "cocos2d.h"
 
-typedef struct tagResource {
+typedef struct tagResourc {
     cocos2d::CCSize size;
     char directory[100];
 } Resource;
-/*
-static Resource smallResource  = { cocos2d::CCSizeMake( 512,  384), "S"};	// Sサイズ用の画像の画面サイズを定義
-static Resource mediumResource = { cocos2d::CCSizeMake(1024,  768), "M"};	// Mサイズ用の画像の画面サイズを定義
-static Resource largeResource  = { cocos2d::CCSizeMake(2048, 1536), "L"};	// Lサイズ用の画像の画面サイズを定義
-*/
+
 /*----- android用 -----*/
 static Resource smallResource  = { cocos2d::CCSizeMake( 540,  960), "S"};
 static Resource mediumResource = { cocos2d::CCSizeMake( 720, 1280), "M"};

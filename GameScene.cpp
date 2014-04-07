@@ -5,23 +5,22 @@
 #include "SimpleAudioEngine.h"
 #include "Animation.h"
 
-
-
 using namespace CocosDenshion;
 USING_NS_CC;
 
 // コンストラクタ
-GameScene::GameScene(){}
-//:enemyUnit_num(2),
-// player_VIT(2),
-// submarine_VIT(202),
-// destroyer_VIT(202),
-// score_and_Maxplace(0.3),
-// buttons_sum(11),
-// lifepoint(3){
-//	scoreText = new CCArray();
-//	srand((unsigned int)time(NULL));
-//}
+GameScene::GameScene()
+:arrow_key(4),
+ enemyUnit_num(2),
+ player_VIT(2),
+ submarine_VIT(202),
+ destroyer_VIT(202),
+ score_and_Maxplace(0.3),
+ buttons_sum(11),
+ lifepoint(3){
+	scoreText = new CCArray();
+	srand((unsigned int)time(NULL));
+}
 
 CCScene* GameScene::scene() {
 	CCScene* scene = CCScene::create();			// 背景の雛型となるオブジェクトを生成
@@ -36,9 +35,15 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	this->setTouchEnabled(true);				  							// タッチ可能にする
-	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 
+
+	// 修正箇所
+	//	this->setTouchEnabled(true);				  							// タッチ可能にする
+	//	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
+	// 修正内容 ⇒
+	this->setTouchEnabled(true);
+	this->setTouchMode(kCCTouchesAllAtOnce);
+	// ←ここまで
 	b2Vec2 gravity;										    				// 重力の設定値を格納するための変数
 	gravity.Set(0.0, -10.0);												// 重力を設定
 
@@ -48,11 +53,18 @@ bool GameScene::init() {
 	world->SetContactListener(mGamePhysicsContactListener);				// 衝突判定処理を追加
 
 	createBackground();
+	// 自機を生成
+	createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT, playerUnit);
+	// 敵駆逐艦を生成
+	createUnit(destroyer_VIT % 100, kTag_EnemyDestroyer, destroyer_VIT, enemyDestroyer);
+	createScore();
+	createLifeCounter();
 	createControllerPanel();
 	createKey();
 
 	// カウントダウン開始
 	this->scheduleOnce(schedule_selector(GameScene::showCountdown), 1);
+
 	return true;
 }
 
@@ -72,7 +84,7 @@ void GameScene::createBackground() {
 	seabedBodyDef.position.Set(0, seabedBottom);							// 海底の位置をセット
 	seabedBodyDef.userData = pSeabed;										// 海底オブジェクトのデータを構造体に登録
 
-	b2Body* seabedBody = world->CreateBody(&seabedBodyDef);					// 重力世界に海底構造体を登録
+	b2Body* seabedBody = world->CreateBody(&seabedBodyDef);				// 重力世界に海底構造体を登録
 
 	float seabedHeight = pBgUnder->getContentSize().height / 10;			// 海底構造体の高さを設定
 
@@ -108,6 +120,105 @@ void GameScene::createBackground() {
 	borderlineBody->CreateFixture(&borderlineBox, 0);
 }
 
+
+// 物理構造を持ったユニットノードを作成
+PhysicsSprite* GameScene::createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Body* body, int shape) {
+	b2BodyDef physicsBodyDef;														// 物理構造を持ったユニット変数
+	if (kTag == kTag_StaticBody) {													// 静的構造が選択された場合
+		physicsBodyDef.type = b2_staticBody;										// オブジェクトは静的になる
+	} else if (kTag == kTag_DynamicBody) {											// 動的構造が選択された場合
+		physicsBodyDef.type = b2_dynamicBody;										// オブジェクトは動的になる
+	} else {																		// どちらでもない場合
+		physicsBodyDef.type = b2_kinematicBody;										// オブジェクトは運動学的になる
+	}
+
+	float width = pNode->getPositionX();
+	float height = pNode->getPositionY();
+	physicsBodyDef.position.Set(pNode->getPositionX() / PTM_RATIO,					// 物理オブジェクトの位置をセット
+			pNode->getPositionY() / PTM_RATIO);
+	physicsBodyDef.userData = pNode;												// ノードをデータに登録
+	body = world->CreateBody(&physicsBodyDef);										// 物理世界に登録
+	b2FixtureDef physicsFixturedef;													// 物理形状を決める変数
+
+	b2PolygonShape PolygonShape;
+	b2CircleShape CircleShape;
+	if (!shape) {																	// shapeが0の場合
+		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.8 / 2 / PTM_RATIO,
+				pNode->getContentSize().height * 0.8 / 1 / PTM_RATIO);														// 角形の範囲を設定
+	} else {																		// shapeが0でない場合
+		CircleShape.m_radius = pNode->getContentSize().width * 0.4 / PTM_RATIO;	// 円形の範囲を設定
+	}
+
+	!shape ? physicsFixturedef.shape = &PolygonShape :
+			 physicsFixturedef.shape = &CircleShape;
+	physicsFixturedef.density = 1;													// オブジェクトの密度を設定
+	physicsFixturedef.friction = 0.3;												// オブジェクトの摩擦を設定
+
+	body->CreateFixture(&physicsFixturedef);										// 構造体に情報を登録
+	pNode->setPhysicsBody(body);													// ノードに構造体を登録
+	return pNode;																	// 作成したノードを返却
+}
+
+
+// ユニットを生成する
+void GameScene::createUnit(int hp, int kTag, int vit, b2Body* body) {
+	CCSize bgSize = getChildByTag(kTag_Background)->getContentSize();				// 背景サイズを取得
+	PhysicsSprite* pUnit = new PhysicsSprite(hp);									// 物理構造を持った画像オブジェクトを生成
+	pUnit->autorelease();															// メモリ領域を開放
+	if (vit == submarine_VIT) {														// 潜水艦の場合
+		if (kTag == kTag_PlayerUnit) {												// プレイヤーユニットの場合
+			pUnit->initWithFile("player.png");
+			pUnit->setPosition(ccp(bgSize.width * 0.8,								// 任意の位置にオブジェクトをセット
+					bgSize.height * 0.35 - (bgSize.height - getWindowSize().height) / 2));
+		} else {																	// プレイヤーの潜水艦でない場合
+			pUnit->initWithFile("stage2.png");
+			pUnit->setPosition(ccp(bgSize.width * 0.2,								// 任意の位置にオブジェクトをセット
+					bgSize.height * 0.35 - (bgSize.height - getWindowSize().height) / 2));
+		}
+	} else {																		// 潜水艦でない場合
+		pUnit->initWithFile("stage1.png");										// 駆逐艦画像を取得し、オブジェクトに格納
+		pUnit->setPosition(ccp(bgSize.width * 0.5,									// 任意の位置にオブジェクトをセット
+				bgSize.height / 8 * 7 - (bgSize.height - getWindowSize().height) / 2));
+	}
+	pUnit = createPhysicsBody(kTag_DynamicBody, pUnit, body, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	this->addChild(pUnit, kZOrder_Unit, kTag);										// タグとオブジェクトを関連づける
+}
+
+// スコア部を生成
+void GameScene::createScore() {
+	// スコア部分の生成
+	scoreText = CCArray::create();														// スコアを入れるための配列を生成
+	float j = 0;																		// スコア間隔調整のための変数
+	CCLabelTTF* tmp;																	// スコアテキスト格納用変数
+	// 任意の桁数だけ繰り返し
+	for (int i = score_and_Maxplace * 10; i % 10; i--, j = j + 0.05) {
+		i * 10 != 1 ?																	// 配列の最後の要素であるか？
+				tmp = CCLabelTTF::create("1", "", NUMBER_FONT_SIZE) :					// でなければ数字表示なし
+				tmp = CCLabelTTF::create("0", "", NUMBER_FONT_SIZE);					// であれば数字表示あり
+		tmp->setPosition(ccp(getWindowSize().width * (0.1 + j),
+				getWindowSize().height * 0.9));											// 座標をセット
+		tmp->setColor(ccBLACK);															// フォントカラーをセット
+		scoreText->addObject(tmp);														// 配列の末尾にオブジェクトをセット
+		this->addChild((CCLabelTTF*)scoreText->lastObject(), kZOrder_Label);			// スコアノードに情報を登録
+	}
+}
+
+// 残機カウンターを生成
+void GameScene::createLifeCounter() {
+	// 画像ファイルをバッチノード化
+	CCSpriteBatchNode* pLifeCounterBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hp.png");
+	this->addChild(pLifeCounterBatchNode, kZOrder_Label, kTag_LifeCounter);			// タグとノードを関連づけ
+	// ライフの数だけ繰り返し
+	for (int i = 0; i < lifepoint; i++) {
+		// バッチノードから画像を取得してオブジェクト化
+		CCSprite* pLifeCounter = CCSprite::createWithTexture(pLifeCounterBatchNode->getTexture());
+		// 任意の位置に画像をセット
+		pLifeCounter->setPosition(ccp(getWindowSize().width / 10 * 9 - (i-1)*5,		// スコアノードの位置を設定
+				getWindowSize().height / 15 * 13));
+		pLifeCounterBatchNode ->addChild(pLifeCounter);		// オブジェクト情報をバッチノードにセット
+	}
+}
+
 //コントローラ下地を作成
 void GameScene::createControllerPanel() {
 	CCSize ccs = getWindowSize();
@@ -124,6 +235,7 @@ void GameScene::createKey() {
 	speedMater();	//速度メータ生成
 	missileButton();		//ミサイル発射ボタン生成
 	speedSwitch();	//メータスイッチ生成
+	testSprite();	//テスト用　最後消す
 }
 
 //ストップボタン表示の定義
@@ -139,11 +251,10 @@ void GameScene::arrowKey() {
 	CCSprite* stopSprite = 	(CCSprite*)getChildByTag(kTag_Key_Center);			//オブジェクトstopボタンを取得
 	float stopSize = stopSprite->getContentSize().height;						//stopのy座標を取得
 
-	int arrowkey = TAG_ARROWKEY;												//マクロTAG_ARROWKEYでint型変数を初期化
 	//先ほどの変数が0より大きい間後置デクリメント
-	while(arrowkey-- > 0) {
+	while(arrow_key-- > 0) {
 		CCSprite* pKey = CCSprite::create("tri.png");							//tri.pngをCCSprite型で生成
-		switch(arrowkey) {
+		switch(arrow_key) {
 		//上キーの実装
 		case 3 : pKey->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8 + stopSize));	//座標のセット
 		this->addChild(pKey, kZOrder_Label, kTag_Key_Up);					//配置順kZOrder_Lavelで実装
@@ -221,49 +332,10 @@ void GameScene::speedSwitch() {
 	this->addChild(pSwitch, kZOrder_Label, kTag_Switch);						//配置順kZOrder_Labelで実装
 }
 
-// タッチ開始時のイベント
-void GameScene::touchesBegan(CCSet* touches, CCEvent* pEvent ) {
-	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {	// タッチ位置を順に探索
-		CCTouch* touch  = (CCTouch *)(*it);									// 取得した値をノードと照合するためccTouch型に変換
-		bool touch_judge = 0;											// 返り値として渡すためのタッチ判定フラグ
-		tag_no = this->kTag_Key_Up;								// 各種ボタンの先頭のタグを取得
-		CCPoint loc = touch->getLocation();							// タッチ位置を取得
-		// 各ボタンのタッチ判定を繰り返し
-		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
-			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
-			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
-			m_touchFlag[tag_no] = touch_judge;
-			m_touchAt[tag_no] = touch->getLocation();
-		}
-	}
-}
-// スワイプしている途中に呼ばれる
-void GameScene::touchesMoved(CCSet* touches, CCEvent* pEvent ) {
-
-	//タッチしたボタンの数だけループ
-	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
-		CCTouch *touch = (CCTouch *)(*it);					// タッチボタンの取得
-		tag_no = this->getTag();								// タグを取得
-
-		//もし取得したタグとスイッチタグが同値であるならば以下ブロック
-		if(tag_no == kTag_Switch) {							//タッチボタンがスイッチであれば以下ブロック
-			CCPoint loc = touch->getLocation();										// タッチ座標の取得
-
-			float threshold = CCDirector::sharedDirector()->getWinSize().width * 0.005f;	// しきい値の取得
-			CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);		// スイッチのオブジェクトを取得
-
-			pSwitch->setPosition(ccp(loc.x, pSwitch->getPositionY()));				//スイッチをタップ位置に追従
-
-			m_touchAt[tag_no]  = touch->getLocation();									// タッチ位置を更新
-			// 以下、必要な情報を取得し、update内で処理してやると良い
-		}
-	}
-}
-
 // ゲーム開始時のカウントダウン
 void GameScene::showCountdown() {
 
-	this->scheduleOnce(schedule_selector(GameScene::playCountdownSound), 0.5);	//playCountdownSound関数を0.5秒後に一度だけ呼び出す
+//	this->scheduleOnce(schedule_selector(GameScene::playCountdownSound), 0.5);	//playCountdownSound関数を0.5秒後に一度だけ呼び出す
 
 	// 「3」の表示
 	CCSprite* pNum3 = CCSprite::create("count3.png");									//count3.pngを取得
@@ -295,26 +367,54 @@ void GameScene::showCountdown() {
 	 */
 	pGo->runAction(Animation::gameStartAnimation(this, callfunc_selector(GameScene::startGame)));
 	this->addChild(pGo, kZOrder_Countdown);												//オブジェクトpGoの実装
+
+
+	/* テスト用ヒットアニメーション
+	 * GO表示の後に画面中心で爆発
+	 */
+	CCSprite* pHit = (CCSprite*)this->getChildByTag(kTag_Test);
+	pHit->runAction(Animation::hitAnimation(kTag_HitAnimation));
+	this->addChild(pHit, kZOrder_Countdown);
 }
 
-// カウントダウンの音を取得する
-void GameScene::playCountdownSound() {
-	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3(テスト用)をセット
-	SimpleAudioEngine::sharedEngine()->playEffect("countdown.mp3");
+//ストップボタン表示の定義
+void GameScene::testSprite() {
+	/*----- STOPボタンの実装 -----*/
+	CCSprite* ptest = CCSprite::create("player.png");												//stop.pngをCCSprite型で生成
+	ptest->setPosition(ccp(getWindowSize().width * 0.5, getWindowSize().height * 0.5));				//座標のセット
+	this->addChild(ptest, kZOrder_Label, kTag_Test);										//配置順kZOrder_Labelで実装
 }
-// 駆逐艦AI
-void GameScene::destroyerAI() {
-	CCNode* position_of_destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// ネコ画像のオブジェクトを生成
-	CCPoint destroyer_loc = position_of_destroyer->getPosition();				// ネコの現在位置を取得
-	//	if(!(rand() % lifepoint / 3)) {
-	//		createMissile(destroyer_loc);
-	//	} else if(!rand() % 3) {
-	//		CCMoveBy* action = CCMoveBy::create(80, ccp(getViewSize().width, 0));
-	//		// 向きを反転
-	//	}
+
+
+//タッチ座標の取得から
+
+// タッチ開始時のイベント
+// タッチ開始時のイベント
+void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
+	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {	// タッチ位置を順に探索
+		CCTouch* touch  = (CCTouch *)(*it);									// 取得した値をノードと照合するためccTouch型に変換
+		bool touch_judge = 0;											// 返り値として渡すためのタッチ判定フラグ
+		tag_no = this->kTag_Key_Up;								// 各種ボタンの先頭のタグを取得
+		CCPoint loc = touch->getLocation();							// タッチ位置を取得
+		// 各ボタンのタッチ判定を繰り返し
+		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
+			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
+			m_touchFlag[tag_no] = touch_judge;
+			m_touchAt[tag_no] = touch->getLocation();
+		}
+	}
 }
+
+//// カウントダウンの音を取得する
+//void GameScene::playCountdownSound() {
+//	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3(テスト用)をセット
+//	SimpleAudioEngine::sharedEngine()->playEffect("countdown.mp3");
+//}
+
 // ゲームスタートの処理を行う
 void GameScene::startGame() {
+
 
 	//敵：潜水艦、駆逐艦のaiを呼び出す
 	//this->schedule(schedule_selector(GameScene::destroyerAI));
