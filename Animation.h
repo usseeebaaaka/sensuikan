@@ -15,9 +15,8 @@ public:
     static CCFiniteTimeAction* num2Animation();	//｢2｣の表示
     static CCFiniteTimeAction* num1Animation();	//｢1｣の表示
     static CCFiniteTimeAction* gameStartAnimation(CCObject* target, SEL_CallFunc selector);		//[start]の表示後、次の処理に移行するため引数を持たす
-    // ゲームオーバー表示
-    static CCFiniteTimeAction* gameOverAnimation(CCObject* target, SEL_CallFunc selector);
-    static CCFiniteTimeAction* screenChangeAnimation(CCObject* target, SEL_CallFunc selector);	//ゲームクリアの表示後、次の処理に移行するため引数を持たすの処理に以降するため引数を持たす
+    static CCFiniteTimeAction* gameOverAnimation(CCObject* target, SEL_CallFunc selector);	//ゲームクリアの表示後、次の処理に移行するため引数を持たすの処理に以降するため引数を持たす
+
     static CCFiniteTimeAction* hitAnimation(int count);		//ミサイル爆発のアニメーション(被弾時or撃墜時)
     static CCFiniteTimeAction* scrollSeaBed();				//海底スクロールのアニメーション
 };
