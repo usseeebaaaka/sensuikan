@@ -66,11 +66,11 @@ class GameScene : public cocos2d::CCLayer {
     // 画像の表示順序のタグ
     enum kZOrder {
     	kZOrder_Background,			// 背景
+    	kZOrder_Controller_Base,	// 操作部の下地
+    	kZOrder_Label,				// 操作部やラベル
     	kZOrder_Seabed,				// 海底
     	kZOrder_Missile,			// ミサイル
     	kZOrder_Unit,				// 機体
-    	kZOrder_Controller_Base,	// 操作部の下地
-    	kZOrder_Label,				// 操作部やラベル
     	kZOrder_Countdown			// カウントダウン等のアニメーション
     };
 
@@ -82,6 +82,8 @@ public:
     static cocos2d::CCScene* scene();										//関数
     void createBackground();												// 背景および海底を生成
     void createUnit(int hp, int kTag, int vit, b2Body* body);				// ユニットを生成
+    virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
+
     // 物理構造を持ったユニットノードを作成
     PhysicsSprite* createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Body* body, int shape);
     void createScore();														// スコアを生成
@@ -91,7 +93,7 @@ public:
     void showCountdown();													// ゲーム開始時のカウントダウン
 //    virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
 //    void defeatPlayer();													// プレイヤーが撃沈
-    void finishGame();
+//    void finishGame();
 //    void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
 //    float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
     CCSize getWindowSize();													// ウィンドウサイズをゲットする
@@ -102,7 +104,7 @@ public:
 //    virtual void touchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
 //    virtual void touchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
 //    virtual void touchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
-//    void destroyerAI();
+    void destroyerAI();
 //    void submarineAI();
 //    void createMissile(CCPoint point);
     CREATE_FUNC(GameScene);													//マクロ
@@ -114,7 +116,6 @@ public:
     void missileButton();
     void speedSwitch();
     void playCountdownSound();
-    void testSprite();
 };
 
 #endif // __GAME_SCENE_H__

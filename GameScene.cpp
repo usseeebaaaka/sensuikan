@@ -1,7 +1,6 @@
 #include "GameScene.h"
 #include "config.h"
 #include "AppMacros.h"
-#include "GamePhysicsContactListener.h"
 #include "SimpleAudioEngine.h"
 #include "Animation.h"
 
@@ -39,13 +38,14 @@ bool GameScene::init() {
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 
 	b2Vec2 gravity;										    				// 重力の設定値を格納するための変数
-	gravity.Set(0.0, -10.0);												// 重力を設定
+	gravity.Set(0.0, 0.0);												// 重力を設定
 
 	world = new b2World(gravity);											// 重力を持った世界を生成
 
 	mGamePhysicsContactListener = new GamePhysicsContactListener(this);		// 衝突判定結果を格納するための変数を用意
 	world->SetContactListener(mGamePhysicsContactListener);				// 衝突判定処理を追加
 
+	sleep(20);
 	createBackground();
 	// 自機を生成
 	createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT, playerUnit);
@@ -104,12 +104,12 @@ void GameScene::createBackground() {
 	b2EdgeShape borderlineBox;
 	// 画面の左端より奥に行けなくなるように設定
 	borderlineBox.Set(b2Vec2(0, seabedBottom / PTM_RATIO),
-			b2Vec2( 0, getWindowSize().height));
+			b2Vec2( 0, getViewSize().height));
 	// 指定した境界線と密度を海底オブジェクトに登録
 	borderlineBody->CreateFixture(&borderlineBox, 0);
 	// 画面の右端より奥に行けなくなるように設定
-	borderlineBox.Set(b2Vec2(getWindowSize().width, seabedBottom / PTM_RATIO),
-			b2Vec2( getWindowSize().width, getWindowSize().height));
+	borderlineBox.Set(b2Vec2(getViewSize().width, seabedBottom / PTM_RATIO),
+			b2Vec2( getViewSize().width, getViewSize().height));
 	// 指定した境界線と密度を海底オブジェクトに登録
 	borderlineBody->CreateFixture(&borderlineBox, 0);
 }
@@ -144,7 +144,7 @@ PhysicsSprite* GameScene::createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Bo
 	}
 
 	!shape ? physicsFixturedef.shape = &PolygonShape :
-			 physicsFixturedef.shape = &CircleShape;
+			physicsFixturedef.shape = &CircleShape;
 	physicsFixturedef.density = 1;													// オブジェクトの密度を設定
 	physicsFixturedef.friction = 0.3;												// オブジェクトの摩擦を設定
 
@@ -215,10 +215,9 @@ void GameScene::createLifeCounter() {
 
 //コントローラ下地を作成
 void GameScene::createControllerPanel() {
-	CCSize ccs = getWindowSize();
 	//コントローラ部を作成
 	CCSprite* pControl = CCSprite::create("control.png");					//control.pngをCCSprite型にし、pControlで初期化
-	pControl->setPosition(ccp(ccs.width / 2, ccs.height / 8));				//座標のセット
+	pControl->setPosition(ccp(getWindowSize().width / 2, getWindowSize().height / 8));				//座標のセット
 	this->addChild(pControl, kZOrder_Controller_Base);						//配置順kZOrder_Controller_Baseで実装
 }
 
@@ -229,7 +228,6 @@ void GameScene::createKey() {
 	speedMater();	//速度メータ生成
 	missileButton();		//ミサイル発射ボタン生成
 	speedSwitch();	//メータスイッチ生成
-	testSprite();	//テスト用　最後消す
 }
 
 //ストップボタン表示の定義
@@ -329,7 +327,7 @@ void GameScene::speedSwitch() {
 // ゲーム開始時のカウントダウン
 void GameScene::showCountdown() {
 
-//	this->scheduleOnce(schedule_selector(GameScene::playCountdownSound), 0.5);	//playCountdownSound関数を0.5秒後に一度だけ呼び出す
+	//	this->scheduleOnce(schedule_selector(GameScene::playCountdownSound), 0.5);	//playCountdownSound関数を0.5秒後に一度だけ呼び出す
 
 	// 「3」の表示
 	CCSprite* pNum3 = CCSprite::create("count3.png");									//count3.pngを取得
@@ -362,29 +360,82 @@ void GameScene::showCountdown() {
 	pGo->runAction(Animation::gameStartAnimation(this, callfunc_selector(GameScene::startGame)));
 	this->addChild(pGo, kZOrder_Countdown);												//オブジェクトpGoの実装
 
+}
+// 毎フレームごとに衝突判定をチェックする
+void GameScene::update(float dt) {
+	// 物理シミュレーションの正確さを決定するパラメーター
+	int velocityIterations = 8;
+	int positionIterations = 1;
+	// worldを更新する
+	world->Step(dt, velocityIterations, positionIterations);
 
-	/* テスト用ヒットアニメーション
-	 * GO表示の後に画面中心で爆発
-	 */
-	CCSprite* pHit = (CCSprite*)this->getChildByTag(kTag_Test);
-	pHit->runAction(Animation::hitAnimation(kTag_HitAnimation));
-	this->addChild(pHit, kZOrder_Countdown);
+	// world内の全オブジェクトをループする
+	for (b2Body* b = world->GetBodyList(); b; b = b->GetNext()) {
+		if (!b->GetUserData()) {
+			continue;													// オブジェクトが見つからない場合は次のループへ
+		}
+		CCNode* object = (CCNode*)b->GetUserData();						// オブジェクトを取得
+		int objectTag = object->getTag();								// オブジェクトのタグを取得
+		// 機体タグだった場合
+		if (objectTag >= kTag_PlayerUnit && objectTag <= kTag_Missile) {
+			// 被弾したユニットを判別
+			PhysicsSprite* damagedUnit = (PhysicsSprite*)this->getChildByTag(objectTag);
+			// 被弾したユニットのHPを減らす
+			damagedUnit->setHp(damagedUnit->getHp() - 1);
+			if (damagedUnit->getHp()) {									// HPが0になっていない場合
+				Animation::hitAnimation(kTag_HitAnimation);				// 被弾アニメーションを取得
+			} else {													// 0になった場合
+				Animation::hitAnimation(kTag_DefeatAnimation);			// 撃沈アニメーションを取得
+				if (objectTag == kTag_PlayerUnit) {						// 自機が撃沈した場合
+					//					defeatPlayer();										// 自機撃沈関数を呼び出す
+					createLifeCounter();								// 残機を再表示
+				}else {													// 敵機を撃沈した場合
+					//					removeObject(object, (void*)b);						// 撃沈したオブジェクトを削除
+					if (objectTag != kTag_Missile) {
+						enemyUnit_num--;									// 敵機の数を減らす
+						if(!enemyUnit_num) {								// 敵機がなくなった場合
+							//							finishGame();									// ゲームクリア
+							break;											// 繰り返しから抜ける
+						}
+					}
+				}
+			}
+		} else if (objectTag == kTag_Collision) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
+			//			defeatPlayer();												// 自機が撃沈される
+		}
+	}
+	CCNode* position_of_destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// ネコ画像のオブジェクトを生成
+	if (position_of_destroyer) {
+		CCPoint destroyer_loc = position_of_destroyer->getPosition();			// ネコの現在位置を取得
+	}
+	CCNode* position_of_submarine = this->getChildByTag(kTag_EnemySubmarine);	// ネコ画像のオブジェクトを生成
+	if (position_of_submarine) {
+		CCPoint submarine_loc = position_of_submarine->getPosition();			// ネコの現在位置を取得
+	}
+	if (!(rand() % 30)) {
+				destroyerAI();														// ランダムで駆逐艦のAIを呼び出す
+	}
+	if (!(rand() % 30)) {
+		//		submarineAI();														// ランダムで潜水艦のAiを呼び出す
+	}
+}
+// 駆逐艦AI
+void GameScene::destroyerAI() {
+	CCNode* position_of_destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// ネコ画像のオブジェクトを生成
+	CCPoint destroyer_loc = position_of_destroyer->getPosition();			// ネコの現在位置を取得
+	if(!(rand() %  3)) {
+		//createMissile(destroyer_loc);
+	} else if(!(rand() % 3)) {
+		CCMoveBy* action = CCMoveBy::create(80, ccp(getViewSize().width, 0));
+		// 向きを反転
+	}
 }
 
-//ストップボタン表示の定義
-void GameScene::testSprite() {
-	/*----- STOPボタンの実装 -----*/
-	CCSprite* ptest = CCSprite::create("player.png");												//stop.pngをCCSprite型で生成
-	ptest->setPosition(ccp(getWindowSize().width * 0.5, getWindowSize().height * 0.5));				//座標のセット
-	this->addChild(ptest, kZOrder_Label, kTag_Test);										//配置順kZOrder_Labelで実装
+// カウントダウンの音を取得する
+void GameScene::playCountdownSound() {
+	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3(テスト用)をセット
+	SimpleAudioEngine::sharedEngine()->playEffect("countdown.mp3");
 }
-
-
-//// カウントダウンの音を取得する
-//void GameScene::playCountdownSound() {
-//	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3(テスト用)をセット
-//	SimpleAudioEngine::sharedEngine()->playEffect("countdown.mp3");
-//}
 
 // ゲームスタートの処理を行う
 void GameScene::startGame() {
@@ -392,6 +443,8 @@ void GameScene::startGame() {
 	//敵：潜水艦、駆逐艦のaiを呼び出す
 	//this->schedule(schedule_selector(GameScene::destroyerAI));
 	//this->schedule(schedule_selector(GameScene::submarineAI));
+	// 毎フレームupdate( )関数を呼び出すように設定する
+	scheduleUpdate();
 }
 
 // ウィンドウサイズをゲットする
