@@ -1,4 +1,15 @@
-﻿
+/*
+ * config.h
+ *
+ *  Created on: 2014/03/19
+ *      Author: boku
+ */
+
+#ifndef CONFIG_H_
+#define CONFIG_H_
+
+#define PTM_RATIO 128			// 128ピクセルで1メートルの変換
+
 
 #define TAG_SEABED 100				// 海底のタグ
 #define TAG_BORDERLINE 101			// 画面枠のタグ
