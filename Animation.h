@@ -10,7 +10,7 @@ USING_NS_CC;			//名前空間CCの使用
 class Animation {
 public:
 
-    /*----- カウントダウン -----*/
+	//関数宣言 下の行のコメント「カウントダウン」は削除
     static CCFiniteTimeAction* num3Animation();	//｢3｣の表示
     static CCFiniteTimeAction* num2Animation();	//｢2｣の表示
     static CCFiniteTimeAction* num1Animation();	//｢1｣の表示
