@@ -402,3 +402,5 @@ CCSize GameScene::getWindowSize() {
 CCSize GameScene::getViewSize() {
 	return CCEGLView::sharedOpenGLView()->getFrameSize();				// シーンのサイズを取得
 }
+
+
