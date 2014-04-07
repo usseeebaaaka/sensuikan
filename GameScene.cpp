@@ -15,6 +15,7 @@ GameScene::GameScene()
  submarine_VIT(202),
  destroyer_VIT(202),
  score_and_Maxplace(0.3),
+ dealofScrollSpead(0.2),
  buttons_sum(11),
  lifepoint(3){
 	scoreText = new CCArray();
@@ -38,14 +39,14 @@ bool GameScene::init() {
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 
 	b2Vec2 gravity;										    				// 重力の設定値を格納するための変数
-	gravity.Set(0.0, 0.0);												// 重力を設定
+	gravity.Set(0.1, 0.0);												// 重力を設定
 
 	world = new b2World(gravity);											// 重力を持った世界を生成
 
 	mGamePhysicsContactListener = new GamePhysicsContactListener(this);		// 衝突判定結果を格納するための変数を用意
 	world->SetContactListener(mGamePhysicsContactListener);				// 衝突判定処理を追加
 
-	sleep(20);
+	//sleep(20);
 	createBackground();
 	// 自機を生成
 	createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT, playerUnit);
@@ -56,6 +57,9 @@ bool GameScene::init() {
 	createControllerPanel();
 	createKey();
 
+	    // ミサイルの準備
+	    missileBatchNode = CCSpriteBatchNode::create("hit0.png");			// ミサイルの画像をセット
+	    this->addChild(missileBatchNode);									// ミサイル群をシーンに追加
 	// カウントダウン開始
 	this->scheduleOnce(schedule_selector(GameScene::showCountdown), 1);
 
@@ -376,8 +380,9 @@ void GameScene::update(float dt) {
 		}
 		CCNode* object = (CCNode*)b->GetUserData();						// オブジェクトを取得
 		int objectTag = object->getTag();								// オブジェクトのタグを取得
+	if (objectTag == kTag_Call_Scroll) {
 		// 機体タグだった場合
-		if (objectTag >= kTag_PlayerUnit && objectTag <= kTag_Missile) {
+	} else if (objectTag >= kTag_PlayerUnit && objectTag <= kTag_Missile) {
 			// 被弾したユニットを判別
 			PhysicsSprite* damagedUnit = (PhysicsSprite*)this->getChildByTag(objectTag);
 			// 被弾したユニットのHPを減らす
@@ -404,13 +409,13 @@ void GameScene::update(float dt) {
 			//			defeatPlayer();												// 自機が撃沈される
 		}
 	}
-	CCNode* position_of_destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// ネコ画像のオブジェクトを生成
+	CCNode* position_of_destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// 駆逐艦画像のオブジェクトを生成
 	if (position_of_destroyer) {
-		CCPoint destroyer_loc = position_of_destroyer->getPosition();			// ネコの現在位置を取得
+		CCPoint destroyer_loc = position_of_destroyer->getPosition();			// 潜水艦の現在位置を取得
 	}
-	CCNode* position_of_submarine = this->getChildByTag(kTag_EnemySubmarine);	// ネコ画像のオブジェクトを生成
+	CCNode* position_of_submarine = this->getChildByTag(kTag_EnemySubmarine);	// 潜水艦画像のオブジェクトを生成
 	if (position_of_submarine) {
-		CCPoint submarine_loc = position_of_submarine->getPosition();			// ネコの現在位置を取得
+		CCPoint submarine_loc = position_of_submarine->getPosition();			// 潜水艦の現在位置を取得
 	}
 	if (!(rand() % 30)) {
 				destroyerAI();														// ランダムで駆逐艦のAIを呼び出す
@@ -421,14 +426,27 @@ void GameScene::update(float dt) {
 }
 // 駆逐艦AI
 void GameScene::destroyerAI() {
-	CCNode* position_of_destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// ネコ画像のオブジェクトを生成
-	CCPoint destroyer_loc = position_of_destroyer->getPosition();			// ネコの現在位置を取得
-	if(!(rand() %  3)) {
-		//createMissile(destroyer_loc);
-	} else if(!(rand() % 3)) {
-		CCMoveBy* action = CCMoveBy::create(80, ccp(getViewSize().width, 0));
+	CCNode* destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// 駆逐艦画像のオブジェクトを生成
+	CCPoint destroyer_loc = destroyer->getPosition();			// 駆逐艦の現在位置を取得
+	if(!(rand() %  2)) {										// ランダムでミサイルを発射
+		createMissile(destroyer_loc);							// ミサイルを発射
+	} else if(!(rand() % 2)) {									// ランダムで移動
+		CCMoveBy* action = CCMoveBy::create(8, ccp(getViewSize().width, 0));
+		destroyer->runAction(action);
+		this->addChild(destroyer, kZOrder_Unit, kTag_EnemyDestroyer);
 		// 向きを反転
 	}
+}
+
+// ミサイル作成
+void GameScene::createMissile(CCPoint point) {
+	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
+	pMissile->autorelease();
+	pMissile->initWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
+	pMissile->setPosition(point);													// ミサイルを指定位置にセット
+	this->addChild(pMissile, kZOrder_Missile, kTag_Missile);
+	b2Body* missileBody;
+	pMissile = createPhysicsBody(kTag_DynamicBody, pMissile, missileBody, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 }
 
 // カウントダウンの音を取得する
@@ -447,6 +465,15 @@ void GameScene::startGame() {
 	scheduleUpdate();
 }
 
+// スクロール開始関数
+void GameScene::callScroll() {
+	float dealofScrollSpead = getdealofScrollSpead();
+}
+
+// スクロール倍率を与える
+float GameScene::getdealofScrollSpead() {
+	return dealofScrollSpead;
+}
 // ウィンドウサイズをゲットする
 CCSize GameScene::getWindowSize() {
 	return CCDirector::sharedDirector()->getWinSize();					// ウィンドウサイズを取得

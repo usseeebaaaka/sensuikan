@@ -18,5 +18,6 @@
 #define TAG_SUBMARINE_UNIT 104 		// 敵機のタグ
 #define TAG_MISSILE 105 			// ミサイルのタグ
 #define TAG_COLLISION 106			// 追突タグ
-
+#define TAG_BORDERLINE 107			// 境界線タグ
+#define TAG_CALL_SCROLL 200			// スクロール開始タグ
 #endif /* CONFIG_H_ */

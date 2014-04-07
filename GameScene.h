@@ -61,7 +61,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Gear3,					// 3番目にスピードが遅いギア
         kTag_Gear4,					// 4番目にスピードが遅いギア
         kTag_Animation,
-        kTag_Test,					// テスト用(最後消す
+        kTag_Call_Scroll = 200,					// スクロール開始フラグ
     };
     // 画像の表示順序のタグ
     enum kZOrder {
@@ -91,11 +91,12 @@ public:
     void createControllerPanel();											// 操作部を生成
     void createKey();															//十字キーを生成
     void showCountdown();													// ゲーム開始時のカウントダウン
+    void callScroll();														// スクロール開始
 //    virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
 //    void defeatPlayer();													// プレイヤーが撃沈
 //    void finishGame();
 //    void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
-//    float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
+    float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
     CCSize getWindowSize();													// ウィンドウサイズをゲットする
     CCSize getViewSize();													// ビューサイズをゲットする
 //    void moveToNextScene();
@@ -106,7 +107,7 @@ public:
 //    virtual void touchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
     void destroyerAI();
 //    void submarineAI();
-//    void createMissile(CCPoint point);
+    void createMissile(CCPoint point);
     CREATE_FUNC(GameScene);													//マクロ
 
     //追加
