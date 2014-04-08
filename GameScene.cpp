@@ -35,8 +35,6 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	this->setTouchEnabled(true);				  							// タッチ可能にする
-	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 
 	b2Vec2 gravity;										    				// 重力の設定値を格納するための変数
 	gravity.Set(0.0, -10.0);												// 重力を設定
@@ -144,7 +142,7 @@ PhysicsSprite* GameScene::createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Bo
 	}
 
 	!shape ? physicsFixturedef.shape = &PolygonShape :
-			 physicsFixturedef.shape = &CircleShape;
+			physicsFixturedef.shape = &CircleShape;
 	physicsFixturedef.density = 1;													// オブジェクトの密度を設定
 	physicsFixturedef.friction = 0.3;												// オブジェクトの摩擦を設定
 
@@ -280,56 +278,56 @@ void GameScene::speedMater() {
 	float stopHeight = stopSprite->getPositionY();								//stopのy座標を取得
 
 	CCSprite* pMater2 = CCSprite::create("Meter2.png");							//Meter2.pngをCCSprite型で生成
-	pMater2->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight));		//座標のセット
+	pMater2->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight - stopSprite->getContentSize().height / 2));		//座標のセット
 	this->addChild(pMater2, kZOrder_Label, kTag_Gear2);							//配置順kZOrder_Labelで実装
 
-	CCSprite* pMater1 = CCSprite::create("Meter1.png");							//Meter1.pngをCCSprite型で生成
-	pMater1->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight - pMater2->getContentSize().height ));		//座標のセット
-	this->addChild(pMater1, kZOrder_Label, kTag_Gear1);							//配置順kZOrder_Labelで実装
-
 	CCSprite* pMater3 = CCSprite::create("Meter2.png");							//Meter3.pngをCCSprite型で生成
-	pMater3->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight + pMater2->getContentSize().height ));		//座標のセット
+	pMater3->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight + stopSprite->getContentSize().height / 2));		//座標のセット
 	this->addChild(pMater3, kZOrder_Label, kTag_Gear3);							//配置順kZOrder_Labelで実装
 
+	CCSprite* pMater1 = CCSprite::create("Meter1.png");							//Meter1.pngをCCSprite型で生成
+	pMater1->setPosition(ccp(getWindowSize().width / 8 * 5, pMater2->getPositionY() - pMater2->getContentSize().height ));		//座標のセット
+	this->addChild(pMater1, kZOrder_Label, kTag_Gear1);							//配置順kZOrder_Labelで実装
+
 	CCSprite* pMater4 = CCSprite::create("Meter3.png");							//Meter3.pngをCCSprite型で生成
-	pMater4->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight + (pMater2->getContentSize().height) * 2 ));		//座標のセット
+	pMater4->setPosition(ccp(getWindowSize().width / 8 * 5, pMater3->getPositionY() + pMater3->getContentSize().height ));		//座標のセット
 	this->addChild(pMater4, kZOrder_Label, kTag_Gear4);							//配置順kZOrder_Labelで実装
 
 }
 
 //ミサイルボタン表示の定義
 void GameScene::missileButton() {
-	CCSprite* mater1 = 	(CCSprite*)getChildByTag(kTag_Gear1);						//オブジェクトmater1ボタンを取得
-	float mater1Height = mater1->getPositionY();									//stopのy座標を取得
+	CCSprite* Key_Down = 	(CCSprite*)getChildByTag(kTag_Key_Down);				//オブジェクト下キーボタンを取得
+	float key_downHeight = Key_Down->getPositionY();								//materのy座標を取得
 
 	/*----- missile 上キーの実装 -----*/
 	CCSprite* pMissileUp = CCSprite::create("missile_up.png");						//missile_up.pngをCCSprite型で生成
-	pMissileUp->setPosition(ccp(getWindowSize().width / 8 * 7, mater1Height * 3));	//座標のセット
+	pMissileUp->setPosition(ccp(getWindowSize().width / 8 * 7, key_downHeight * 5));	//座標のセット
 	this->addChild(pMissileUp, kZOrder_Label, kTag_Shoot_Vertical);					//配置順kZOrder_Labelで実装
 
 	/*----- missile 左キーの実装 -----*/
 	CCSprite* pMissileLeft = CCSprite::create("missile_left.png");					//missile_left.pngをCCSprite型で生成
-	pMissileLeft->setPosition(ccp(getWindowSize().width / 8 * 7, mater1Height));	//座標のセット
+	pMissileLeft->setPosition(ccp(getWindowSize().width / 8 * 7, key_downHeight));	//座標のセット
 	this->addChild(pMissileLeft, kZOrder_Label, kTag_Shoot_Horizontal);				//配置順kZOrder_Labelで実装
 
 }
 
 //スピードスイッチ表示の定義
 void GameScene::speedSwitch() {
-	CCSprite* mater1 = 	(CCSprite*)getChildByTag(kTag_Gear1);					//オブジェクトギア1オブジェクトを取得
-	float mater1HeightSize = mater1->getContentSize().height;					//ギア1の高さ取得
-	CCSize ccs = mater1->getPosition();											//ギア1の座標を取得
+	CCSprite* mater2 = 	(CCSprite*)getChildByTag(kTag_Gear2);				//オブジェクトギア1オブジェクトを取得
+	CCPoint pMater2 = mater2->getPosition();								//ギア2の高さ取得
+	float Mater2Size = mater2->getContentSize().height;						//ギア1の座標を取得
 
 	//速度メーター スイッチ
 	CCSprite* pSwitch = CCSprite::create("switch.png");							//switch.pngファイルを取得
-	pSwitch->setPosition(ccp(ccs.width, ccs.height - (mater1HeightSize / 20 * 7)));	//座標をセット
-	this->addChild(pSwitch, kZOrder_Label, kTag_Switch);						//配置順kZOrder_Labelで実装
+	pSwitch->setPosition(ccp(pMater2.x, pMater2.y - Mater2Size / 10 * 9 ));		//座標をセット
+	this->addChild(pSwitch, kZOrder_Countdown, kTag_Switch);					//配置順kZOrder_Labelで実装
 }
 
 // ゲーム開始時のカウントダウン
 void GameScene::showCountdown() {
 
-//	this->scheduleOnce(schedule_selector(GameScene::playCountdownSound), 0.5);	//playCountdownSound関数を0.5秒後に一度だけ呼び出す
+	//	this->scheduleOnce(schedule_selector(GameScene::playCountdownSound), 0.5);	//playCountdownSound関数を0.5秒後に一度だけ呼び出す
 
 	// 「3」の表示
 	CCSprite* pNum3 = CCSprite::create("count3.png");									//count3.pngを取得
@@ -379,6 +377,47 @@ void GameScene::testSprite() {
 	this->addChild(ptest, kZOrder_Label, kTag_Test);										//配置順kZOrder_Labelで実装
 }
 
+// タッチ開始時のイベント
+void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
+	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {	// タッチ位置を順に探索
+		CCTouch* touch  = (CCTouch *)(*it);									// 取得した値をノードと照合するためccTouch型に変換
+		bool touch_judge = 0;											// 返り値として渡すためのタッチ判定フラグ
+		tag_no = this->kTag_Key_Up;										// 各種ボタンの先頭のタグを取得
+		CCPoint loc = touch->getLocation();								// タッチ位置を取得
+		// 各ボタンのタッチ判定を繰り返し
+		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
+			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
+			m_touchFlag[tag_no] = touch_judge;							// tag_no番目の配列にタッチしているかしていないかを代入
+			m_touchAt[tag_no] = touch->getLocation();					// 位置を保存
+		}
+	}
+}
+
+// スワイプしている途中に呼ばれる
+void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
+	CCSprite* Mater4 = 	(CCSprite*)getChildByTag(kTag_Gear4);			//オブジェクトGear4を取得
+	float pMater4 = Mater4->getPositionY();								//Mater4のy座標を取得
+
+	//タッチしたボタンの数だけループ
+	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
+		CCTouch *touch = (CCTouch *)(*it);						// タッチボタンの取得
+		tag_no = this->kTag_Key_Up;								// 一番小さい数値が入っているkTag_Key_Upをtag_noに代入
+
+		// tag_noとkTag_Key_Upの差がボタンの合計数未満の間、tag_noを後置インクリメントしながらループ
+		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+			m_touchAt[tag_no]  = touch->getLocation();								// タッチ位置を更新
+			CCPoint loc = m_touchAt[tag_no];										// タッチ座標の取得
+			CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);		//オブジェクトkTag_Switchを取得しCCSprite*型変数を初期化
+
+			//もしtag_noとkTag_Switchが同値であり、かつスイッチオブジェクトをタップしていて、かつタッチ座標がGear4のy座標未満であれば以下ブロック
+			if( (tag_no == kTag_Switch && pSwitch->boundingBox().containsPoint(loc) ) && loc.y < pMater4) {
+					pSwitch->setPosition(ccp(pSwitch->getPositionX(), loc.y));			// スイッチをx座標は同じ座標、y座標はタッチされた座標にセット
+					break;																// ブレイク
+			}
+		}
+	}
+}
 
 //// カウントダウンの音を取得する
 //void GameScene::playCountdownSound() {
@@ -388,6 +427,9 @@ void GameScene::testSprite() {
 
 // ゲームスタートの処理を行う
 void GameScene::startGame() {
+
+	this->setTouchEnabled(true);				  							// タッチ可能にする
+	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 
 	//敵：潜水艦、駆逐艦のaiを呼び出す
 	//this->schedule(schedule_selector(GameScene::destroyerAI));
@@ -402,5 +444,3 @@ CCSize GameScene::getWindowSize() {
 CCSize GameScene::getViewSize() {
 	return CCEGLView::sharedOpenGLView()->getFrameSize();				// シーンのサイズを取得
 }
-
-

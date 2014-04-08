@@ -99,9 +99,9 @@ public:
 //    void moveToNextScene();
     void startGame();
 //    void setScoreNumber();
-//    virtual void touchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
-//    virtual void touchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
-//    virtual void touchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
+    virtual void ccTouchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
+    virtual void ccTouchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
+//    virtual void ccTouchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
 //    void destroyerAI();
 //    void submarineAI();
 //    void createMissile(CCPoint point);
