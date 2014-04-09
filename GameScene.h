@@ -10,9 +10,9 @@ class GameScene : public cocos2d::CCLayer {
     b2World* world;
     GamePhysicsContactListener* mGamePhysicsContactListener;
     float score_and_Maxplace;												// 整数部は得点で小数部は得点の桁
-    int arrow_key;
-    int tag_no;
-    int buttons_sum;
+    int arrow_key;															// 十字キー(４方向)
+    int tag_no;																// タグの番号
+    int buttons_sum;														// 合計ボタン数
     int lifeup_score;														// 残機アップする得点
     int enemyUnit_num;														// 作成する潜水艦の数
     int player_VIT;															// 自機の耐久度
@@ -21,7 +21,7 @@ class GameScene : public cocos2d::CCLayer {
     int lifepoint;															// 残機
     float dealofScrollSpead;												// スクロールスピードの倍率
     CCArray* scoreText;														// スコアの各位のテキスト
-    map<int, CCPoint> m_touchAt;												// タッチ座標
+    map<int, CCPoint> m_touchAt;											// タッチ座標
     map<int, bool> m_touchFlag;												// タッチフラグ
     b2Body* playerUnit;														// 自機の実体
     b2Body* enemyDestroyer;													// 敵駆逐艦の実体
@@ -61,16 +61,16 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Gear3,					// 3番目にスピードが遅いギア
         kTag_Gear4,					// 4番目にスピードが遅いギア
         kTag_Animation,
-        kTag_Test,					// テスト用(最後消す
+        kTag_Call_Scroll = 200,					// スクロール開始フラグ
     };
     // 画像の表示順序のタグ
     enum kZOrder {
     	kZOrder_Background,			// 背景
+    	kZOrder_Controller_Base,	// 操作部の下地
+    	kZOrder_Label,				// 操作部やラベル
     	kZOrder_Seabed,				// 海底
     	kZOrder_Missile,			// ミサイル
     	kZOrder_Unit,				// 機体
-    	kZOrder_Controller_Base,	// 操作部の下地
-    	kZOrder_Label,				// 操作部やラベル
     	kZOrder_Countdown			// カウントダウン等のアニメーション
     };
 
@@ -82,29 +82,31 @@ public:
     static cocos2d::CCScene* scene();										//関数
     void createBackground();												// 背景および海底を生成
     void createUnit(int hp, int kTag, int vit, b2Body* body);				// ユニットを生成
+    virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
+
     // 物理構造を持ったユニットノードを作成
     PhysicsSprite* createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Body* body, int shape);
     void createScore();														// スコアを生成
-    void createLifeCounter();														// 残りhpカウンターを生成
+    void createLifeCounter();													// 残りhpカウンターを生成
     void createControllerPanel();											// 操作部を生成
-    void createKey();															//十字キーを生成
-    void showCountdown();													// ゲーム開始時のカウントダウン
-//    virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
-//    void defeatPlayer();													// プレイヤーが撃沈
-    void finishGame();
-//    void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
-//    float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
+    void createKey();															// 十字キーを生成
+    void showCountdown();														// ゲーム開始時のカウントダウン
+    void callScroll();															// スクロール開始
+    void defeatPlayer();														// プレイヤーが撃沈
+    void finishGame();															// 終了時clearもしくはgameoverの画像を表示
+    void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
+    float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
     CCSize getWindowSize();													// ウィンドウサイズをゲットする
-    CCSize getViewSize();													// ビューサイズをゲットする
-//    void moveToNextScene();
-    void startGame();
-//    void setScoreNumber();
-    virtual void ccTouchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
+    CCSize getViewSize();														// ビューサイズをゲットする
+    void moveToNextScene();													// クリア、ゲームオーバ時の画面遷移
+    void startGame();															// ゲームスタート
+    void setScoreNumber();													// スコアに変化があった際の再描画
+    virtual void ccTouchesBegan(CCSet* touches, CCEvent* pEvent );			// タッチ開始時のイベント
     virtual void ccTouchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
-//    virtual void ccTouchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
-//    void destroyerAI();
+    virtual void ccTouchesEnded(CCSet* touches, CCEvent* pEvent );				// タッチ終了時のイベント
+    void destroyerAI();
 //    void submarineAI();
-//    void createMissile(CCPoint point);
+    void createMissile(CCPoint pPoint, int kTag = 0);
     CREATE_FUNC(GameScene);													//マクロ
 
     //追加
@@ -114,7 +116,6 @@ public:
     void missileButton();
     void speedSwitch();
     void playCountdownSound();
-    void testSprite();
 };
 
 #endif // __GAME_SCENE_H__
