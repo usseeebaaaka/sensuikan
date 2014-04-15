@@ -548,14 +548,42 @@ void GameScene::forwardUnit() {
 void GameScene::backUnit() {
 	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// ユニットの現在角度を取得
 	float coefficientOfSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
-	float forward = unitData[kTag_PlayerUnit]->getPositionX()  - 1 * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
-	float up = unitData[kTag_PlayerUnit]->getPositionY() -1 * PI * unitAngle;		// ユニットの進むべきY座標を計算
-	unitData[kTag_PlayerUnit]->setPosition(ccp(forward, up));			// 画像の座標を設定
+	float back = unitData[kTag_PlayerUnit]->getPositionX()  + coefficientOfSpeed;		// ユニットの進むべきX座標を計算
+	float up = unitData[kTag_PlayerUnit]->getPositionY() + PI * unitAngle;		// ユニットの進むべきY座標を計算
+	unitData[kTag_PlayerUnit]->setPosition(ccp(back, up));			// 画像の座標を設定
 	// 物理オブジェクトの座標を設定
-	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(forward / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
 
 }
 // スワイプしている途中に呼ばれる
+//void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
+//	//	CCSprite* Mater4 = 	(CCSprite*)getChildByTag(kTag_Gear4);			//オブジェクトGear4を取得
+//	float pMater4 = ((CCSprite*)getChildByTag(kTag_Gear4))->getPositionY();								//Mater4のy座標を取得
+//
+//	//タッチしたボタンの数だけループ
+//	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
+//		CCTouch *touch = (CCTouch *)(*it);						// タッチボタンの取得
+//		tag_no = this->kTag_Key_Up;								// 一番小さい数値が入っているkTag_Key_Upをtag_noに代入
+//
+//		// tag_noとkTag_Key_Upの差がボタンの合計数未満の間、tag_noを後置インクリメントしながらループ
+//		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+//			m_touchAt[tag_no]  = touch->getLocation();								// タッチ位置を更新
+//			CCPoint loc = m_touchAt[tag_no];										// タッチ座標の取得
+//			CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);		// オブジェクトkTag_Switchを取得しCCSprite*型変数を初期化
+//
+//			//もしtag_noとkTag_Switchが同値であり、かつスイッチオブジェクトをタップしていて、かつタッチ座標がGear4のy座標未満であれば以下ブロック
+//			if( (tag_no == kTag_Switch && pSwitch->boundingBox().containsPoint(loc) ) && loc.y < pMater4) {
+//				pSwitch->setPosition(ccp(pSwitch->getPositionX(), loc.y));			// スイッチをx座標は同じ座標、y座標はタッチされた座標にセット
+//				break;																// ブレイク
+//			}
+//		}
+//	}
+//}
+/* 関数名 : ccTouchesMoved関数
+ * 返却型 : void
+ *
+ * タップ後スワイプをした際に呼び出される関数
+ */
 void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
 	//	CCSprite* Mater4 = 	(CCSprite*)getChildByTag(kTag_Gear4);			//オブジェクトGear4を取得
 	float pMater4 = ((CCSprite*)getChildByTag(kTag_Gear4))->getPositionY();								//Mater4のy座標を取得
@@ -579,7 +607,6 @@ void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
 		}
 	}
 }
-
 // タッチ終了時のイベント
 void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
 	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
