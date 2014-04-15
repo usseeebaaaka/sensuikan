@@ -40,6 +40,7 @@ bool GameScene::init() {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
 	initPhysics();
+	createControllerPanel();
 	createBackground();
 	createScore();
 	// 自機を生成
@@ -49,7 +50,6 @@ bool GameScene::init() {
 	// 敵潜水艦を生成
 	createUnit(submarine_VIT % 100, kTag_EnemySubmarine, submarine_VIT);
 	createLifeCounter();
-	createControllerPanel();
 	createKey();
 
 	// ミサイルの準備
@@ -64,7 +64,7 @@ bool GameScene::init() {
 
 void GameScene::initPhysics() {
 	b2Vec2 gravity;										    				// 重力の設定値を格納するための変数
-	gravity.Set(0.1, -0.5);												// 重力を設定
+	gravity.Set(0.1, -10);												// 重力を設定
 
 	world = new b2World(gravity);											// 重力を持った世界を生成
 
@@ -85,7 +85,7 @@ void GameScene::createBackground() {
 
 	b2BodyDef seabedBodyDef;												// 物理構造を持つ海底構造体を生成
 	float seabedBottom = pBgUnder->getContentSize().height / 3;				// 海底とコントローラ部の境界座標を設定
-	seabedBodyDef.position.Set(0, seabedBottom / PTM_RATIO);							// 海底の位置をセット
+	seabedBodyDef.position.Set(seabedBottom / PTM_RATIO, 0);							// 海底の位置をセット
 	seabedBodyDef.userData = pSeabed;										// 海底オブジェクトのデータを構造体に登録
 
 	b2Body* seabedBody = world->CreateBody(&seabedBodyDef);				// 重力世界に海底構造体を登録
@@ -453,7 +453,7 @@ void GameScene::submarineAI() {
 		float b = unitData[kTag_EnemySubmarine]->getPositionX() - 15;
 		a = rand() % 2 ? a : b;
 		unitData[kTag_EnemySubmarine]->setPositionX(a);
-		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(b2Vec2((a + 10) / PTM_RATIO, (unitData[kTag_EnemySubmarine]->getPositionY()) / PTM_RATIO), rand() % 3);
+		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(b2Vec2((a + 10) / PTM_RATIO, (unitData[kTag_EnemySubmarine]->getPositionY()) / PTM_RATIO), rand() % 3 / 10);
 	}
 }
 // ミサイル作成
@@ -499,7 +499,8 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
 			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
-				createMissile(b2Vec2(getViewSize().width / PTM_RATIO / 2 , getViewSize().height / PTM_RATIO / 2));										// 自機撃沈関数を呼び出す
+				float c = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+				unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), c - 0.02);	// 船首を上げます
 			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
 				score_and_Maxplace += 15;
 				setScoreNumber();
@@ -518,7 +519,10 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 		}
 	}
 }
+//
+void GameScene::rotateAngle() {
 
+}
 // スワイプしている途中に呼ばれる
 void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
 	//	CCSprite* Mater4 = 	(CCSprite*)getChildByTag(kTag_Gear4);			//オブジェクトGear4を取得
