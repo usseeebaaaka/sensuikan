@@ -124,6 +124,7 @@ public:
     void missileButton();
     void speedSwitch();
     void playCountdownSound();
+#define PI 3.141592															// 円周率をマクロ定義
 };
 
 #endif // __GAME_SCENE_H__

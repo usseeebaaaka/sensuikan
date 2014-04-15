@@ -536,19 +536,24 @@ void GameScene::rotateDownAngle() {
 }
 // 前進する関数
 void GameScene::forwardUnit() {
-	float a = unitData[kTag_PlayerUnit]->getPositionX() - 1;
-	unitData[kTag_PlayerUnit]->setPositionX(a);			// 右に行くか左に行くかをランダムで選択
-	float b = unitData[kTag_PlayerUnit]->getPositionY();
-	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(a / PTM_RATIO,
-			(unitData[kTag_PlayerUnit]->getPositionY()) / PTM_RATIO - unitPhysicsData[kTag_PlayerUnit]->GetAngle()),
-			unitPhysicsData[kTag_PlayerUnit]->GetAngle());
-	int c = 0;
+	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// ユニットの現在角度を取得
+	float coefficientOfSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
+	float forward = unitData[kTag_PlayerUnit]->getPositionX()  - 1 * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
+	float up = unitData[kTag_PlayerUnit]->getPositionY() -1 * PI * unitAngle;		// ユニットの進むべきY座標を計算
+	unitData[kTag_PlayerUnit]->setPosition(ccp(forward, up));			// 画像の座標を設定
+	// 物理オブジェクトの座標を設定
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(forward / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
 }
 // 後退する関数
 void GameScene::backUnit() {
-	float a = unitData[kTag_PlayerUnit]->getPositionX() + 1;
-	unitData[kTag_PlayerUnit]->setPositionX(a);			// 右に行くか左に行くかをランダムで選択
-	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(a / PTM_RATIO, (unitData[kTag_PlayerUnit]->getPositionY()) / PTM_RATIO), 0);
+	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// ユニットの現在角度を取得
+	float coefficientOfSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
+	float forward = unitData[kTag_PlayerUnit]->getPositionX()  - 1 * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
+	float up = unitData[kTag_PlayerUnit]->getPositionY() -1 * PI * unitAngle;		// ユニットの進むべきY座標を計算
+	unitData[kTag_PlayerUnit]->setPosition(ccp(forward, up));			// 画像の座標を設定
+	// 物理オブジェクトの座標を設定
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(forward / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
+
 }
 // スワイプしている途中に呼ばれる
 void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
