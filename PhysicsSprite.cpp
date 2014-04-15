@@ -2,11 +2,12 @@
 #include "Config.h"
 
 PhysicsSprite::PhysicsSprite()
-: m_pBody(NULL) {
+: m_pBody(NULL)
+,hp(0){
 }
 PhysicsSprite::PhysicsSprite(int hp)
-: m_pBody(NULL) {
-	this->hp = hp;
+: m_pBody(NULL)
+,hp(hp){
 }
 void PhysicsSprite::setPhysicsBody(b2Body*  body) {
     m_pBody = body;

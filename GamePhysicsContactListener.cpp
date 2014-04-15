@@ -19,7 +19,7 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 	if (!actorA || !actorB){										// データが2つ揃っていない場合はそのまま戻る
 		return;
 	} else if ((tagA == TAG_PLAYER_UNIT && tagB == TAG_DESTROYER_UNIT) || (tagA == TAG_DESTROYER_UNIT && tagB == TAG_PLAYER_UNIT)
-			|| (tagB == TAG_PLAYER_UNIT && tagA == TAG_DESTROYER_UNIT) || (tagB == TAG_DESTROYER_UNIT && tagA == TAG_PLAYER_UNIT)) {
+			|| (tagA == TAG_PLAYER_UNIT && tagB == TAG_SUBMARINE_UNIT) || (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_PLAYER_UNIT)) {
 		// ゲームオーバー
         actorA->setTag(TAG_COLLISION);
 	} else if(tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE) {
@@ -31,5 +31,8 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 	} else if ((tagA == TAG_SUBMARINE_UNIT && tagB == TAG_MISSILE) || (tagA == TAG_MISSILE && tagB == TAG_SUBMARINE_UNIT)) {
 		//
         actorA->setTag(TAG_SUBMARINE_UNIT);
+	} else if ((tagA == TAG_BORDERLINE && tagB == TAG_PLAYER_UNIT) || (tagA == TAG_PLAYER_UNIT && tagB == TAG_BORDERLINE)) {
+		//
+        actorA->setTag(TAG_CALL_SCROLL);
 	}
 }
