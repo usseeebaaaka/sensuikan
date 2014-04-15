@@ -96,7 +96,10 @@ public:
     void createKey();															//十字キーを生成
     void showCountdown();													// ゲーム開始時のカウントダウン
     void callScroll();														// スクロール開始
-    void rotateAngle();														// ユニットの角度を変え続ける
+    void rotateUpAngle();														// 船首を上げる
+    void rotateDownAngle();														// 船首を下げる
+    void forwardUnit();															// 前進する
+    void backUnit();															// 後退する
 //    void defeatPlayer();													// プレイヤーが撃沈
 //    void finishGame();
 //    void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する

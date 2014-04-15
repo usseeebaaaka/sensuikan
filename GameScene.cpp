@@ -35,7 +35,6 @@ CCScene* GameScene::scene() {
 
 // ゲーム内の部品を生成する関数
 bool GameScene::init() {
-	sleep(20);
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
@@ -499,11 +498,17 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
 			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
-				float c = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
-				unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), c - 0.02);	// 船首を上げます
+				// 毎フレームrotateUpAngle関数を呼び出すように設定する
+			    this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
 			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
-				score_and_Maxplace += 15;
-				setScoreNumber();
+				// 毎フレームrotateDownAngle関数を呼び出すように設定する
+			    this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
+			} else if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームforwardUnit関数を呼び出すように設定する
+				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
+			} else if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームbackUnit関数を呼び出すように設定する
+				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
 			}
 			/* tag_noがミサイル発射上ボタンもしくは左ボタンであり、
 			 * かつそのオブジェクトの座標をタップしていれば以下のブロック
@@ -519,9 +524,31 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 		}
 	}
 }
-//
-void GameScene::rotateAngle() {
-
+// 船首を上げる関数
+void GameScene::rotateUpAngle() {
+	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), unitAngle - 0.02);	// 船首を上げます
+}
+// 船首を下げる関数
+void GameScene::rotateDownAngle() {
+	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), unitAngle + 0.02);	// 船首を下げます
+}
+// 前進する関数
+void GameScene::forwardUnit() {
+	float a = unitData[kTag_PlayerUnit]->getPositionX() - 1;
+	unitData[kTag_PlayerUnit]->setPositionX(a);			// 右に行くか左に行くかをランダムで選択
+	float b = unitData[kTag_PlayerUnit]->getPositionY();
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(a / PTM_RATIO,
+			(unitData[kTag_PlayerUnit]->getPositionY()) / PTM_RATIO - unitPhysicsData[kTag_PlayerUnit]->GetAngle()),
+			unitPhysicsData[kTag_PlayerUnit]->GetAngle());
+	int c = 0;
+}
+// 後退する関数
+void GameScene::backUnit() {
+	float a = unitData[kTag_PlayerUnit]->getPositionX() + 1;
+	unitData[kTag_PlayerUnit]->setPositionX(a);			// 右に行くか左に行くかをランダムで選択
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(a / PTM_RATIO, (unitData[kTag_PlayerUnit]->getPositionY()) / PTM_RATIO), 0);
 }
 // スワイプしている途中に呼ばれる
 void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
@@ -559,7 +586,15 @@ void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
-
+			if(tag_no == kTag_Key_Up) {
+			    this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+			} else if (tag_no == kTag_Key_Down) {
+				 this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+			} else if(tag_no == kTag_Key_Left) {
+				this->unschedule(schedule_selector(GameScene::forwardUnit));
+			} else if(tag_no == kTag_Key_Right) {
+				this->unschedule(schedule_selector(GameScene::backUnit));
+			}
 			m_touchFlag[tag_no] = !(touch_judge);
 		}
 	}
