@@ -1,5 +1,5 @@
 #include "GameScene.h"
-#include "config.h"
+#include "Config.h"
 #include "AppMacros.h"
 #include "SimpleAudioEngine.h"
 #include "Animation.h"
@@ -11,48 +11,43 @@ USING_NS_CC;
 GameScene::GameScene()
 :arrow_key(4),
  enemyUnit_num(2),
- player_VIT(2),
+ player_VIT(1),
  submarine_VIT(202),
  destroyer_VIT(202),
  score_and_Maxplace(0.3),
  dealofScrollSpead(0.2),
  buttons_sum(11),
+ playerUnit(NULL),
  lifepoint(3){
 	scoreText = new CCArray();
 	srand((unsigned int)time(NULL));
+	unitPhysicsData[kTag_PlayerUnit] = playerUnit;
+	unitPhysicsData[kTag_EnemyDestroyer] = enemyDestroyer;
+	unitPhysicsData[kTag_EnemySubmarine] = enemySubmarine;
 }
 
 CCScene* GameScene::scene() {
 	CCScene* scene = CCScene::create();			// 背景の雛型となるオブジェクトを生成
 	GameScene* layer = GameScene::create();		// 背景に処理を重ねるためのオブジェクトを生成
 	scene->addChild(layer);						// 雛型にレイヤーを埋め込む
-
 	return scene;								// 作成した雛型を返却
 }
 
 // ゲーム内の部品を生成する関数
 bool GameScene::init() {
+	sleep(20);
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	this->setTouchEnabled(true);				  							// タッチ可能にする
-	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
-
-	b2Vec2 gravity;										    				// 重力の設定値を格納するための変数
-	gravity.Set(0.0, 0.0);												// 重力を設定
-
-	world = new b2World(gravity);											// 重力を持った世界を生成
-
-	mGamePhysicsContactListener = new GamePhysicsContactListener(this);		// 衝突判定結果を格納するための変数を用意
-	world->SetContactListener(mGamePhysicsContactListener);				// 衝突判定処理を追加
-
-	sleep(20);
+	initPhysics();
 	createBackground();
-	// 自機を生成
-	createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT, playerUnit);
-	// 敵駆逐艦を生成
-	createUnit(destroyer_VIT % 100, kTag_EnemyDestroyer, destroyer_VIT, enemyDestroyer);
 	createScore();
+	// 自機を生成
+	createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT);
+	// 敵駆逐艦を生成
+	createUnit(destroyer_VIT % 100, kTag_EnemyDestroyer, destroyer_VIT);
+	// 敵潜水艦を生成
+	createUnit(submarine_VIT % 100, kTag_EnemySubmarine, submarine_VIT);
 	createLifeCounter();
 	createControllerPanel();
 	createKey();
@@ -67,6 +62,17 @@ bool GameScene::init() {
 }
 
 
+void GameScene::initPhysics() {
+	b2Vec2 gravity;										    				// 重力の設定値を格納するための変数
+	gravity.Set(0.1, -0.5);												// 重力を設定
+
+	world = new b2World(gravity);											// 重力を持った世界を生成
+
+	mGamePhysicsContactListener = new GamePhysicsContactListener(this);		// 衝突判定結果を格納するための変数を用意
+	world->SetContactListener(mGamePhysicsContactListener);				// 衝突判定処理を追加
+
+}
+
 // 背景および海底を生成
 void GameScene::createBackground() {
 	CCSprite* pBgUnder = CCSprite::create("morning.png");					// 背景画像を取得し、オブジェクトに格納
@@ -79,7 +85,7 @@ void GameScene::createBackground() {
 
 	b2BodyDef seabedBodyDef;												// 物理構造を持つ海底構造体を生成
 	float seabedBottom = pBgUnder->getContentSize().height / 3;				// 海底とコントローラ部の境界座標を設定
-	seabedBodyDef.position.Set(0, seabedBottom);							// 海底の位置をセット
+	seabedBodyDef.position.Set(0, seabedBottom / PTM_RATIO);							// 海底の位置をセット
 	seabedBodyDef.userData = pSeabed;										// 海底オブジェクトのデータを構造体に登録
 
 	b2Body* seabedBody = world->CreateBody(&seabedBodyDef);				// 重力世界に海底構造体を登録
@@ -120,7 +126,7 @@ void GameScene::createBackground() {
 
 
 // ユニットを生成する
-void GameScene::createUnit(int hp, int kTag, int vit, b2Body* body) {
+void GameScene::createUnit(int hp, int kTag, int vit) {
 	CCSize bgSize = getChildByTag(kTag_Background)->getContentSize();				// 背景サイズを取得
 	PhysicsSprite* pUnit = new PhysicsSprite(hp);									// 物理構造を持った画像オブジェクトを生成
 	pUnit->autorelease();															// メモリ領域を開放
@@ -137,33 +143,34 @@ void GameScene::createUnit(int hp, int kTag, int vit, b2Body* body) {
 		pUnit->setPosition(ccp(bgSize.width * 0.5,									// 任意の位置にオブジェクトをセット
 				bgSize.height / 8 * 7 - (bgSize.height - getWindowSize().height) / 2));
 	}
-	pUnit = createPhysicsBody(kTag_DynamicBody, pUnit, body, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 	this->addChild(pUnit, kZOrder_Unit, kTag);										// タグとオブジェクトを関連づける
+	pUnit = createPhysicsBody(kTag_StaticBody, kTag, pUnit, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	unitData[kTag] = pUnit;												// ユニットのデータを配列に格納
+	b2Vec2 a = unitPhysicsData[kTag]->GetPosition();
 }
 // 物理構造を持ったユニットノードを作成
-PhysicsSprite* GameScene::createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Body* body, int shape) {
+PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite* pNode, int shape) {
 	b2BodyDef physicsBodyDef;														// 物理構造を持ったユニット変数
-	if (kTag == kTag_StaticBody) {													// 静的構造が選択された場合
+	if (bodyTag == kTag_StaticBody) {													// 静的構造が選択された場合
 		physicsBodyDef.type = b2_staticBody;										// オブジェクトは静的になる
-	} else if (kTag == kTag_DynamicBody) {											// 動的構造が選択された場合
+	} else if (bodyTag == kTag_DynamicBody) {											// 動的構造が選択された場合
 		physicsBodyDef.type = b2_dynamicBody;										// オブジェクトは動的になる
 	} else {																		// どちらでもない場合
 		physicsBodyDef.type = b2_kinematicBody;										// オブジェクトは運動学的になる
 	}
-
-	float width = pNode->getPositionX();
-	float height = pNode->getPositionY();
+	float width = pNode->getPositionX() / PTM_RATIO;
+	float height = pNode->getPositionY() / PTM_RATIO;
 	physicsBodyDef.position.Set(pNode->getPositionX() / PTM_RATIO,					// 物理オブジェクトの位置をセット
 			pNode->getPositionY() / PTM_RATIO);
 	physicsBodyDef.userData = pNode;												// ノードをデータに登録
-	body = world->CreateBody(&physicsBodyDef);										// 物理世界に登録
+	unitPhysicsData[kTag] = world->CreateBody(&physicsBodyDef);						// 物理世界に登録
 	b2FixtureDef physicsFixturedef;													// 物理形状を決める変数
 
 	b2PolygonShape PolygonShape;
 	b2CircleShape CircleShape;
 	if (!shape) {																	// shapeが0の場合
 		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.8 / 2 / PTM_RATIO,
-				pNode->getContentSize().height * 0.8 / 1 / PTM_RATIO);														// 角形の範囲を設定
+				pNode->getContentSize().height * 0.8 / 2 / PTM_RATIO);														// 角形の範囲を設定
 	} else {																		// shapeが0でない場合
 		CircleShape.m_radius = pNode->getContentSize().width * 0.4 / PTM_RATIO;	// 円形の範囲を設定
 	}
@@ -171,10 +178,11 @@ PhysicsSprite* GameScene::createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Bo
 	!shape ? physicsFixturedef.shape = &PolygonShape :
 			physicsFixturedef.shape = &CircleShape;
 	physicsFixturedef.density = 1;													// オブジェクトの密度を設定
-	physicsFixturedef.friction = 0.3;												// オブジェクトの摩擦を設定
+	physicsFixturedef.friction = 1;												// オブジェクトの摩擦を設定
 
-	body->CreateFixture(&physicsFixturedef);										// 構造体に情報を登録
-	pNode->setPhysicsBody(body);													// ノードに構造体を登録
+	unitPhysicsData[kTag]->CreateFixture(&physicsFixturedef);										// 構造体に情報を登録
+	pNode->setPhysicsBody(unitPhysicsData[kTag]);													// ノードに構造体を登録
+	b2Vec2 a = unitPhysicsData[kTag]->GetPosition();
 	return pNode;																	// 作成したノードを返却
 }
 
@@ -182,13 +190,12 @@ PhysicsSprite* GameScene::createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Bo
 
 // スコア部を生成
 void GameScene::createScore() {
-	// スコア部分の生成
-	scoreText = CCArray::create();														// スコアを入れるための配列を生成
+	// スコア部分の生成														// スコアを入れるための配列を生成
 	float j = 0;																		// スコア間隔調整のための変数
 	CCLabelTTF* tmp;																	// スコアテキスト格納用変数
 	// 任意の桁数だけ繰り返し
 	for (int i = score_and_Maxplace * 10; i % 10; i--, j = j + 0.05) {
-		i * 10 != 1 ?																	// 配列の最後の要素であるか？
+		i % 10 != 1 ?																	// 配列の最後の要素であるか？
 				tmp = CCLabelTTF::create("1", "", NUMBER_FONT_SIZE) :					// でなければ数字表示なし
 				tmp = CCLabelTTF::create("0", "", NUMBER_FONT_SIZE);					// であれば数字表示あり
 		tmp->setPosition(ccp(getWindowSize().width * (0.1 + j),
@@ -365,12 +372,13 @@ void GameScene::showCountdown() {
 }
 // 毎フレームごとに衝突判定をチェックする
 void GameScene::update(float dt) {
+	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
 	// 物理シミュレーションの正確さを決定するパラメーター
 	int velocityIterations = 8;
 	int positionIterations = 1;
 	// worldを更新する
 	world->Step(dt, velocityIterations, positionIterations);
-
+//	setScoreNumber ();
 	// world内の全オブジェクトをループする
 	for (b2Body* b = world->GetBodyList(); b; b = b->GetNext()) {
 		if (!b->GetUserData()) {
@@ -384,7 +392,7 @@ void GameScene::update(float dt) {
 			// 被弾したユニットを判別
 			PhysicsSprite* damagedUnit = (PhysicsSprite*)this->getChildByTag(objectTag);
 			// 被弾したユニットのHPを減らす
-			damagedUnit->setHp(damagedUnit->getHp() - 1);
+			damagedUnit->setHp(damagedUnit->getHp());
 			if (damagedUnit->getHp()) {									// HPが0になっていない場合
 				Animation::hitAnimation(kTag_HitAnimation);				// 被弾アニメーションを取得
 			} else {													// 0になった場合
@@ -407,43 +415,56 @@ void GameScene::update(float dt) {
 			//			defeatPlayer();												// 自機が撃沈される
 		}
 	}
-	CCNode* position_of_destroyer = this->getChildByTag(kTag_EnemyDestroyer);	// 駆逐艦画像のオブジェクトを生成
-	if (position_of_destroyer) {
-		CCPoint destroyer_loc = position_of_destroyer->getPosition();			// 潜水艦の現在位置を取得
-	}
-	CCNode* position_of_submarine = this->getChildByTag(kTag_EnemySubmarine);	// 潜水艦画像のオブジェクトを生成
-	if (position_of_submarine) {
-		CCPoint submarine_loc = position_of_submarine->getPosition();			// 潜水艦の現在位置を取得
-	}
-	if (!(rand() % 30)) {
+	if (!(rand() % 20) && this->getChildByTag(kTag_EnemyDestroyer)) {
 		destroyerAI();														// ランダムで駆逐艦のAIを呼び出す
 	}
-	if (!(rand() % 30)) {
-		//		submarineAI();														// ランダムで潜水艦のAiを呼び出す
+	if (!(rand() % 20) && this->getChildByTag(kTag_EnemyDestroyer)) {
+				submarineAI();														// ランダムで潜水艦のAiを呼び出す
 	}
 }
 // 駆逐艦AI
 void GameScene::destroyerAI() {
-	PhysicsSprite* destroyer = (PhysicsSprite*) this->getChildByTag(kTag_EnemyDestroyer);	// 駆逐艦画像のオブジェクトを生成
-	CCPoint destroyer_loc = destroyer->getPosition();			// 駆逐艦の現在位置を取得
-	if(!(rand() %  2000)) {										// ランダムでミサイルを発射
-		createMissile(destroyer_loc);							// ミサイルを発射
+	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
+	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
+
+	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
+	if(!(rand() %  3)) {										// ランダムでミサイルを発射
+		createMissile(destroyerPosition);							// ミサイルを発射
 	} else if(!(rand() % 2)) {									// ランダムで移動
-		destroyer->setPositionX(destroyer->getPositionX() + 1);
-		this->addChild(destroyer, kZOrder_Unit, kTag_EnemyDestroyer);
+		float a = unitData[kTag_EnemyDestroyer]->getPositionX() + 20;
+		float b = unitData[kTag_EnemyDestroyer]->getPositionX() - 20;
+		a = rand() % 2 ? a : b;
+		unitData[kTag_EnemyDestroyer]->setPositionX(a);			// 右に行くか左に行くかをランダムで選択
+		unitPhysicsData[kTag_EnemyDestroyer]->SetTransform(b2Vec2(a / PTM_RATIO, (unitData[kTag_EnemyDestroyer]->getPositionY()) / PTM_RATIO), 0);
 		// 向きを反転
 	}
 }
 
+// 潜水艦AIの作成
+void GameScene::submarineAI() {
+	PhysicsSprite* ab = unitData[kTag_EnemySubmarine];
+	b2Vec2 submarinePosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
+
+	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
+	if(!(rand() %  3)) {										// ランダムでミサイルを発射
+		createMissile(submarinePosition);							// ミサイルを発射
+	} else if(!(rand() % 2)) {									// ランダムで移動
+		float a = unitData[kTag_EnemySubmarine]->getPositionX() + 20;
+		float b = unitData[kTag_EnemySubmarine]->getPositionX() - 15;
+		a = rand() % 2 ? a : b;
+		unitData[kTag_EnemySubmarine]->setPositionX(a);
+		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(b2Vec2((a + 10) / PTM_RATIO, (unitData[kTag_EnemySubmarine]->getPositionY()) / PTM_RATIO), rand() % 3);
+	}
+}
 // ミサイル作成
-void GameScene::createMissile(CCPoint point) {
+void GameScene::createMissile(b2Vec2 position) {
 	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();
 	pMissile->initWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
-	pMissile->setPosition(point);													// ミサイルを指定位置にセット
+	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO));													// ミサイルを指定位置にセット
 	this->addChild(pMissile, kZOrder_Missile, kTag_Missile);
 	b2Body* missileBody;
-	pMissile = createPhysicsBody(kTag_DynamicBody, pMissile, missileBody, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 }
 
 // カウントダウンの音を取得する
@@ -454,12 +475,128 @@ void GameScene::playCountdownSound() {
 
 // ゲームスタートの処理を行う
 void GameScene::startGame() {
-
-	//敵：潜水艦、駆逐艦のaiを呼び出す
-	//this->schedule(schedule_selector(GameScene::destroyerAI));
-	//this->schedule(schedule_selector(GameScene::submarineAI));
+	this->setTouchEnabled(true);				  							// タッチ可能にする
+	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 	// 毎フレームupdate( )関数を呼び出すように設定する
 	scheduleUpdate();
+}
+/* ***********************
+ *
+ * 		タッチ処理
+ *
+ * ***********************/
+
+// タッチ開始時のイベント
+void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
+
+	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {	// タッチ位置を順に探索
+		CCTouch* touch  = (CCTouch *)(*it);									// 取得した値をノードと照合するためccTouch型に変換
+		bool touch_judge = 0;											// 返り値として渡すためのタッチ判定フラグ
+		tag_no = this->kTag_Key_Up;										// 各種ボタンの先頭のタグを取得
+		CCPoint loc = touch->getLocation();								// タッチ位置を取得
+
+		// 各ボタンのタッチ判定を繰り返し
+		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
+			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
+				createMissile(b2Vec2(getViewSize().width / PTM_RATIO / 2 , getViewSize().height / PTM_RATIO / 2));										// 自機撃沈関数を呼び出す
+			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
+				score_and_Maxplace += 15;
+				setScoreNumber();
+			}
+			/* tag_noがミサイル発射上ボタンもしくは左ボタンであり、
+			 * かつそのオブジェクトの座標をタップしていれば以下のブロック
+			 */
+			if((tag_no == kTag_Shoot_Vertical || tag_no == kTag_Shoot_Horizontal)
+					&& i->boundingBox().containsPoint(loc)) {
+				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
+				createMissile(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
+			}
+			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
+			m_touchFlag[tag_no] = touch_judge;							// tag_no番目の配列にタッチしているかしていないかを代入
+			m_touchAt[tag_no] = touch->getLocation();					// 位置を保存
+		}
+	}
+}
+
+// スワイプしている途中に呼ばれる
+void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
+	//	CCSprite* Mater4 = 	(CCSprite*)getChildByTag(kTag_Gear4);			//オブジェクトGear4を取得
+	float pMater4 = ((CCSprite*)getChildByTag(kTag_Gear4))->getPositionY();								//Mater4のy座標を取得
+
+	//タッチしたボタンの数だけループ
+	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
+		CCTouch *touch = (CCTouch *)(*it);						// タッチボタンの取得
+		tag_no = this->kTag_Key_Up;								// 一番小さい数値が入っているkTag_Key_Upをtag_noに代入
+
+		// tag_noとkTag_Key_Upの差がボタンの合計数未満の間、tag_noを後置インクリメントしながらループ
+		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+			m_touchAt[tag_no]  = touch->getLocation();								// タッチ位置を更新
+			CCPoint loc = m_touchAt[tag_no];										// タッチ座標の取得
+			CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);		// オブジェクトkTag_Switchを取得しCCSprite*型変数を初期化
+
+			//もしtag_noとkTag_Switchが同値であり、かつスイッチオブジェクトをタップしていて、かつタッチ座標がGear4のy座標未満であれば以下ブロック
+			if( (tag_no == kTag_Switch && pSwitch->boundingBox().containsPoint(loc) ) && loc.y < pMater4) {
+				pSwitch->setPosition(ccp(pSwitch->getPositionX(), loc.y));			// スイッチをx座標は同じ座標、y座標はタッチされた座標にセット
+				break;																// ブレイク
+			}
+		}
+	}
+}
+
+// タッチ終了時のイベント
+void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
+	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
+		CCTouch* touch  = (CCTouch *)(*it);
+		bool touch_judge = 0;											// 返り値として渡すためのタッチ判定フラグ
+		tag_no = this->kTag_Key_Up;										// 各種ボタンの先頭のタグを取得
+		CCPoint loc = touch->getLocation();								// タッチ位置を取得
+		// 各ボタンのタッチ判定を繰り返し
+		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
+			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
+
+			m_touchFlag[tag_no] = !(touch_judge);
+		}
+	}
+}
+
+void GameScene::setScoreNumber() {
+
+	int showScore;											// 表示するスコア
+	int maxScore = 1;										// 表示可能な最大スコア
+	// 繰返し文により、表示可能最大値を算出
+	// score_and_Maxplaceは小数部が桁数、整数部がスコア
+	// 小数部が0.3である為３回繰り返され、maxScoreは1000になる
+	for(int i = score_and_Maxplace * 10; i % 10; i-=1) {
+		maxScore *= 10;
+	}
+
+	// score_and_Maxplaceが1000より大きければ
+	if (score_and_Maxplace > maxScore) {
+		showScore = maxScore - 1;		// maxScore(1000)から1引かれた値をshowScoreに代入する
+		// 大きくなければ
+	} else {
+		showScore = score_and_Maxplace;	// float型score_and_Maxplaceをint型showScoreに代入、暗黙的キャスト
+	}
+
+	// score_and_Maxplaceを10で割った余りが0(ヌル)になるまでループ
+	// ヌルでない間は下一桁をデクリメント
+	for (int i = score_and_Maxplace * 10; i % 10; i--) {
+		// CCArray型変数scoreTextから指定されたインデックスのオブジェクトを取り出し
+		// CCString型変数tmpを初期化
+		CCString* tmp = (CCString*)scoreText->objectAtIndex(i % 10);
+
+		// showScore(現在スコア)に10かけた値をmaxScore(最高点)で割った値が0であれば以下ブロック
+		if (showScore * 10 / maxScore == 0) {
+			i % 10 != 1 ?							//
+					tmp = CCString::create(" "):
+					tmp = CCString::create("%d");
+		} else {
+			tmp = CCString::create("%d");
+		}
+		scoreText->addObject(tmp);					// 配列の末尾にオブジェクトをセット
+	}
 }
 
 // スクロール開始関数

@@ -21,8 +21,11 @@ class GameScene : public cocos2d::CCLayer {
     int lifepoint;															// 残機
     float dealofScrollSpead;												// スクロールスピードの倍率
     CCArray* scoreText;														// スコアの各位のテキスト
-    map<int, CCPoint> m_touchAt;												// タッチ座標
+    map<int, CCPoint> m_touchAt;											// タッチ座標
     map<int, bool> m_touchFlag;												// タッチフラグ
+    map<int, PhysicsSprite*> unitData;										// ユニットのデータ群
+    map<int, b2Body*> unitPhysicsData;
+    map<int, b2Vec2> unitPhysicsPoint;										// ユニットの物理構造体群
     b2Body* playerUnit;														// 自機の実体
     b2Body* enemyDestroyer;													// 敵駆逐艦の実体
     b2Body* enemySubmarine;													// 敵潜水艦の実体
@@ -33,8 +36,8 @@ class GameScene : public cocos2d::CCLayer {
     enum kTag {
     	kTag_Polygon,				// 角形物理構造
     	kTag_Circle,				// 円形物理構造
-    	kTag_HitAnimation = 14,		// 被弾アニメーションのタグ
     	kTag_DefeatAnimation = 7,	// 撃沈アニメーションのタグ
+    	kTag_HitAnimation = 14,		// 被弾アニメーションのタグ
     	kTag_StaticBody,			// 静的なボディ
     	kTag_DynamicBody,			// 動的なボディ
     	kTag_KinematicBody,			// 運動学的ボディ
@@ -78,21 +81,21 @@ public:
     GameScene();															// デフォルトコンストラクタ
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init();
+    void initPhysics();														// 重力世界の初期化
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::CCScene* scene();										//関数
     void createBackground();												// 背景および海底を生成
-    void createUnit(int hp, int kTag, int vit, b2Body* body);				// ユニットを生成
+    void createUnit(int hp, int kTag, int vit);				// ユニットを生成
     virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
 
     // 物理構造を持ったユニットノードを作成
-    PhysicsSprite* createPhysicsBody(int kTag, PhysicsSprite* pNode, b2Body* body, int shape);
+    PhysicsSprite* createPhysicsBody(int bodyTag, int kTag, PhysicsSprite* pNode, int shape);
     void createScore();														// スコアを生成
     void createLifeCounter();														// 残りhpカウンターを生成
     void createControllerPanel();											// 操作部を生成
     void createKey();															//十字キーを生成
     void showCountdown();													// ゲーム開始時のカウントダウン
     void callScroll();														// スクロール開始
-//    virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
 //    void defeatPlayer();													// プレイヤーが撃沈
 //    void finishGame();
 //    void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
@@ -101,13 +104,13 @@ public:
     CCSize getViewSize();													// ビューサイズをゲットする
 //    void moveToNextScene();
     void startGame();
-//    void setScoreNumber();
-//    virtual void touchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
-//    virtual void touchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
-//    virtual void touchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
+    void setScoreNumber();
+    virtual void ccTouchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
+    virtual void ccTouchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
+    virtual void ccTouchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
     void destroyerAI();
-//    void submarineAI();
-    void createMissile(CCPoint point);
+    void submarineAI();
+    void createMissile(b2Vec2 position);
     CREATE_FUNC(GameScene);													//マクロ
 
     //追加
