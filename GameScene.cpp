@@ -678,14 +678,13 @@ void GameScene::forwardUnit() {
 void GameScene::backUnit() {
 	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// ユニットの現在角度を取得
 	float coefficientOfSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
-	float forward = unitData[kTag_PlayerUnit]->getPositionX()  - 1 * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
-	float up = unitData[kTag_PlayerUnit]->getPositionY() -1 * PI * unitAngle;		// ユニットの進むべきY座標を計算
-	unitData[kTag_PlayerUnit]->setPosition(ccp(forward, up));			// 画像の座標を設定
+	float back = unitData[kTag_PlayerUnit]->getPositionX()  + coefficientOfSpeed;		// ユニットの進むべきX座標を計算
+	float up = unitData[kTag_PlayerUnit]->getPositionY() + PI * unitAngle;		// ユニットの進むべきY座標を計算
+	unitData[kTag_PlayerUnit]->setPosition(ccp(back, up));			// 画像の座標を設定
 	// 物理オブジェクトの座標を設定
-	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(forward / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
+	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
 
 }
-
 /* ***********************
  *
  * 		タッチ処理
