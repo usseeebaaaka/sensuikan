@@ -29,6 +29,7 @@ class GameScene : public cocos2d::CCLayer {
     b2Body* playerUnit;														// 自機の実体
     b2Body* enemyDestroyer;													// 敵駆逐艦の実体
     b2Body* enemySubmarine;													// 敵潜水艦の実体
+    b2Body* missile;														// ミサイルの実体
     CCSpriteBatchNode* missileBatchNode;									// ミサイル群
     CCSpriteBatchNode* hpBatchNode;											// hp群
     CCSpriteBatchNode* lifeBatchNode;										// 残機群
@@ -99,6 +100,7 @@ public:
     void createKey();															//十字キーを生成
     void showCountdown();													// ゲーム開始時のカウントダウン
     void callScroll();														// スクロール開始
+    void goGoMissile();															// ミサイルを動かす
     void rotateUpAngle();														// 船首を上げる
     void rotateDownAngle();														// 船首を下げる
     void forwardUnit();															// 前進する

@@ -25,6 +25,7 @@ GameScene::GameScene()
 	unitPhysicsData[kTag_PlayerUnit] = playerUnit;
 	unitPhysicsData[kTag_EnemyDestroyer] = enemyDestroyer;
 	unitPhysicsData[kTag_EnemySubmarine] = enemySubmarine;
+	unitPhysicsData[kTag_Missile] = missile;
 }
 
 CCScene* GameScene::scene() {
@@ -63,7 +64,7 @@ bool GameScene::init() {
 
 void GameScene::initPhysics() {
 	b2Vec2 gravity;															// 重力の設定値を格納するための変数
-	gravity.Set(0.1, -10);													// 重力を設定
+	gravity.Set(0, -1);													// 重力を設定
 
 	world = new b2World(gravity);											// 重力を持った世界を生成
 
@@ -650,9 +651,19 @@ void GameScene::createMissile(b2Vec2 position) {
 	pMissile->initWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
 	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO));													// ミサイルを指定位置にセット
 	this->addChild(pMissile, kZOrder_Missile, kTag_Missile);
-	b2Body* missileBody;
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 }
+// ミサイルを動かす
+void GameScene::goGoMissile() {
+	float unitAngle = unitPhysicsData[kTag_Missile]->GetAngle();		// ユニットの現在角度を取得
+	float coefficientOfSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
+	float forward = unitData[kTag_Missile]->getPositionX()  - 1 * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
+	float up = unitData[kTag_Missile]->getPositionY() -1 * PI * unitAngle;		// ユニットの進むべきY座標を計算
+	unitData[kTag_Missile]->setPosition(ccp(forward, up));			// 画像の座標を設定
+	// 物理オブジェクトの座標を設定
+	unitPhysicsData[kTag_Missile]->SetTransform(b2Vec2(forward / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_Missile]->GetAngle());
+}
+
 
 // 船首を上げる関数
 void GameScene::rotateUpAngle() {
