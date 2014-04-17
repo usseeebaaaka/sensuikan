@@ -59,9 +59,9 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Key_Left,				// 左キー
         kTag_Key_Right,				// 右キー
         kTag_Key_Center,			// ストップボタン
-        kTag_Switch,
         kTag_Shoot_Vertical,		// 垂直射撃ボタン
         kTag_Shoot_Horizontal,		// 水平射撃ボタン
+        kTag_Switch,				// スピードスイッチ
         kTag_Gear1,					// 1番スピードが遅いギア
         kTag_Gear2,					// 2番目にスピードが遅いギア
         kTag_Gear3,					// 3番目にスピードが遅いギア

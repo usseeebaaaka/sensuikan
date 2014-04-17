@@ -403,8 +403,8 @@ void GameScene::hitPlayer () {
 	if (unitData[kTag_PlayerUnit]->getHp() == 0) {								// hpがなくなった場合
 		defeatPlayer();
 	} else {
-//		bombAction->runAction(Animation::hitAnimation(hitAnimation));
-//		this->addChild(bombAction, kZOrder_Countdown);
+		//		bombAction->runAction(Animation::hitAnimation(hitAnimation));
+		//		this->addChild(bombAction, kZOrder_Countdown);
 		createLifeCounter();
 	}
 }
@@ -472,14 +472,14 @@ void GameScene::update(float dt) {
 		if (objectTag == kTag_Call_Scroll) {
 			// ミサイル消失タグだった場合
 		} else if (objectTag == kTag_Remove_Missile) {
-            // 0.1秒後に消えるアクションをセットする
-            CCDelayTime* delay = CCDelayTime::create(0.1);
-            CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
-            CCSequence* action = CCSequence::createWithTwoActions(delay, func);
-            action->setTag(kTag_Remove_Missile);
-            object->runAction(action);
+			// 0.1秒後に消えるアクションをセットする
+			CCDelayTime* delay = CCDelayTime::create(0.1);
+			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
+			CCSequence* action = CCSequence::createWithTwoActions(delay, func);
+			action->setTag(kTag_Remove_Missile);
+			object->runAction(action);
 		} else if (objectTag == kTag_Collision) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
-            removeObject(object, (void*)b);								// ミサイルを消す
+			removeObject(object, (void*)b);								// ミサイルを消す
 			hitPlayer();												// 自機が撃沈される
 		}
 	}
@@ -660,14 +660,14 @@ void GameScene::goGoMissile() {
 void GameScene::rotateUpAngle() {
 	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
 	if (unitAngle > -1 * PI / 4) {
-	unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), unitAngle - 0.02);	// 船首を上げます
+		unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), unitAngle - 0.02);	// 船首を上げます
 	}
 }
 // 船首を下げる関数
 void GameScene::rotateDownAngle() {
 	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
 	if (unitAngle < PI / 4) {
-	unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), unitAngle + 0.02);	// 船首を下げます
+		unitPhysicsData[kTag_PlayerUnit]->SetTransform(unitPhysicsData[kTag_PlayerUnit]->GetPosition(), unitAngle + 0.02);	// 船首を下げます
 	}
 }
 // 前進する関数
@@ -713,6 +713,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 		// 各ボタンのタッチ判定を繰り返し
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
+			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
 
 			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateUpAngle関数を呼び出すように設定する
@@ -731,11 +732,11 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 			 * かつそのオブジェクトの座標をタップしていれば以下のブロック
 			 */
 			if((tag_no == kTag_Shoot_Vertical || tag_no == kTag_Shoot_Horizontal)
-					&& true == i->boundingBox().containsPoint(loc)) {
+					&& touch_judge) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
 				createMissile(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
 			}
-			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
+
 			if(touch_judge) {
 				changeButton(tag_no, kTag_changeBegan);
 			}
@@ -764,11 +765,27 @@ void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			m_touchAt[tag_no]  = touch->getLocation();								// タッチ位置を更新
 			CCPoint loc = m_touchAt[tag_no];										// タッチ座標の取得
-			CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);		// オブジェクトkTag_Switchを取得しCCSprite*型変数を初期化
+//			CCSprite* pButton = (CCSprite*)this->getChildByTag(tag_no);				// tag_noのオブジェクトを取得しCCSprite*型変数を初期化
 
+			if ((kTag_Key_Up <= tag_no && tag_no <= kTag_Shoot_Horizontal)
+					&& getCCSprite(tag_no)->boundingBox().containsPoint(loc)){
+				CCPoint objPoint = getCCPoint(tag_no);					// オブジェクトの中心座標を取得
+				CCSize objSize = getCCSprite(tag_no)->getContentSize();	// オブジェクトのサイズを取得
+				float obj_Left  = objPoint.x - objSize.width  / 2;		// オブジェクトの左辺を取得
+				float obj_Right = objPoint.x + objSize.width  / 2;		//     〃      の右辺を取得
+				float obj_Up    = objPoint.y + objSize.height / 2;		//     〃      の上辺を取得
+				float obj_Down  = objPoint.y - objSize.height / 2;		//     〃      の下辺を取得
+				/* オブジェクトをタップし、
+				 * その後オブジェクト外までスワイプした時
+				 * 以下のブロック
+				 */
+				if(( loc.x < obj_Left || obj_Right < loc.x) || (loc.y < obj_Down || obj_Up < loc.y)) {
+					changeButton(tag_no, kTag_changeEnded);
+				}
+			}
 			//もしtag_noとkTag_Switchが同値であり、かつスイッチオブジェクトをタップしていて、かつタッチ座標がGear4のy座標未満であれば以下ブロック
-			if( (tag_no == kTag_Switch && pSwitch->boundingBox().containsPoint(loc) ) && (pMeter1 < loc.y && loc.y < pMeter4)) {
-				pSwitch->setPosition(ccp(pSwitch->getPositionX(), loc.y));			// スイッチをx座標は同じ座標、y座標はタッチされた座標にセット
+			if( (tag_no == kTag_Switch && getCCSprite(tag_no)->boundingBox().containsPoint(loc) ) && (pMeter1 < loc.y && loc.y < pMeter4)) {
+				getCCSprite(tag_no)->setPosition(ccp(getCCSprite(tag_no)->getPositionX(), loc.y));			// スイッチをx座標は同じ座標、y座標はタッチされた座標にセット
 				break;																// ブレイク
 			}
 		}
