@@ -396,7 +396,7 @@ void GameScene::startGame() {
 	scheduleUpdate();
 }
 // 攻撃被弾時に呼び出される関数
-void GameScene::hitPlayer () {
+void GameScene::hitPlayer() {
 	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - 1);
 	CCNode* bombAction = CCNode::create();
 	bombAction->setPosition(unitData[kTag_PlayerUnit]->getPosition());
@@ -408,9 +408,8 @@ void GameScene::hitPlayer () {
 		createLifeCounter();
 	}
 }
-
 // 自機撃沈関数
-void GameScene::defeatPlayer () {
+void GameScene::defeatPlayer() {
 	this->lifepoint--;									// 残機を減らす
 	if (lifepoint == 0) {								// 残機がなくなった場合
 		finishGame();								// ゲームオーバー
@@ -422,7 +421,19 @@ void GameScene::defeatPlayer () {
 		createLifeCounter();
 	}
 }
+// 攻撃被弾時に呼び出される関数
+void GameScene::hitEnemySubmarine() {
+	unitData[kTag_EnemySubmarine]->setHp(unitData[kTag_EnemySubmarine]->getHp() - 1);
+	CCNode* bombAction = CCNode::create();
+	bombAction->setPosition(unitData[kTag_EnemySubmarine]->getPosition());
+	if (unitData[kTag_EnemySubmarine]->getHp() == 0) {								// hpがなくなった場合
+		removeObject(unitData[kTag_EnemySubmarine], (void*)unitPhysicsData[kTag_EnemySubmarine]);						// 撃沈したオブジェクトを削除
 
+	} else {
+//		bombAction->runAction(Animation::hitAnimation(hitAnimation));
+//		this->addChild(bombAction, kZOrder_Countdown);
+	}
+}
 // オブジェクトを除去する
 void GameScene::removeObject(CCNode* pObject, void* body) {
 	pObject->removeFromParentAndCleanup(true);			// シーンからオブジェクトを削除する
@@ -478,7 +489,7 @@ void GameScene::update(float dt) {
             CCSequence* action = CCSequence::createWithTwoActions(delay, func);
             action->setTag(kTag_Remove_Missile);
             object->runAction(action);
-		} else if (objectTag == kTag_Collision) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
+		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
             removeObject(object, (void*)b);								// ミサイルを消す
 			hitPlayer();												// 自機が撃沈される
 		}

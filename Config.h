@@ -14,10 +14,12 @@
 #define TAG_BORDERLINE 28			// 画面枠のタグ
 #define TAG_SEABED 29				// 海底のタグ
 #define TAG_PLAYER_UNIT 30 		// 自機のタグ
-#define TAG_SUBMARINE_UNIT 31 		// 敵機のタグ
-#define TAG_DESTROYER_UNIT 32 		// 敵機のタグ
+#define TAG_ENEMY_SUBMARINE 31 		// 敵機のタグ
+#define TAG_ENEMY_DESTROYER 32 		// 敵機のタグ
 #define TAG_MISSILE 33 			// ミサイルのタグ
-#define TAG_COLLISION 34			// 追突タグ
-#define TAG_REMOVE_MISSILE 35	// ミサイル消失タグ
+#define TAG_COLLISION_PLAYER 34			// 自機どっかんタグ
+#define TAG_COLLISION_SUBMARINE 35	// 潜水艦どっかんタグ
+#define TAG_COLLISION_DESTROYER 36	// 駆逐艦どっかんタグ
+#define TAG_REMOVE_MISSILE 37	// ミサイル消失タグ
 #define TAG_CALL_SCROLL 200			// スクロール開始タグ
 #endif /* CONFIG_H_ */

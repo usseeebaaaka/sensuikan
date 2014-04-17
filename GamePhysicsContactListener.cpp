@@ -32,16 +32,22 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
         actorA->setTag(TAG_REMOVE_MISSILE);
 	} else if(tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE) {
 		// 自機のライフが1減る
-        actorB->setTag(TAG_COLLISION);
+        actorB->setTag(TAG_COLLISION_PLAYER);
 	}  else if(tagA== TAG_MISSILE && tagB == TAG_PLAYER_UNIT) {
 		// 自機のライフが1減る
-        actorA->setTag(TAG_COLLISION);
-	}else if ((tagA == TAG_DESTROYER_UNIT && tagB == TAG_MISSILE) || (tagA == TAG_MISSILE && tagB == TAG_DESTROYER_UNIT)) {
-		//
-        actorA->setTag(TAG_DESTROYER_UNIT);
-	} else if ((tagA == TAG_SUBMARINE_UNIT && tagB == TAG_MISSILE) || (tagA == TAG_MISSILE && tagB == TAG_SUBMARINE_UNIT)) {
-		//
-        actorA->setTag(TAG_SUBMARINE_UNIT);
+        actorA->setTag(TAG_COLLISION_PLAYER);
+	} else if(tagA == TAG_ENEMY_SUBMARINE && tagB == TAG_MISSILE) {
+		// 自機のライフが1減る
+        actorB->setTag(TAG_COLLISION_SUBMARINE);
+	} else if(tagA== TAG_MISSILE && tagB == TAG_ENEMY_SUBMARINE) {
+		// 自機のライフが1減る
+        actorA->setTag(TAG_COLLISION_SUBMARINE);
+	} else if(tagA == TAG_ENEMY_DESTROYER && tagB == TAG_MISSILE) {
+		// 自機のライフが1減る
+        actorB->setTag(TAG_COLLISION_DESTROYER);
+	} else if(tagA== TAG_MISSILE && tagB == TAG_ENEMY_DESTROYER) {
+		// 自機のライフが1減る
+        actorA->setTag(TAG_COLLISION_DESTROYER);
 	} else if ((tagA == TAG_BORDERLINE && tagB == TAG_PLAYER_UNIT) || (tagA == TAG_PLAYER_UNIT && tagB == TAG_BORDERLINE)) {
 		//
         actorA->setTag(TAG_CALL_SCROLL);
