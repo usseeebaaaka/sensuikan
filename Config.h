@@ -17,7 +17,9 @@
 #define TAG_SUBMARINE_UNIT 31 		// 敵機のタグ
 #define TAG_DESTROYER_UNIT 32 		// 敵機のタグ
 #define TAG_MISSILE 33 			// ミサイルのタグ
-#define TAG_COLLISION 34			// 追突タグ
-#define TAG_REMOVE_MISSILE 35	// ミサイル消失タグ
+#define TAG_COLLISION_PLAYER 34			// 追突タグ
+#define TAG_COLLISION_SUBMARINE 35
+#define TAG_COLLISION_DESTROYER 36
+#define TAG_REMOVE_MISSILE 37	// ミサイル消失タグ
 #define TAG_CALL_SCROLL 200			// スクロール開始タグ
 #endif /* CONFIG_H_ */

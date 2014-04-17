@@ -52,7 +52,9 @@ class GameScene : public cocos2d::CCLayer {
         kTag_EnemySubmarine,		// 敵潜水艦
         kTag_EnemyDestroyer,		// 敵駆逐艦
         kTag_Missile,				// ミサイル
-        kTag_Collision, 				// 衝突
+        kTag_CollisionPlayer, 				// 自機と衝突
+        kTag_CollisionSubmarine,
+        kTag_CollisionDestroyer,
         kTag_Remove_Missile,		// ミサイル消失
         kTag_Key_Up,				// 上キー
         kTag_Key_Down,				// 下キー
@@ -110,6 +112,7 @@ public:
     void finishGame();
     void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
     float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
+    float coefficientOfSpeed();												// スピード倍率を返却
     CCSize getWindowSize();													// ウィンドウサイズをゲットする
     CCSize getViewSize();													// ビューサイズをゲットする
     void moveToNextScene();
@@ -132,6 +135,8 @@ public:
 	void speedSwitch();										// 速度調整スイッチの表示
 	//    void playCountdownSound();								// 開始時カウントダウンの音を出力する(使用するかは未定)
 	void hitPlayer();											// 被弾をした時に呼ばれる関数
+	void hitSubmarine();										// 潜水艦にヒット
+	void hitDestroyer();										// 駆逐艦にヒット
 	void changeButton(int tag_no, int change);				// 十字キー、ストップボタン、発射ボタンタップ時に呼び出される
 	void changeCrosskey(int tag_no, int change);				// 十字キーのスプライトを入れ替える
 	void changeStopButton(int tag_no, int change);			// ストップボタンのスプライトを入れ替える

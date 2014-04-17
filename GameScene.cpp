@@ -42,7 +42,6 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	sleep(15);
 	initPhysics();
 	createControllerPanel();
 	createBackground();
@@ -408,7 +407,6 @@ void GameScene::hitPlayer () {
 		createLifeCounter();
 	}
 }
-
 // 自機撃沈関数
 void GameScene::defeatPlayer () {
 	this->lifepoint--;									// 残機を減らす
@@ -422,7 +420,18 @@ void GameScene::defeatPlayer () {
 		createLifeCounter();
 	}
 }
-
+// 攻撃被弾時に呼び出される関数
+void GameScene::hitSubmarine() {
+	unitData[kTag_EnemySubmarine]->setHp(unitData[kTag_EnemySubmarine]->getHp() - 1);
+	CCNode* bombAction = CCNode::create();
+	bombAction->setPosition(unitData[kTag_EnemySubmarine]->getPosition());
+	if (unitData[kTag_EnemySubmarine]->getHp() == 0) {								// hpがなくなった場合
+		removeObject(unitData[kTag_EnemySubmarine], (void*)unitPhysicsData[kTag_EnemySubmarine]);						// 撃沈したオブジェクトを削除
+	} else {
+//		bombAction->runAction(Animation::hitAnimation(hitAnimation));
+//		this->addChild(bombAction, kZOrder_Countdown);
+	}
+}
 // オブジェクトを除去する
 void GameScene::removeObject(CCNode* pObject, void* body) {
 	pObject->removeFromParentAndCleanup(true);			// シーンからオブジェクトを削除する
@@ -452,7 +461,6 @@ void GameScene::moveToNextScene() {
 	tran = CCTransitionProgressRadialCCW::create(1, GameScene::scene());
 	CCDirector::sharedDirector()->replaceScene(tran);
 }
-
 // 毎フレームごとに衝突判定をチェックする
 void GameScene::update(float dt) {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
@@ -468,7 +476,12 @@ void GameScene::update(float dt) {
 			continue;													// オブジェクトが見つからない場合は次のループへ
 		}
 		CCNode* object = (CCNode*)b->GetUserData();						// オブジェクトを取得
-		int objectTag = object->getTag();								// オブジェクトのタグを取得
+		if (!(object->getTag())) {
+			// オブジェクトのタグを取得
+			continue;
+		}
+		int objectTag;
+		objectTag = object->getTag();
 		if (objectTag == kTag_Call_Scroll) {
 			// ミサイル消失タグだった場合
 		} else if (objectTag == kTag_Remove_Missile) {
@@ -478,9 +491,12 @@ void GameScene::update(float dt) {
             CCSequence* action = CCSequence::createWithTwoActions(delay, func);
             action->setTag(kTag_Remove_Missile);
             object->runAction(action);
-		} else if (objectTag == kTag_Collision) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
+		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
             removeObject(object, (void*)b);								// ミサイルを消す
 			hitPlayer();												// 自機が撃沈される
+		} else if (objectTag == kTag_CollisionSubmarine) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
+            removeObject(object, (void*)b);								// ミサイルを消す
+			hitSubmarine();												// 自機が撃沈される
 		}
 	}
 	if (!(rand() % 20) && this->getChildByTag(kTag_EnemyDestroyer)) {
@@ -490,8 +506,6 @@ void GameScene::update(float dt) {
 		submarineAI();														// ランダムで潜水艦のAiを呼び出す
 	}
 }
-
-
 // スコア部を生成
 void GameScene::createScore() {
 	// スコア部分の生成
@@ -606,7 +620,7 @@ void GameScene::destroyerAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  20)) {										// ランダムでミサイルを発射
+	if(!(rand() %  1000)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition);							// ミサイルを発射
 	} else if(!(rand() % 2)) {									// ランダムで移動
 		float a = unitData[kTag_EnemyDestroyer]->getPositionX() + 20;
@@ -640,7 +654,7 @@ void GameScene::createMissile(b2Vec2 position) {
 	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();
 	pMissile->initWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
-	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO));													// ミサイルを指定位置にセット
+	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.7));													// ミサイルを指定位置にセット
 	this->addChild(pMissile, kZOrder_Missile, kTag_Missile);
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 }
@@ -773,6 +787,10 @@ void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
 			}
 		}
 	}
+}
+// スピード倍率を返す関数
+float GameScene::coefficientOfSpeed() {
+return 0;
 }
 
 /* 関数名 : ccTouchesEnded関数
