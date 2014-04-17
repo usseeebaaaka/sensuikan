@@ -24,7 +24,13 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 	} else if (tagA == TAG_SEABED && tagB == TAG_MISSILE) {
 		// ミサイルが消える
         actorB->setTag(TAG_REMOVE_MISSILE);
-	}else if(tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE) {
+	} else if (tagA == TAG_BORDERLINE && tagB == TAG_MISSILE) {
+		// ミサイルが消える
+        actorB->setTag(TAG_REMOVE_MISSILE);
+	} else if (tagA == TAG_MISSILE && tagB == TAG_BORDERLINE) {
+		// ミサイルが消える
+        actorA->setTag(TAG_REMOVE_MISSILE);
+	} else if(tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE) {
 		// 自機のライフが1減る
         actorB->setTag(TAG_COLLISION);
 	}  else if(tagA== TAG_MISSILE && tagB == TAG_PLAYER_UNIT) {

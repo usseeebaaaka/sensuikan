@@ -11,7 +11,7 @@
 #define PTM_RATIO 128			// 128ピクセルで1メートルの変換
 
 
-#define TAG_BORDERLINE 101			// 画面枠のタグ
+#define TAG_BORDERLINE 28			// 画面枠のタグ
 #define TAG_SEABED 29				// 海底のタグ
 #define TAG_PLAYER_UNIT 30 		// 自機のタグ
 #define TAG_SUBMARINE_UNIT 31 		// 敵機のタグ

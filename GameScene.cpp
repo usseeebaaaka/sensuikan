@@ -472,28 +472,12 @@ void GameScene::update(float dt) {
 		if (objectTag == kTag_Call_Scroll) {
 			// ミサイル消失タグだった場合
 		} else if (objectTag == kTag_Remove_Missile) {
-			// 被弾したユニットを判別
-			PhysicsSprite* damagedUnit = (PhysicsSprite*)this->getChildByTag(objectTag);
-			// 被弾したユニットのHPを減らす
-			damagedUnit->setHp(damagedUnit->getHp());
-			if (damagedUnit->getHp()) {									// HPが0になっていない場合
-				//Animation::hitAnimation(kTag_HitAnimation);				// 被弾アニメーションを取得
-			} else {													// 0になった場合
-				//Animation::hitAnimation(kTag_DefeatAnimation);			// 撃沈アニメーションを取得
-				if (objectTag == kTag_PlayerUnit) {						// 自機が撃沈した場合
-					//					defeatPlayer();										// 自機撃沈関数を呼び出す
-					createLifeCounter();								// 残機を再表示
-				}else {													// 敵機を撃沈した場合
-					//					removeObject(object, (void*)b);						// 撃沈したオブジェクトを削除
-					if (objectTag != kTag_Missile) {
-						enemyUnit_num--;									// 敵機の数を減らす
-						if(!enemyUnit_num) {								// 敵機がなくなった場合
-							//							finishGame();									// ゲームクリア
-							break;											// 繰り返しから抜ける
-						}
-					}
-				}
-			}
+            // 0.1秒後に消えるアクションをセットする
+            CCDelayTime* delay = CCDelayTime::create(0.1);
+            CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
+            CCSequence* action = CCSequence::createWithTwoActions(delay, func);
+            action->setTag(kTag_Remove_Missile);
+            object->runAction(action);
 		} else if (objectTag == kTag_Collision) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
             removeObject(object, (void*)b);								// ミサイルを消す
 			hitPlayer();												// 自機が撃沈される

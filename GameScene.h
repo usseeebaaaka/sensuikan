@@ -43,11 +43,11 @@ class GameScene : public cocos2d::CCLayer {
     	kTag_DynamicBody,			// 動的なボディ
     	kTag_KinematicBody,			// 運動学的ボディ
         kTag_Background,			// 背景
-        kTag_Borderline,			// 画面限界
         kTag_Score,					// 得点
 		kTag_Life,					// 残機
         kTag_LifeCounter,			// 残りHP
-        kTag_Seabed = 29,				// 海底
+        kTag_Borderline = 28,		// 画面限界
+        kTag_Seabed,				// 海底
         kTag_PlayerUnit,			// 自機
         kTag_EnemySubmarine,		// 敵潜水艦
         kTag_EnemyDestroyer,		// 敵駆逐艦
