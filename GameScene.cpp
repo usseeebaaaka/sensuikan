@@ -42,6 +42,7 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
+	sleep(15);
 	initPhysics();
 	createControllerPanel();
 	createBackground();
@@ -306,6 +307,7 @@ void GameScene::speedMater() {
 	CCSprite* pMater2 = CCSprite::create("Meter2.png");							//Meter2.pngをCCSprite型で生成
 	pMater2->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight - pMater2->getContentSize().height / 2));		//座標のセット
 	this->addChild(pMater2, kZOrder_Label, kTag_Gear2);							//配置順kZOrderds_Labelで実装
+	float a = pMater2->getPositionY();									// メーターの座標値を取得
 
 	CCSprite* pMater3 = CCSprite::create("Meter2.png");							//Meter3.pngをCCSprite型で生成
 	pMater3->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight + pMater2->getContentSize().height / 2));		//座標のセット
@@ -319,6 +321,12 @@ void GameScene::speedMater() {
 	pMater4->setPosition(ccp(getWindowSize().width / 8 * 5, pMater3->getPositionY() + pMater3->getContentSize().height ));		//座標のセット
 	this->addChild(pMater4, kZOrder_Label, kTag_Gear4);							//配置順kZOrder_Labelで実装
 
+	/*
+	 * 自機の加減速に利用するため、各メーターのY座標を配列に格納
+	 */
+	for (int i = kTag_Gear1; i <= kTag_Gear4; i++) {
+		meterPosition.push_back(this->getChildByTag(i)->getPositionY());
+	}
 }
 
 //ミサイルボタン表示の定義
@@ -336,7 +344,6 @@ void GameScene::missileButton() {
 	pMissileLeft->setRotation(270);
 	pMissileLeft->setPosition(ccp(getWindowSize().width / 8 * 7, key_downHeight));	//座標のセット
 	this->addChild(pMissileLeft, kZOrder_Label, kTag_Shoot_Horizontal);				//配置順kZOrder_Labelで実装
-
 }
 
 //スピードスイッチ表示の定義
@@ -686,20 +693,22 @@ void GameScene::rotateDownAngle() {
 }
 // 前進する関数
 void GameScene::forwardUnit() {
+	float coefficientOfSpeed = this->coefficientOfSpeed();
 	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// ユニットの現在角度を取得
-	float coefficientOfSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
-	float forward = unitData[kTag_PlayerUnit]->getPositionX()  - 0.2 * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
-	float up = unitData[kTag_PlayerUnit]->getPositionY() - 0.2 * PI * unitAngle;		// ユニットの進むべきY座標を計算
+	float angleBonusSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
+	float forward = unitData[kTag_PlayerUnit]->getPositionX()  - 0.2 * angleBonusSpeed * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
+	float up = unitData[kTag_PlayerUnit]->getPositionY() - 0.2 * PI * unitAngle * coefficientOfSpeed;		// ユニットの進むべきY座標を計算
 	unitData[kTag_PlayerUnit]->setPosition(ccp(forward, up));			// 画像の座標を設定
 	// 物理オブジェクトの座標を設定
 	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(forward / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
 }
 // 後退する関数
 void GameScene::backUnit() {
+	float coefficientOfSpeed = this->coefficientOfSpeed();
 	float unitAngle = unitPhysicsData[kTag_PlayerUnit]->GetAngle();		// ユニットの現在角度を取得
-	float coefficientOfSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
-	float back = unitData[kTag_PlayerUnit]->getPositionX()  + 0.2 * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
-	float up = unitData[kTag_PlayerUnit]->getPositionY() + 0.2 * PI * unitAngle;		// ユニットの進むべきY座標を計算
+	float angleBonusSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
+	float back = unitData[kTag_PlayerUnit]->getPositionX()  + 0.2 * angleBonusSpeed * coefficientOfSpeed;		// ユニットの進むべきX座標を計算
+	float up = unitData[kTag_PlayerUnit]->getPositionY() + 0.2 * PI * unitAngle * coefficientOfSpeed;		// ユニットの進むべきY座標を計算
 	unitData[kTag_PlayerUnit]->setPosition(ccp(back, up));			// 画像の座標を設定
 	// 物理オブジェクトの座標を設定
 	unitPhysicsData[kTag_PlayerUnit]->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_PlayerUnit]->GetAngle());
@@ -790,7 +799,22 @@ void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
 }
 // スピード倍率を返す関数
 float GameScene::coefficientOfSpeed() {
-return 0;
+	CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);				// スイッチのノードを取得
+	float pSwitchPointY = pSwitch->getPositionY();
+	float coefficientOfSpeed;
+	float a = meterPosition[kTag_Gear4 - kTag_Gear1];
+	float b = meterPosition[kTag_Gear3 - kTag_Gear1];
+	float c = meterPosition[kTag_Gear2 - kTag_Gear1];
+	if (pSwitchPointY <= meterPosition[0]) {
+		coefficientOfSpeed = 7;
+	} else if (pSwitchPointY >= meterPosition[1]) {
+		coefficientOfSpeed = 5;
+	} else if (pSwitchPointY >= meterPosition[2]) {
+		coefficientOfSpeed = 3;
+	} else {
+		coefficientOfSpeed = 1;
+	}
+return coefficientOfSpeed;
 }
 
 /* 関数名 : ccTouchesEnded関数

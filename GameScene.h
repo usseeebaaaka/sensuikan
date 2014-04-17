@@ -28,6 +28,7 @@ class GameScene : public cocos2d::CCLayer {
     map<int, PhysicsSprite*> unitData;										// ユニットのデータ群
     map<int, b2Body*> unitPhysicsData;
     map<int, b2Vec2> unitPhysicsPoint;										// ユニットの物理構造体群
+    vector<float> meterPosition;											// スピードメーターのめもり位置
     b2Body* playerUnit;														// 自機の実体
     b2Body* enemyDestroyer;													// 敵駆逐艦の実体
     b2Body* enemySubmarine;													// 敵潜水艦の実体
