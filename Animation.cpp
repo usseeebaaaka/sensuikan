@@ -49,7 +49,7 @@ CCFiniteTimeAction* Animation::gameStartAnimation(CCObject* target, SEL_CallFunc
  * 仮引数 : int型変数count
  */
 CCFiniteTimeAction* Animation::hitAnimation(int count) {
-	CCDelayTime* delay = CCDelayTime::create(4);		//2秒ディレイ test用
+//	CCDelayTime* delay = CCDelayTime::create(4);		//2秒ディレイ test用
 	CCArray *animFrames = CCArray::create();			//CCArray型配列を初期化
 	CCSpriteFrameCache *cache = CCSpriteFrameCache::sharedSpriteFrameCache();	//キャッシュより指定したファイル名のインスタンスを取得しCCSpriteFrame型のオブジェクトframeに代入
 	/* 初期値0のint型変数iが

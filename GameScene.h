@@ -19,6 +19,8 @@ class GameScene : public cocos2d::CCLayer {
     int submarine_VIT;														// 潜水艦の耐久度
     int destroyer_VIT;														// 駆逐艦の耐久度
     int lifepoint;															// 残機
+	int defeatAnimation;	// 撃沈アニメーションのタグ
+	int hitAnimation;		// 被弾アニメーションのタグ
     float dealofScrollSpead;												// スクロールスピードの倍率
     CCArray* scoreText;														// スコアの各位のテキスト
     map<int, CCPoint> m_touchAt;											// タッチ座標
@@ -37,22 +39,21 @@ class GameScene : public cocos2d::CCLayer {
     enum kTag {
     	kTag_Polygon,				// 角形物理構造
     	kTag_Circle,				// 円形物理構造
-    	kTag_DefeatAnimation = 7,	// 撃沈アニメーションのタグ
-    	kTag_HitAnimation = 14,		// 被弾アニメーションのタグ
     	kTag_StaticBody,			// 静的なボディ
     	kTag_DynamicBody,			// 動的なボディ
     	kTag_KinematicBody,			// 運動学的ボディ
         kTag_Background,			// 背景
-        kTag_Seabed,				// 海底
         kTag_Borderline,			// 画面限界
         kTag_Score,					// 得点
 		kTag_Life,					// 残機
         kTag_LifeCounter,			// 残りHP
+        kTag_Seabed = 29,				// 海底
         kTag_PlayerUnit,			// 自機
         kTag_EnemySubmarine,		// 敵潜水艦
         kTag_EnemyDestroyer,		// 敵駆逐艦
         kTag_Missile,				// ミサイル
-        kTag_Collision,				// 衝突
+        kTag_Collision, 				// 衝突
+        kTag_Remove_Missile,		// ミサイル消失
         kTag_Key_Up,				// 上キー
         kTag_Key_Down,				// 下キー
         kTag_Key_Left,				// 左キー
@@ -68,7 +69,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Animation,
         kTag_changeBegan = 100,		// タップ開始
         kTag_changeEnded = 101,		// タップ終了
-        kTag_Call_Scroll = 200,					// スクロール開始フラグ
+        kTag_Call_Scroll = 200,		// スクロール開始フラグ
     };
     // 画像の表示順序のタグ
     enum kZOrder {
