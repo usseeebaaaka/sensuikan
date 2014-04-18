@@ -31,19 +31,19 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 		// ミサイルが消える
         actorA->setTag(TAG_REMOVE_MISSILE);
 	} else if(tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE) {
-		// 自機のライフが1減る
+		// 自機に衝突したミサイルが消える
         actorB->setTag(TAG_COLLISION_PLAYER);
 	}  else if(tagA== TAG_MISSILE && tagB == TAG_PLAYER_UNIT) {
-		// 自機のライフが1減る
+		// 自機に衝突したミサイルが消える
         actorA->setTag(TAG_COLLISION_PLAYER);
 	}else if ((tagA == TAG_DESTROYER_UNIT && tagB == TAG_MISSILE) || (tagA == TAG_MISSILE && tagB == TAG_DESTROYER_UNIT)) {
-		//
+		// 自機に衝突したミサイルが消える
         actorA->setTag(TAG_DESTROYER_UNIT);
 	} else if ((tagA == TAG_SUBMARINE_UNIT && tagB == TAG_MISSILE)) {
-		//
+		// 敵潜水艦に衝突したミサイルが消える
         actorB->setTag(TAG_COLLISION_SUBMARINE);
 	} else if (tagA == TAG_MISSILE && tagB == TAG_SUBMARINE_UNIT) {
-		//
+		// 敵潜水艦に衝突したミサイルが消える
         actorA->setTag(TAG_COLLISION_SUBMARINE);
 	}
 }
