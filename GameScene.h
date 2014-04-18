@@ -22,13 +22,13 @@ class GameScene : public cocos2d::CCLayer {
 	int defeatAnimation;	// 撃沈アニメーションのタグ
 	int hitAnimation;		// 被弾アニメーションのタグ
     float dealofScrollSpead;												// スクロールスピードの倍率
+    float coefficientOfSpeed();												// スピード倍率を返却
     CCArray* scoreText;														// スコアの各位のテキスト
     map<int, CCPoint> m_touchAt;											// タッチ座標
     map<int, bool> m_touchFlag;												// タッチフラグ
     map<int, PhysicsSprite*> unitData;										// ユニットのデータ群
     map<int, b2Body*> unitPhysicsData;
     map<int, b2Vec2> unitPhysicsPoint;										// ユニットの物理構造体群
-    vector<float> meterPosition;											// スピードメーターのめもり位置
     b2Body* playerUnit;														// 自機の実体
     b2Body* enemyDestroyer;													// 敵駆逐艦の実体
     b2Body* enemySubmarine;													// 敵潜水艦の実体
@@ -62,9 +62,9 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Key_Left,				// 左キー
         kTag_Key_Right,				// 右キー
         kTag_Key_Center,			// ストップボタン
-        kTag_Switch,
         kTag_Shoot_Vertical,		// 垂直射撃ボタン
         kTag_Shoot_Horizontal,		// 水平射撃ボタン
+        kTag_Switch,				// スピードスイッチ
         kTag_Gear1,					// 1番スピードが遅いギア
         kTag_Gear2,					// 2番目にスピードが遅いギア
         kTag_Gear3,					// 3番目にスピードが遅いギア
@@ -113,7 +113,6 @@ public:
     void finishGame();
     void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
     float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
-    float coefficientOfSpeed();												// スピード倍率を返却
     CCSize getWindowSize();													// ウィンドウサイズをゲットする
     CCSize getViewSize();													// ビューサイズをゲットする
     void moveToNextScene();
