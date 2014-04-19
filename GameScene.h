@@ -95,7 +95,7 @@ public:
     void createBackground();												// 背景および海底を生成
     void createUnit(int hp, int kTag, int vit);				// ユニットを生成
     virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
-
+    bool stopJudge();														// ストップボタン
     // 物理構造を持ったユニットノードを作成
     PhysicsSprite* createPhysicsBody(int bodyTag, int kTag, PhysicsSprite* pNode, int shape);
     void createScore();														// スコアを生成

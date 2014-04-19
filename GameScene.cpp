@@ -42,7 +42,7 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-//	sleep(15);
+//	sleep(20);
 	initPhysics();
 	createControllerPanel();
 	createBackground();
@@ -55,6 +55,7 @@ bool GameScene::init() {
 	createUnit(submarine_VIT % 100, kTag_EnemySubmarine, submarine_VIT);
 	createLifeCounter();
 	createKey();
+	createLife();
 
 	// ミサイルの準備
 	missileBatchNode = CCSpriteBatchNode::create("Missile.png");			// ミサイルの画像をセット
@@ -357,7 +358,10 @@ void GameScene::speedSwitch() {
 	pSwitch->setPosition(ccp(pMater2.x, pMater2.y - Mater2Size / 10 * 9 ));		//座標をセット
 	this->addChild(pSwitch, kZOrder_Countdown, kTag_Switch);					//配置順kZOrder_Labelで実装
 }
-
+// ストップボタン
+bool GameScene::stopJudge() {
+	return 0;
+}
 // ゲーム開始時のカウントダウン
 void GameScene::showCountdown() {
 
@@ -452,9 +456,11 @@ void GameScene::hitDestroyer() {
 	}
 }
 // オブジェクトを除去する
-void GameScene::removeObject(CCNode* pObject, void* body) {
+void GameScene::removeObject(CCNode* pObject, void* body = 0) {
 	pObject->removeFromParentAndCleanup(true);			// シーンからオブジェクトを削除する
+	if (body) {
 	world->DestroyBody((b2Body*)body);					// 重力世界からオブジェクトを削除する
+	}
 }
 
 // 終了時clearもしくはgameoverの画像を表示
@@ -524,6 +530,10 @@ void GameScene::update(float dt) {
 	}
 	if (!(rand() % 20) && this->getChildByTag(kTag_EnemySubmarine)) {
 		submarineAI();														// ランダムで潜水艦のAiを呼び出す
+	}
+
+	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
+		finishGame();
 	}
 }
 // スコア部を生成
@@ -671,14 +681,19 @@ void GameScene::submarineAI() {
 
 // ミサイル作成
 void GameScene::createMissile(b2Vec2 position) {
-	CCMoveBy* missileLine = CCMoveBy::create(3, ccp(50, 100));
-	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
+	CCMoveBy* missileLine = CCMoveBy::create(1, ccp(0, -1000));
+	CCSprite* pMissile = CCSprite::createWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
+//	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();
-	pMissile->initWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
+//	pMissile->initWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
 	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.7));													// ミサイルを指定位置にセット
-	pMissile->runAction(missileLine);
+//	pMissile->runAction(missileLine);
 	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);
-	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+//	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	pMissile->runAction(missileLine);
+    CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)0);
+    CCSequence* action = CCSequence::createWithTwoActions(missileLine, func);
+//	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);
 }
 // ミサイルを動かす
 void GameScene::goGoMissile() {
@@ -752,19 +767,6 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
 
-			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
-				// 毎フレームrotateUpAngle関数を呼び出すように設定する
-				this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
-			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
-				// 毎フレームrotateDownAngle関数を呼び出すように設定する
-				this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
-			} else if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
-				// 毎フレームforwardUnit関数を呼び出すように設定する
-				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
-			} else if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
-				// 毎フレームbackUnit関数を呼び出すように設定する
-				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
-			}
 			/* tag_noがミサイル発射上ボタンもしくは左ボタンであり、
 			 * かつそのオブジェクトの座標をタップしていれば以下のブロック
 			 */
@@ -772,6 +774,11 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 					&& true == i->boundingBox().containsPoint(loc)) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
 				createMissile(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
+			} else if(tag_no == kTag_Key_Center) {
+					this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+					this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+					this->unschedule(schedule_selector(GameScene::forwardUnit));
+					this->unschedule(schedule_selector(GameScene::backUnit));
 			}
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
 			if(touch_judge) {
@@ -850,14 +857,18 @@ void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
-			if(tag_no == kTag_Key_Up) {
-				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-			} else if (tag_no == kTag_Key_Down) {
-				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-			} else if(tag_no == kTag_Key_Left) {
-				this->unschedule(schedule_selector(GameScene::forwardUnit));
-			} else if(tag_no == kTag_Key_Right) {
-				this->unschedule(schedule_selector(GameScene::backUnit));
+			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームrotateUpAngle関数を呼び出すように設定する
+				this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
+			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームrotateDownAngle関数を呼び出すように設定する
+				this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
+			} else if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームforwardUnit関数を呼び出すように設定する
+				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
+			} else if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームbackUnit関数を呼び出すように設定する
+				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
 			}
 			// もしtouch_judgeがtrue(離した判定)であれば以下ブロック
 			if(touch_judge) {
