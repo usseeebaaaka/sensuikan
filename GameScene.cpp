@@ -493,6 +493,11 @@ void GameScene::update(float dt) {
 	int positionIterations = 1;
 	// worldを更新する
 	world->Step(dt, velocityIterations, positionIterations);
+	CCRect player = unitData[kTag_PlayerUnit]->boundingBox();
+	CCRect destroyer = unitData[kTag_EnemyDestroyer]->boundingBox();
+	CCRect submarine = unitData[kTag_EnemySubmarine]->boundingBox();
+	CCRect missile = missileBatchNode->boundingBox();
+	bool kari = player.intersectsRect(destroyer);
 	// world内の全オブジェクトをループする
 	for (b2Body* b = world->GetBodyList(); b; b = b->GetNext()) {
 		if (!b->GetUserData()) {
@@ -514,7 +519,7 @@ void GameScene::update(float dt) {
             CCSequence* action = CCSequence::createWithTwoActions(delay, func);
             action->setTag(kTag_Remove_Missile);
             object->runAction(action);
-		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
+		} else if (player.intersectsRect(destroyer)) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
             removeObject(object, (void*)b);								// ミサイルを消す
 			hitPlayer();												// 自機が撃沈される
 		} else if (objectTag == kTag_CollisionSubmarine) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
