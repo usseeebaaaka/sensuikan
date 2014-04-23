@@ -12,7 +12,9 @@ PhysicsSprite::PhysicsSprite(int hp)
 void PhysicsSprite::setPhysicsBody(b2Body*  body) {
     m_pBody = body;
 }
-
+b2Body* PhysicsSprite::getPhysicsBody() {
+	return m_pBody;
+}
 bool PhysicsSprite::isDirty(void) {
     return true;
 }

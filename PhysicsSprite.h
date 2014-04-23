@@ -14,7 +14,7 @@ public:
     PhysicsSprite();
     PhysicsSprite(int hp);
     void setPhysicsBody(b2Body* body);
-
+    b2Body* getPhysicsBody();
     virtual bool isDirty(void);
     virtual CCAffineTransform nodeToParentTransform(void);
 

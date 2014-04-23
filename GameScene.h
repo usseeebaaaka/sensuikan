@@ -8,7 +8,11 @@
 
 class GameScene : public cocos2d::CCLayer {
     b2World* world;
+    b2World* world2;
+    b2World* world3;
     GamePhysicsContactListener* mGamePhysicsContactListener;
+    GamePhysicsContactListener* mGamePhysicsContactListener2;
+    GamePhysicsContactListener* mGamePhysicsContactListener3;
     float score_and_Maxplace;												// 整数部は得点で小数部は得点の桁
     int arrow_key;
     int tag_no;
@@ -125,6 +129,8 @@ public:
     void destroyerAI();
     void submarineAI();
     void createMissile(b2Vec2 position);
+    void createMissileLeft(b2Vec2 position);
+    void createMissileSubmarine(b2Vec2 position);
     CREATE_FUNC(GameScene);													//マクロ
 
     //追加
