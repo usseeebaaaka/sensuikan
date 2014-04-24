@@ -18,21 +18,32 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 
 	if (!actorA || !actorB){										// データが2つ揃っていない場合はそのまま戻る
 		return;
-	} else if ((tagA == TAG_PLAYER_UNIT && tagB == TAG_DESTROYER_UNIT) || (tagA == TAG_DESTROYER_UNIT && tagB == TAG_PLAYER_UNIT)
-			|| (tagA == TAG_PLAYER_UNIT && tagB == TAG_SUBMARINE_UNIT) || (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_PLAYER_UNIT)) {
-		// ゲームオーバー
-        actorA->setTag(TAG_COLLISION);
+	} else if (tagA == TAG_MISSILE && tagB == TAG_SEABED) {
+		// ミサイルが消える
+        actorA->setTag(TAG_REMOVE_MISSILE);
+	} else if (tagA == TAG_SEABED && tagB == TAG_MISSILE) {
+		// ミサイルが消える
+        actorB->setTag(TAG_REMOVE_MISSILE);
+	} else if (tagA == TAG_BORDERLINE && tagB == TAG_MISSILE) {
+		// ミサイルが消える
+        actorB->setTag(TAG_REMOVE_MISSILE);
+	} else if (tagA == TAG_MISSILE && tagB == TAG_BORDERLINE) {
+		// ミサイルが消える
+        actorA->setTag(TAG_REMOVE_MISSILE);
 	} else if(tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE) {
-		// 自機のライフが1減る
-        actorA->setTag(TAG_PLAYER_UNIT);
-	} else if ((tagA == TAG_DESTROYER_UNIT && tagB == TAG_MISSILE) || (tagA == TAG_MISSILE && tagB == TAG_DESTROYER_UNIT)) {
-		//
+		// 自機に衝突したミサイルが消える
+        actorB->setTag(TAG_COLLISION_PLAYER);
+	}  else if(tagA== TAG_MISSILE && tagB == TAG_PLAYER_UNIT) {
+		// 自機に衝突したミサイルが消える
+        actorA->setTag(TAG_COLLISION_PLAYER);
+	}else if ((tagA == TAG_DESTROYER_UNIT && tagB == TAG_MISSILE) || (tagA == TAG_MISSILE && tagB == TAG_DESTROYER_UNIT)) {
+		// 自機に衝突したミサイルが消える
         actorA->setTag(TAG_DESTROYER_UNIT);
-	} else if ((tagA == TAG_SUBMARINE_UNIT && tagB == TAG_MISSILE) || (tagA == TAG_MISSILE && tagB == TAG_SUBMARINE_UNIT)) {
-		//
-        actorA->setTag(TAG_SUBMARINE_UNIT);
-	} else if ((tagA == TAG_BORDERLINE && tagB == TAG_PLAYER_UNIT) || (tagA == TAG_PLAYER_UNIT && tagB == TAG_BORDERLINE)) {
-		//
-        actorA->setTag(TAG_CALL_SCROLL);
+	} else if ((tagA == TAG_SUBMARINE_UNIT && tagB == TAG_MISSILE)) {
+		// 敵潜水艦に衝突したミサイルが消える
+        actorB->setTag(TAG_COLLISION_SUBMARINE);
+	} else if (tagA == TAG_MISSILE && tagB == TAG_SUBMARINE_UNIT) {
+		// 敵潜水艦に衝突したミサイルが消える
+        actorA->setTag(TAG_COLLISION_SUBMARINE);
 	}
 }
