@@ -10,10 +10,13 @@ class PhysicsSprite : public CCSprite {
 protected:
     b2Body* m_pBody;
     int hp;
+//    int kTag;
 public:
     PhysicsSprite();
     PhysicsSprite(int hp);
     void setPhysicsBody(b2Body* body);
+//   void setTag(int tag);
+//    int getTag();
     b2Body* getPhysicsBody();
     virtual bool isDirty(void);
     virtual CCAffineTransform nodeToParentTransform(void);

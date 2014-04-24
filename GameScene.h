@@ -129,6 +129,7 @@ public:
     void destroyerAI();
     void submarineAI();
     void createMissile(b2Vec2 position);
+    void createMissileDiagonal(b2Vec2 position);
     void createMissileLeft(b2Vec2 position);
     void createMissileSubmarine(b2Vec2 position);
     CREATE_FUNC(GameScene);													//マクロ

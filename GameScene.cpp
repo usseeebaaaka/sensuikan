@@ -532,7 +532,10 @@ void GameScene::update(float dt) {
             object->runAction(action);
 		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
             removeObject(object, (void*)b);								// ミサイルを消す
+//          PhysicsSprite* pObject = (PhysicsSprite*)object;
+//            if (pObject->getTag() /*!= kTag_PlayerUnit*/) {
 			hitPlayer();												// 自機が撃沈される
+//            }
 		} else if (objectTag == kTag_CollisionSubmarine) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
             removeObject(object, (void*)b);								// ミサイルを消す
 			hitSubmarine();												// 自機が撃沈される
@@ -685,7 +688,7 @@ void GameScene::submarineAI() {
 
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 	if(!(rand() %  12)) {										// ランダムでミサイルを発射
-		createMissileSubmarine(submarinePosition);							// ミサイルを発射
+		rand() % 2 ? createMissile(submarinePosition) : createMissileSubmarine(submarinePosition);							// ミサイルを発射
 	} else if(!(rand() % 2)) {									// ランダムで移動
 		float a = unitData[kTag_EnemySubmarine]->getPositionX() + 20;
 		float b = unitData[kTag_EnemySubmarine]->getPositionX() - 15;
@@ -708,6 +711,7 @@ void GameScene::createMissile(b2Vec2 position) {
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissile->getPhysicsBody();
 	missileBody->SetLinearVelocity(b2Vec2(0.2, 0));
+//	pMissile->setTag(kTag_EnemyDestroyer);
 }
 // ミサイル作成
 void GameScene::createMissileSubmarine(b2Vec2 position) {
@@ -719,6 +723,7 @@ void GameScene::createMissileSubmarine(b2Vec2 position) {
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissile->getPhysicsBody();
 	missileBody->SetLinearVelocity(b2Vec2(1.5, 0)/*, (b2Vec2(position.x * PTM_RATIO, position.y - PTM_RATIO))*/);
+//	pMissile->setTag(kTag_EnemySubmarine);
 }
 // ミサイル作成
 void GameScene::createMissileLeft(b2Vec2 position) {
@@ -730,6 +735,19 @@ void GameScene::createMissileLeft(b2Vec2 position) {
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissile->getPhysicsBody();
 	missileBody->SetLinearVelocity(b2Vec2(-1.5, 0)/*, (b2Vec2(position.x * PTM_RATIO, position.y - PTM_RATIO))*/);
+//	pMissile->setTag(kTag_PlayerUnit);
+}
+// ミサイル作成
+void GameScene::createMissileDiagonal(b2Vec2 position) {
+	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
+	pMissile->autorelease();
+	pMissile->initWithTexture(missileBatchNode->getTexture());						// を指定位置にセット
+	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.7));													// ミサイルを指定位置にセット
+	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);
+	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	b2Body* missileBody = pMissile->getPhysicsBody();
+	missileBody->SetLinearVelocity(b2Vec2(-1.5, 15)/*, (b2Vec2(position.x * PTM_RATIO, position.y - PTM_RATIO))*/);
+//	pMissile->setTag(kTag_PlayerUnit);
 }
 // ミサイルを動かす
 void GameScene::goGoMissile() {
@@ -807,9 +825,13 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 			 * かつそのオブジェクトの座標をタップしていれば以下のブロック
 			 */
 			if((tag_no == kTag_Shoot_Vertical || tag_no == kTag_Shoot_Horizontal)
-					&& true == i->boundingBox().containsPoint(loc)) {
+					&& i->boundingBox().containsPoint(loc)) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
+				if(tag_no == kTag_Shoot_Horizontal) {
 				createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
+				} else {
+					createMissileDiagonal(playerPosition);
+				}
 			} else if(tag_no == kTag_Key_Center) {
 					this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
 					this->unschedule(schedule_selector(GameScene::rotateDownAngle));
