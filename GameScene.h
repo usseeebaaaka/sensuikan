@@ -8,7 +8,11 @@
 
 class GameScene : public cocos2d::CCLayer {
     b2World* world;
+    b2World* world2;
+    b2World* world3;
     GamePhysicsContactListener* mGamePhysicsContactListener;
+    GamePhysicsContactListener* mGamePhysicsContactListener2;
+    GamePhysicsContactListener* mGamePhysicsContactListener3;
     float score_and_Maxplace;												// 整数部は得点で小数部は得点の桁
     int arrow_key;
     int tag_no;
@@ -53,6 +57,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_EnemySubmarine,		// 敵潜水艦
         kTag_EnemyDestroyer,		// 敵駆逐艦
         kTag_Missile,				// ミサイル
+        kTag_MissileEnemy,
         kTag_CollisionPlayer, 				// 自機と衝突
         kTag_CollisionSubmarine,
         kTag_CollisionDestroyer,
@@ -64,7 +69,8 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Key_Center,			// ストップボタン
         kTag_Shoot_Vertical,		// 垂直射撃ボタン
         kTag_Shoot_Horizontal,		// 水平射撃ボタン
-        kTag_Switch,				// 速度調整スイッチ
+        kTag_Retry,					// リトライボタン
+        kTag_Switch,
         kTag_Gear1,					// 1番スピードが遅いギア
         kTag_Gear2,					// 2番目にスピードが遅いギア
         kTag_Gear3,					// 3番目にスピードが遅いギア
@@ -109,6 +115,7 @@ public:
     void rotateDownAngle();														// 船首を下げる
     void forwardUnit();															// 前進する
     void backUnit();															// 後退する
+    void hitUnit(PhysicsSprite* unit);
     void defeatPlayer();													// プレイヤーが撃沈
     void finishGame();
     void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
@@ -125,6 +132,9 @@ public:
     void destroyerAI();
     void submarineAI();
     void createMissile(b2Vec2 position);
+    void createMissileDiagonal(b2Vec2 position);
+    void createMissileLeft(b2Vec2 position);
+    void createMissileSubmarine(b2Vec2 position);
     CREATE_FUNC(GameScene);													//マクロ
 
     //追加
@@ -145,7 +155,7 @@ public:
 	CCSprite* getCCSprite(int tag_no);							// tag_noのオブジェクトのスプライトゲット
 	CCPoint getCCPoint(int tag_no);							// tag_noのオブジェクトの座標をゲット
 	float getAngle(int tag_no);								// tag_noのオブジェクトの角度をゲット
-	void hitUnit(PhysicsSprite* unit);
+	void createRetryButton();
 	#define PI 3.141592															// 円周率をマクロ定義
 };
 
