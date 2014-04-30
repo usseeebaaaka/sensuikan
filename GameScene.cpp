@@ -554,9 +554,9 @@ void GameScene::update(float dt) {
 			hitUnit(unitData[kTag_EnemyDestroyer]);											// 自機が撃沈される
 		}
 	}
-	if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter > 0) {
+	if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter > 629) {
 		destroyerAI();
-	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 0) {
+	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
 		destroyerAI2();
 	} if (this->getChildByTag(kTag_EnemySubmarine) && (timeCounter > 1140 || (timeCounter > 1020 && timeCounter < 1080)|| (timeCounter > 660 && timeCounter < 780)|| (timeCounter > 300 && timeCounter < 420))) {
 		submarineAI();
@@ -570,8 +570,8 @@ void GameScene::update(float dt) {
 	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
 		finishGame();
 	}
-	if (timeCounter == -1 || timeCounter == 1) {
-		timeCounter *= -1260;
+	if (!timeCounter) {
+		timeCounter += 1260;
 	}
 }
 // スコア部を生成
@@ -825,7 +825,7 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	b2Body* missileBody = pMissile->getPhysicsBody();											// オブジェクトpMissileのデータメンバを取得
 	position.Set(position.x, (position.y * PTM_RATIO + PTM_RATIO * 0.4) / PTM_RATIO);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, -PI/ 10 * 9);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-0.2, 0.9));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-0.8, 0.8));										// x座標y座標に圧力をかける
 }
 
 // 船首を上げる関数
@@ -1116,7 +1116,7 @@ void GameScene::changeMissileButton(int tag_no, int change) {
 
 void GameScene::missileTimer() {
 	reloadTime++;
-	if (reloadTime == 120) {
+	if (reloadTime == 45) {
 		reloadTime = 0;
 		reloadMissile += 3;
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
