@@ -41,6 +41,8 @@ class GameScene : public cocos2d::CCLayer {
     b2Body* enemySubmarine;													// 敵潜水艦の実体
     b2Body* missile;														// ミサイルの実体
     CCSpriteBatchNode* missileBatchNode;									// ミサイル群
+    CCSpriteBatchNode* bombBatchNode;									// ミサイル群
+    CCSpriteBatchNode* enemyMissileBatchNode;									// ミサイル群
     CCSpriteBatchNode* hpBatchNode;											// hp群
     CCSpriteBatchNode* lifeBatchNode;										// 残機群
     // 各種オブジェクト等をタグで管理
@@ -72,6 +74,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Key_Center,			// ストップボタン
         kTag_Shoot_Vertical,		// 垂直射撃ボタン
         kTag_Shoot_Horizontal,		// 水平射撃ボタン
+        kTag_Retry,
         kTag_Switch,
         kTag_Gear1,					// 1番スピードが遅いギア
         kTag_Gear2,					// 2番目にスピードが遅いギア
@@ -127,6 +130,7 @@ public:
     CCSize getViewSize();													// ビューサイズをゲットする
     void moveToNextScene();
     void startGame();
+    void createRetryButton();
     void setScoreNumber();
     virtual void ccTouchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
     virtual void ccTouchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
