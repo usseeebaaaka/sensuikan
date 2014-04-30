@@ -4,13 +4,13 @@
 PhysicsSprite::PhysicsSprite()
 : m_pBody(NULL)
 ,hp(0)
-//,kTag(0)
+,isEnemy(true)
 {
 }
 PhysicsSprite::PhysicsSprite(int hp)
 : m_pBody(NULL)
 ,hp(hp)
-//,kTag(0)
+,isEnemy(false)
 {
 }
 void PhysicsSprite::setPhysicsBody(b2Body*  body) {
@@ -22,12 +22,6 @@ b2Body* PhysicsSprite::getPhysicsBody() {
 bool PhysicsSprite::isDirty(void) {
     return true;
 }
-//void PhysicsSprite::setTag(int tag) {
-//	kTag = tag;
-//}
-//int PhysicsSprite::getTag() {
-//	return kTag;
-//}
 CCAffineTransform PhysicsSprite::nodeToParentTransform(void) {
     b2Vec2 pos  = m_pBody->GetPosition();
 
