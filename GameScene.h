@@ -37,7 +37,11 @@ class GameScene : public cocos2d::CCLayer {
     b2Body* enemyDestroyer;													// 敵駆逐艦の実体
     b2Body* enemySubmarine;													// 敵潜水艦の実体
     b2Body* missile;														// ミサイルの実体
-    CCSpriteBatchNode* missileBatchNode;									// ミサイル群
+    CCSpriteBatchNode* missileBatchNode;									// 自機ミサイル群
+    /*----- 4/30 add 植田 -----*/
+    CCSpriteBatchNode* bombBatchNode;										// 駆逐艦のミサイル群
+    CCSpriteBatchNode* enemyMissileBatchNode;								// 敵潜水艦のみさり
+    /*----- ここまで -----*/
     CCSpriteBatchNode* hpBatchNode;											// hp群
     CCSpriteBatchNode* lifeBatchNode;										// 残機群
     // 各種オブジェクト等をタグで管理
@@ -58,9 +62,9 @@ class GameScene : public cocos2d::CCLayer {
         kTag_EnemyDestroyer,		// 敵駆逐艦
         kTag_Missile,				// ミサイル
         kTag_MissileEnemy,
-        kTag_CollisionPlayer, 				// 自機と衝突
-        kTag_CollisionSubmarine,
-        kTag_CollisionDestroyer,
+        kTag_CollisionPlayer, 		// 自機の衝突判定
+        kTag_CollisionSubmarine,	// 敵潜水艦の衝突判定
+        kTag_CollisionDestroyer,	// 敵駆逐艦の衝突判定
         kTag_Remove_Missile,		// ミサイル消失
         kTag_Key_Up,				// 上キー
         kTag_Key_Down,				// 下キー
@@ -70,7 +74,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Shoot_Vertical,		// 垂直射撃ボタン
         kTag_Shoot_Horizontal,		// 水平射撃ボタン
         kTag_Retry,					// リトライボタン
-        kTag_Switch,
+        kTag_Switch,				// スピードメータのメモリスイッチ
         kTag_Gear1,					// 1番スピードが遅いギア
         kTag_Gear2,					// 2番目にスピードが遅いギア
         kTag_Gear3,					// 3番目にスピードが遅いギア
@@ -108,25 +112,25 @@ public:
     void createLifeCounter();														// 残りhpカウンターを生成
     void createControllerPanel();											// 操作部を生成
     void createKey();															//十字キーを生成
-    void showCountdown();													// ゲーム開始時のカウントダウン
-    void callScroll();														// スクロール開始
-    void goGoMissile();															// ミサイルを動かす
+    void showCountdown();														// ゲーム開始時のカウントダウン
+    void callScroll();															// スクロール開始
+    void goGoMissile();														// ミサイルを動かす
     void rotateUpAngle();														// 船首を上げる
-    void rotateDownAngle();														// 船首を下げる
-    void forwardUnit();															// 前進する
+    void rotateDownAngle();													// 船首を下げる
+    void forwardUnit();														// 前進する
     void backUnit();															// 後退する
     void hitUnit(PhysicsSprite* unit);
-    void defeatPlayer();													// プレイヤーが撃沈
+    void defeatPlayer();														// プレイヤーが撃沈
     void finishGame();
     void removeObject(CCNode* pObject, void* body);							// オブジェクトを除去する
     float getdealofScrollSpead();											// スクロールスピードの倍率をゲットする
     float coefficientOfSpeed();												// スピード倍率を返却
     CCSize getWindowSize();													// ウィンドウサイズをゲットする
-    CCSize getViewSize();													// ビューサイズをゲットする
+    CCSize getViewSize();														// ビューサイズをゲットする
     void moveToNextScene();
     void startGame();
     void setScoreNumber();
-    virtual void ccTouchesBegan(CCSet* touches, CCEvent* pEvent );			 // タッチ開始時のイベント
+    virtual void ccTouchesBegan(CCSet* touches, CCEvent* pEvent );			// タッチ開始時のイベント
     virtual void ccTouchesMoved(CCSet* touches, CCEvent* pEvent );			// スワイプしている途中に呼ばれる
     virtual void ccTouchesEnded(CCSet* touches, CCEvent* pEvent );			// タッチ終了時のイベント
     void destroyerAI();
@@ -155,8 +159,10 @@ public:
 	CCSprite* getCCSprite(int tag_no);							// tag_noのオブジェクトのスプライトゲット
 	CCPoint getCCPoint(int tag_no);							// tag_noのオブジェクトの座標をゲット
 	float getAngle(int tag_no);								// tag_noのオブジェクトの角度をゲット
+	/*----- 4/29 add 植田 -----*/
 	void createRetryButton();
-	#define PI 3.141592															// 円周率をマクロ定義
+	/*----- ここまで -----*/
+#define PI 3.141592															// 円周率をマクロ定義
 };
 
 #endif // __GAME_SCENE_H__
