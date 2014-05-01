@@ -2,20 +2,26 @@
 #include "Config.h"
 
 PhysicsSprite::PhysicsSprite()
-: m_pBody(NULL) {
+: m_pBody(NULL)
+,hp(0)
+,isEnemy(true)
+{
 }
 PhysicsSprite::PhysicsSprite(int hp)
-: m_pBody(NULL) {
-	this->hp = hp;
+: m_pBody(NULL)
+,hp(hp)
+,isEnemy(false)
+{
 }
 void PhysicsSprite::setPhysicsBody(b2Body*  body) {
     m_pBody = body;
 }
-
+b2Body* PhysicsSprite::getPhysicsBody() {
+	return m_pBody;
+}
 bool PhysicsSprite::isDirty(void) {
     return true;
 }
-
 CCAffineTransform PhysicsSprite::nodeToParentTransform(void) {
     b2Vec2 pos  = m_pBody->GetPosition();
 

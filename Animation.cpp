@@ -49,8 +49,8 @@ CCFiniteTimeAction* Animation::gameStartAnimation(CCObject* target, SEL_CallFunc
  * 仮引数 : int型変数count
  */
 CCFiniteTimeAction* Animation::hitAnimation(int count) {
-	CCDelayTime* delay = CCDelayTime::create(4);		//2秒ディレイ test用
-	CCArray *animFrames = CCArray::create();	//CCArray型配列を初期化
+//	CCDelayTime* delay = CCDelayTime::create(4);		//2秒ディレイ test用
+	CCArray *animFrames = CCArray::create();			//CCArray型配列を初期化
 	CCSpriteFrameCache *cache = CCSpriteFrameCache::sharedSpriteFrameCache();	//キャッシュより指定したファイル名のインスタンスを取得しCCSpriteFrame型のオブジェクトframeに代入
 	/* 初期値0のint型変数iが
 	 * count未満の間
@@ -73,15 +73,15 @@ CCFiniteTimeAction* Animation::hitAnimation(int count) {
 
 	return CCAnimate::create(animation);	//CCAnimateクラスのアクションを生成して返却
 }
-//
-///* screenChangeAnimation関数
-// * 返却型 : CCFiniteTimeAction型ポインタ
-// * 仮引数 : CCObject型ポインタtarget, SEL_CallFunc型変数selector
-// */
-//CCFiniteTimeAction* Animation::gameOverAnimation(CCObject* target, SEL_CallFunc selector) {
-//	CCScaleTo* scaleUp = CCScaleTo::create(0.5, 1);			//0.5秒で対象物1倍に
-//	CCDelayTime* delay = CCDelayTime::create(2.5);			//そのまま2.5秒待機
-//	CCCallFunc* func = CCCallFunc::create(target, selector);	//呼び出す関数をfuncに代入
-//
-//	return CCSequence::create(scaleUp, delay, func, NULL);	//scaleUp delay func NULLを引数に
-//}
+
+/* screenChangeAnimation関数
+ * 返却型 : CCFiniteTimeAction型ポインタ
+ * 仮引数 : CCObject型ポインタtarget, SEL_CallFunc型変数selector
+ */
+CCFiniteTimeAction* Animation::gameOverAnimation(CCObject* target, SEL_CallFunc selector) {
+	CCScaleTo* scaleUp = CCScaleTo::create(0.5, 2);			//0.5秒で対象物1倍に
+	CCDelayTime* delay = CCDelayTime::create(1.5);			//そのまま2.5秒待機
+	CCCallFunc* func = CCCallFunc::create(target, selector);	//呼び出す関数をfuncに代入
+
+	return CCSequence::create(scaleUp, delay, func, NULL);	//scaleUp delay func NULLを引数に
+}
