@@ -113,7 +113,7 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 	} else if (((tagA == TAG_MISSILE && tagB == TAG_MISSILE_ENEMY)			// 自ミサイルと敵ミサイル
 			|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE))			// 敵ミサイルと自ミサイル
 			/*|| (tagA == TAG_MISSILE && tagB == TAG_MISSILE)*/					// 自ミサイルと自ミサイル
-			|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE_ENEMY)){	// 敵ミサイルと敵ミサイル
+			/*|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE_ENEMY)*/){	// 敵ミサイルと敵ミサイル
 		// 両タグにミサイル除去タグをセット
 		actorA->setTag(TAG_REMOVE_MISSILE);
 		actorB->setTag(TAG_REMOVE_MISSILE);

@@ -14,8 +14,8 @@ GameScene::GameScene()
  reloadMissile(3),
  enemyUnit_num(2),
  player_VIT(2),
- submarine_VIT(404),
- destroyer_VIT(404),
+ submarine_VIT(1010),
+ destroyer_VIT(1010),
  score_and_Maxplace(50.3),
  dealofScrollSpead(0.2),
  buttons_sum(11),
@@ -45,7 +45,6 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	//	sleep(20);
 	initPhysics();
 	createControllerPanel();
 	createBackground();
@@ -75,7 +74,7 @@ bool GameScene::init() {
 
 void GameScene::initPhysics() {
 	b2Vec2 gravity;															// 重力の設定値を格納するための変数
-	gravity.Set(0, -0.3);													// 重力を設定
+	gravity.Set(0, -0.6);													// 重力を設定
 
 	world = new b2World(gravity);											// 重力を持った世界を生成
 
@@ -682,7 +681,7 @@ void GameScene::destroyerAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  300)) {										// ランダムでミサイルを発射
+	if(!(rand() %  200)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemyDestroyer]->GetAngle();		// ユニットの現在角度を取得
@@ -700,7 +699,7 @@ void GameScene::destroyerAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  300)) {										// ランダムでミサイルを発射
+	if(!(rand() %  200)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemyDestroyer]->GetAngle();		// ユニットの現在角度を取得
@@ -719,7 +718,7 @@ void GameScene::submarineAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
-	if(!(rand() %  300)) {										// ランダムでミサイルを発射
+	if(!(rand() %  200)) {										// ランダムでミサイルを発射
 		createMissileSubmarine(destroyerPosition);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
@@ -740,7 +739,7 @@ void GameScene::submarineAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
-	if(!(rand() %  300)) {										// ランダムでミサイルを発射
+	if(!(rand() %  200)) {										// ランダムでミサイルを発射
 		createMissileSubmarine(destroyerPosition);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
@@ -793,7 +792,7 @@ void GameScene::createMissileSubmarine(b2Vec2 position) {
 	enemyMissileBatchNode->addChild(pMissileSubmarine, kZOrder_Missile, kTag_MissileEnemy);						// 以上の情報でミサイル画像を生成
 	pMissileSubmarine = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pMissileSubmarine, kTag_Polygon);	// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissileSubmarine->getPhysicsBody();											// オブジェクトpMissileのデータメンバ
-	position.Set(position.x, (position.y * PTM_RATIO - PTM_RATIO * 0.4) / PTM_RATIO);			// 重力世界と座標をセット
+	position.Set((position.x * PTM_RATIO * 1.4 /*- PTM_RATIO * 0.4*/) / PTM_RATIO, (position.y * PTM_RATIO - PTM_RATIO * 0.2) / PTM_RATIO);			// 重力世界と座標をセット
 	missileBody->SetTransform(position, PI/2);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(0.8, 0.2));											// x座標y座標に圧力をかけてオブジェクト生成
 }
@@ -1116,7 +1115,7 @@ void GameScene::changeMissileButton(int tag_no, int change) {
 
 void GameScene::missileTimer() {
 	reloadTime++;
-	if (reloadTime == 45) {
+	if (reloadTime == 50) {
 		reloadTime = 0;
 		reloadMissile += 3;
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
