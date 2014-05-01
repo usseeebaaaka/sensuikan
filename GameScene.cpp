@@ -74,7 +74,7 @@ bool GameScene::init() {
 
 void GameScene::initPhysics() {
 	b2Vec2 gravity;															// 重力の設定値を格納するための変数
-	gravity.Set(0, -0.6);													// 重力を設定
+	gravity.Set(0, -0.4);													// 重力を設定
 
 	world = new b2World(gravity);											// 重力を持った世界を生成
 
