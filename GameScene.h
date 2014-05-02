@@ -67,6 +67,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_CollisionSubmarine,
         kTag_CollisionDestroyer,
         kTag_Remove_Missile,		// ミサイル消失
+        kTag_explosion_Missile,		// ミサイル爆発
         kTag_Key_Up,				// 上キー
         kTag_Key_Down,				// 下キー
         kTag_Key_Left,				// 左キー
@@ -166,6 +167,8 @@ public:
 	/*----- 4/30 add 植田 -----*/
 	void explosionSound();
 	/*----- ここまで -----*/
+	/*----- 5/2 add 植田 -----*/
+	void displayScore(int score);								// 入力された数値分加算減算し画面に表示
 	#define PI 3.141592															// 円周率をマクロ定義
 };
 
