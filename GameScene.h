@@ -67,6 +67,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_CollisionSubmarine,
         kTag_CollisionDestroyer,
         kTag_Remove_Missile,		// ミサイル消失
+        kTag_explosion_Missile,		// ミサイル爆発
         kTag_Key_Up,				// 上キー
         kTag_Key_Down,				// 下キー
         kTag_Key_Left,				// 左キー

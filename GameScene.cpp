@@ -428,7 +428,7 @@ void GameScene::startGame() {
 void GameScene::hitUnit(PhysicsSprite* unit){
 	this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
 	unit->setHp(unit->getHp() - 1);	// hpを-1してセット
-	CCSprite* bombAction = CCSprite::create("hit0.png");						// hit0.pngを取得
+	CCSprite* bombAction = CCSprite::create();						// hit0.pngを取得
 	bombAction->setPosition(unit->getPosition());								// playerのオブジェクト(潜水艦)と同じ座標にセット
 	int anima = unit->getHp() != 0 ? hitAnimation : defeatAnimation;
 	bombAction->runAction(Animation::hitAnimation(anima));						// 被弾時のアニメーションhitAnimationを呼び出す
@@ -518,13 +518,14 @@ void GameScene::update(float dt) {
 		objectTag = object->getTag();
 		if (objectTag == kTag_Call_Scroll) {
 			// ミサイル消失タグだった場合
-		} else if (objectTag == kTag_Remove_Missile) {
+		} else if (objectTag == kTag_Remove_Missile || objectTag == kTag_explosion_Missile) {
 
-			CCSprite* explosion = CCSprite::create("hit0.png");						// hit0.pngを取得
-			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));								// playerのオブジェクト(潜水艦)と同じ座標にセット
-			explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
-			this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
-
+			if(objectTag == kTag_explosion_Missile) {
+				CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
+				explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));								// playerのオブジェクト(潜水艦)と同じ座標にセット
+				explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+				this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+			}
 
 			// 0.1秒後に消えるアクションをセットする
 			CCDelayTime* delay = CCDelayTime::create(0);
@@ -909,7 +910,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 					&& i->boundingBox().containsPoint(loc)) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
 				if(tag_no == kTag_Shoot_Horizontal && reloadMissile) {
-				reloadMissile--;
+					reloadMissile--;
 					createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
 				} else if (reloadMissile){
 					reloadMissile--;
@@ -920,7 +921,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				}			// retryボタンをタップしたら以下処理
 			} else if(tag_no == kTag_Retry && i->boundingBox().containsPoint(loc)) {
 				GameScene::moveToNextScene();									// moveToNextSceneを呼び出しシーンの再生成
-			// stopボタンをタップしたら以下処理
+				// stopボタンをタップしたら以下処理
 			} else if(tag_no == kTag_Key_Center) {
 				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
 				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
