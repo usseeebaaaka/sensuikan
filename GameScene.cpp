@@ -16,7 +16,7 @@ GameScene::GameScene()
  player_VIT(2),
  submarine_VIT(1515),
  destroyer_VIT(1515),
- score_and_Maxplace(50.3),
+ score_and_Maxplace(100.3),
  dealofScrollSpead(0.2),
  buttons_sum(11),
  playerUnit(NULL),
@@ -443,9 +443,11 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		}
 		// hp0になったユニットが敵潜水艦だったら以下
 	}else if (unit == unitData[kTag_EnemySubmarine] && unit->getHp() == 0) {
+		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
 		// hp0になったユニットが敵駆逐艦だったら以下
 	}else if (unit == unitData[kTag_EnemyDestroyer] && unit->getHp() == 0) {
+		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
 	}
 }
@@ -517,6 +519,13 @@ void GameScene::update(float dt) {
 		if (objectTag == kTag_Call_Scroll) {
 			// ミサイル消失タグだった場合
 		} else if (objectTag == kTag_Remove_Missile) {
+
+			CCSprite* explosion = CCSprite::create("hit0.png");						// hit0.pngを取得
+			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));								// playerのオブジェクト(潜水艦)と同じ座標にセット
+			explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+			this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+
+
 			// 0.1秒後に消えるアクションをセットする
 			CCDelayTime* delay = CCDelayTime::create(0);
 			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
@@ -543,16 +552,14 @@ void GameScene::update(float dt) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
 				this->unschedule(schedule_selector(GameScene::backUnit));
 			}
-		} else if (objectTag == kTag_CollisionSubmarine) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
-			score_and_Maxplace += 5;
-			setScoreNumber();
-			removeObject(object, (void*)b);								// ミサイルを消す
-			hitUnit(unitData[kTag_EnemySubmarine]);											// 自機が撃沈される
+		} else if (objectTag == kTag_CollisionSubmarine) {						// 敵潜水艦に衝突判定があれば以下
+			displayScore(10);													// スコアを+10して更新
+			removeObject(object, (void*)b);										// ミサイルを消す
+			hitUnit(unitData[kTag_EnemySubmarine]);								// 自機が撃沈される
 		} else if (objectTag == kTag_CollisionDestroyer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
-			score_and_Maxplace += 5;
-			setScoreNumber();
-			removeObject(object, (void*)b);								// ミサイルを消す
-			hitUnit(unitData[kTag_EnemyDestroyer]);											// 自機が撃沈される
+			displayScore(10);													// スコアを+10して更新
+			removeObject(object, (void*)b);										// ミサイルを消す
+			hitUnit(unitData[kTag_EnemyDestroyer]);								// 自機が撃沈される
 		}
 	}
 	if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter > 629) {
@@ -582,8 +589,8 @@ void GameScene::createScore() {
 	// 任意の桁数だけ繰り返し
 	for (int i = score_and_Maxplace * 10; i % 10; i-=1, j += 0.05) {
 		i % 10 != 1 ?																	// 配列の最後の要素であるか？
-				tmp = CCLabelTTF::create("5", "", NUMBER_FONT_SIZE):					// でなければ数字表示なし
-				tmp = CCLabelTTF::create("0", "", NUMBER_FONT_SIZE);					// であれば数字表示あり
+				tmp = CCLabelTTF::create("0", "", NUMBER_FONT_SIZE):					// でなければ数字表示なし
+				tmp = CCLabelTTF::create("1", "", NUMBER_FONT_SIZE);					// であれば数字表示あり
 		tmp->setPosition(ccp(getWindowSize().width * (0.2 - j),
 				getWindowSize().height * 0.9));											// 座標をセット
 		tmp->setColor(ccBLACK);															// フォントカラーをセット
@@ -677,6 +684,13 @@ void GameScene::setScoreNumber() {
 		tmp->setString(num->getCString());
 	}
 }
+
+/*----- 入力された数値分加算減算し画面に表示 -----*/
+void GameScene::displayScore(int score) {
+	score_and_Maxplace += score;	// 現スコアに引数で渡されたポイントを加算減算する
+	setScoreNumber();				// ゲーム上のスコアを更新
+}
+
 // 駆逐艦AI
 void GameScene::destroyerAI() {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
@@ -826,7 +840,7 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	b2Body* missileBody = pMissile->getPhysicsBody();											// オブジェクトpMissileのデータメンバを取得
 	position.Set(position.x, (position.y * PTM_RATIO + PTM_RATIO * 0.4) / PTM_RATIO);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, -PI/ 10 * 9);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-0.8, 0.8));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-0.2, 0.8));										// x座標y座標に圧力をかける
 }
 
 // 船首を上げる関数

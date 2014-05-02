@@ -166,6 +166,8 @@ public:
 	/*----- 4/30 add 植田 -----*/
 	void explosionSound();
 	/*----- ここまで -----*/
+	/*----- 5/2 add 植田 -----*/
+	void displayScore(int score);								// 入力された数値分加算減算し画面に表示
 	#define PI 3.141592															// 円周率をマクロ定義
 };
 
