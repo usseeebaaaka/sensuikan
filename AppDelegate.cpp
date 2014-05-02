@@ -15,6 +15,21 @@ AppDelegate::~AppDelegate()
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
+
+	  // BGMを準備する。
+	  SimpleAudioEngine::sharedEngine()->preloadBackgroundMusic(
+	    CCFileUtils::sharedFileUtils()->fullPathForFilename("bgm.mp3").c_str());
+
+	  // 効果音を準備する。
+	  SimpleAudioEngine::sharedEngine()->preloadEffect(
+	    CCFileUtils::sharedFileUtils()->fullPathForFilename("explosion.wav").c_str());
+
+	  // BGMのボリュームを設定する。
+	  SimpleAudioEngine::sharedEngine()->setBackgroundMusicVolume(1.0f);
+
+	  // 効果音のボリュームを設定する。
+	  SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.1f);
+
     CCDirector* pDirector = CCDirector::sharedDirector();
     CCEGLView* pEGLView = CCEGLView::sharedOpenGLView();
 

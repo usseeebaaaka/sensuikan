@@ -418,7 +418,7 @@ void GameScene::showCountdown() {
 }
 // ゲームスタートの処理を行う
 void GameScene::startGame() {
-	SimpleAudioEngine::sharedEngine()->playBackgroundMusic("battle.mp3", true);
+	SimpleAudioEngine::sharedEngine()->playBackgroundMusic("sonar.mp3", true);
 	this->setTouchEnabled(true);				  							// タッチ可能にする
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 	// 毎フレームupdate( )関数を呼び出すように設定する
@@ -525,6 +525,7 @@ void GameScene::update(float dt) {
 				explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));								// playerのオブジェクト(潜水艦)と同じ座標にセット
 				explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
 				this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+				this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
 			}
 
 			// 0.1秒後に消えるアクションをセットする
@@ -841,7 +842,7 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	b2Body* missileBody = pMissile->getPhysicsBody();											// オブジェクトpMissileのデータメンバを取得
 	position.Set(position.x, (position.y * PTM_RATIO + PTM_RATIO * 0.4) / PTM_RATIO);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, -PI/ 10 * 9);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-0.2, 0.8));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-0.2, 3.0));										// x座標y座標に圧力をかける
 }
 
 // 船首を上げる関数
@@ -1187,4 +1188,6 @@ float GameScene::getAngle(int tag_no) {
 void GameScene::explosionSound() {
 	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3(テスト用)をセット
 	SimpleAudioEngine::sharedEngine()->playEffect("explosion.mp3");
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.05);
 }
+
