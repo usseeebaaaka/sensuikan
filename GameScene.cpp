@@ -45,6 +45,7 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
+//	sleep(15);
 	initPhysics();
 	createControllerPanel();
 	createBackground();
@@ -80,17 +81,6 @@ void GameScene::initPhysics() {
 
 	mGamePhysicsContactListener = new GamePhysicsContactListener(this);		// 衝突判定結果を格納するための変数を用意
 	world->SetContactListener(mGamePhysicsContactListener);				// 衝突判定処理を追加
-
-	//	world2 = new b2World(gravity);											// 重力を持った世界を生成
-	//
-	//	mGamePhysicsContactListener2 = new GamePhysicsContactListener(this);		// 衝突判定結果を格納するための変数を用意
-	//	world2->SetContactListener(mGamePhysicsContactListener2);				// 衝突判定処理を追加
-	//
-	//	world3 = new b2World(gravity);											// 重力を持った世界を生成
-	//
-	//	mGamePhysicsContactListener3 = new GamePhysicsContactListener(this);		// 衝突判定結果を格納するための変数を用意
-	//	world3->SetContactListener(mGamePhysicsContactListener3);				// 衝突判定処理を追加
-
 }
 // 背景および海底を生成
 void GameScene::createBackground() {
@@ -563,9 +553,9 @@ void GameScene::update(float dt) {
 		submarineAI();
 	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 840 && timeCounter < 960)|| (timeCounter > 480 && timeCounter < 660) || (timeCounter > 180 && timeCounter < 240) || (timeCounter > 0 && timeCounter < 120))) {
 		submarineAI2();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && (timeCounter > 1080 && timeCounter < 1140) || (timeCounter > 420 && timeCounter < 480) || (timeCounter > 240 && timeCounter < 300)) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 1080 && timeCounter < 1140) || (timeCounter > 420 && timeCounter < 480) || (timeCounter > 240 && timeCounter < 300))) {
 		submarineAI4();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && (timeCounter > 960 && timeCounter < 1020) || (timeCounter > 780 && timeCounter < 840) || (timeCounter > 120 && timeCounter < 180)) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 960 && timeCounter < 1020) || (timeCounter > 780 && timeCounter < 840) || (timeCounter > 120 && timeCounter < 180))) {
 		submarineAI3();
 	}
 	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
