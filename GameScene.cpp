@@ -516,29 +516,29 @@ void GameScene::update(float dt) {
 		if (objectTag == kTag_Call_Scroll) {
 			// ミサイル消失タグだった場合
 		} else if (objectTag == kTag_Remove_Missile || objectTag == kTag_explosion_Missile) {
-						if(objectTag == kTag_explosion_Missile) {
-							CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
-							explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
-							explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
-							this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
-							this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
-						}
-						// 0.1秒後に消えるアクションをセットする
-						CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
+			if(objectTag == kTag_explosion_Missile) {
+				CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
+				explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
+				explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+				this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+				this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
+			}
+			// 0.1秒後に消えるアクションをセットする
+			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
 			//			CCSequence* action = CCSequence::createWithTwoActions(delay, func);
-						func->setTag(kTag_Remove_Missile);
-						object->runAction(func);
+			func->setTag(kTag_Remove_Missile);
+			object->runAction(func);
 
-//			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
-//			func->setTag(kTag_Remove_Missile);
-//			if(objectTag == kTag_explosion_Missile) {
-//				CCPoint runAnimationPoint = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
-//				object->setPosition(runAnimationPoint);
-//				CCSequence* action = CCSequence::createWithTwoActions(func, Animation::hitAnimation(hitAnimation));
-//				object->runAction(action);
-//			} else {
-//				object->runAction(func);
-//			}
+			//			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
+			//			func->setTag(kTag_Remove_Missile);
+			//			if(objectTag == kTag_explosion_Missile) {
+			//				CCPoint runAnimationPoint = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
+			//				object->setPosition(runAnimationPoint);
+			//				CCSequence* action = CCSequence::createWithTwoActions(func, Animation::hitAnimation(hitAnimation));
+			//				object->runAction(action);
+			//			} else {
+			//				object->runAction(func);
+			//			}
 
 		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
 			removeObject(object, (void*)b);								// ミサイルを消す
@@ -851,7 +851,7 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();															// 使われなくなったら自動的に開放
 	pMissile->initWithTexture(missileBatchNode->getTexture());							// を指定位置にセット													// 表示上の画像を180度回転
-//	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO * 0 /*+ PTM_RATIO * 0.4*/));	// 画像の座標を指定(PTM_RATIOは重力世界と表示を重ねるため)
+	//	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO * 0 /*+ PTM_RATIO * 0.4*/));	// 画像の座標を指定(PTM_RATIOは重力世界と表示を重ねるため)
 	pMissile->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);							// 以上の情報でミサイル画像を生成
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Circle);		// オブジェクトに物理構造を持たせる
@@ -928,7 +928,13 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
 				if(tag_no == kTag_Shoot_Horizontal && reloadMissile) {
 					reloadMissile--;
-					createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
+					// 1秒後に消えるアクションをセットする
+					//CCDelayTime* delay = CCDelayTime::create(1);
+					//CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::createMissileDiagonal), playerPosition);
+					//CCSequence* action = CCSequence::createWithTwoActions(delay, func);
+					//	                action->setTag(kTag_Action_Remove_Object);
+					//object->runAction(action);
+										createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
 				} else if (reloadMissile){
 					reloadMissile--;
 					createMissileDiagonal(playerPosition);
