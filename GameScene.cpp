@@ -443,10 +443,13 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 	this->addChild(bombAction, kZOrder_Countdown);								// 爆発アニメーションの実装
 
 	if (unit == unitData[kTag_PlayerUnit]) {
-		if(unit->getHp() <= 0) {												// hpがなくなった場合
+		if(unit->getHp() == 0) {												// hpがなくなった場合
 			defeatPlayer();														// 残機を減らす処理へ
 			// hpが0でなければ以下の処理
 		} else {
+			if (unit->getHp() < 0) {
+				unit->setHp(0);
+			}
 			createLifeCounter();												// 自機life表示を再生性
 		}
 		// hp0になったユニットが敵潜水艦だったら以下
@@ -562,7 +565,7 @@ void GameScene::update(float dt) {
 			//          PhysicsSprite* pObject = (PhysicsSprite*)object;
 			//            if (pObject->getTag() /*!= kTag_PlayerUnit*/) {
 			hitUnit(unitData[kTag_PlayerUnit]);												// 自機が撃沈される
-		} else if (objectTag == kTag_PlayerUnit) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
+		} else if (objectTag == kTag_PlayerUnit && this->getChildByTag(kTag_PlayerUnit)) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
 			CCNode* myUnit = this->getChildByTag(kTag_PlayerUnit);
 			/*			if(myUnit->getPositionY() > getWindowSize().height * 3 / 4) {
 				// 毎フレームrotateUpAngle関数を呼び出すように設定する
@@ -744,7 +747,7 @@ void GameScene::destroyerAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  20000)) {											// ランダムでミサイルを発射
+	if(!(rand() %  200)) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemyDestroyer]->GetAngle();		// ユニットの現在角度を取得
@@ -762,7 +765,7 @@ void GameScene::destroyerAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  20000)) {										// ランダムでミサイルを発射
+	if(!(rand() %  200)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemyDestroyer]->GetAngle();		// ユニットの現在角度を取得
@@ -782,7 +785,7 @@ void GameScene::submarineAI() {
 
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 
-	if(!(rand() %  10000)) {										// ランダムでミサイルを発射
+	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition) : createMissile(destroyerPosition);
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
@@ -804,7 +807,7 @@ void GameScene::submarineAI2() {
 
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 
-	if(!(rand() %  10000)) {										// ランダムでミサイルを発射
+	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition) : createMissile(destroyerPosition);
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
@@ -969,9 +972,11 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
 				if(tag_no == kTag_Shoot_Horizontal && reloadMissile) {
 					reloadMissile--;
+					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
 					createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
 				} else if (reloadMissile){
 					reloadMissile--;
+					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
 					//					createMissileDiagonal(playerPosition);	//MOD 14/5/6 H.U
 					createMissileDiagonal(unitPhysicsData[kTag_PlayerUnit]);	//MOD 14/5/6 H.U
 				}
@@ -1210,7 +1215,9 @@ void GameScene::missileTimer() {
 		reloadTime = 0;
 		reloadMissile += 3;
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-	} else {
+	} else if (reloadTime == 12 && reloadMissile){
+		reloadTime = 0;
+		this->unschedule(schedule_selector(GameScene::missileTimer));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
 
 	}
 }
