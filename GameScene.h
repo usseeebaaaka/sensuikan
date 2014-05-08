@@ -182,7 +182,9 @@ public:
 	void contactUnit(PhysicsSprite* unit);						// 自機と敵機の接触判定
 	void fuelUnit();											// 燃料機能の実装
 	/*----- ここまで -----*/
-
+	/*----- 5/8 add 植田 -----*/
+	bool areSpritesColliding(cocos2d::CCSprite *spr1, cocos2d::CCSprite *spr2/*, bool pp*/);
+	/*----- ここまで -----*/
 	/*----- テスト -----*/
 	void testPlayerBack();
 	void testSubmarineBack();

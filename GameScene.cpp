@@ -438,16 +438,16 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 	unit->setHp(unit->getHp() - 1);												// hpを-1してセット
 	CCSprite* bombAction = CCSprite::create();									// スプライト生成
 	bombAction->setPosition(unit->getPosition());								// playerのオブジェクト(潜水艦)と同じ座標にセット
-	int anima = unit->getHp() != 0 ? hitAnimation : defeatAnimation;
+	int anima = unit->getHp() != 0 ? hitAnimation : defeatAnimation;			// 残hpの数で爆発か撃沈かの数値を判断する
 	bombAction->runAction(Animation::hitAnimation(anima));						// 被弾時のアニメーションhitAnimationを呼び出す
 	this->addChild(bombAction, kZOrder_Countdown);								// 爆発アニメーションの実装
 
 	if (unit == unitData[kTag_PlayerUnit]) {
-		if(unit->getHp() <= 0) {												// hpがなくなった場合
+		if(unit->getHp() == 0) {												// hpがなくなった場合
 			defeatPlayer();														// 残機を減らす処理へ
 			// hpが0でなければ以下の処理
 		} else {
-			createLifeCounter();												// 自機life表示を再生性
+			createLifeCounter();												// 自機life表示を再生成
 		}
 		// hp0になったユニットが敵潜水艦だったら以下
 	}else if (unit == unitData[kTag_EnemySubmarine] && unit->getHp() == 0) {
@@ -744,7 +744,7 @@ void GameScene::destroyerAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  20000)) {											// ランダムでミサイルを発射
+	if(!(rand() %  100)) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemyDestroyer]->GetAngle();		// ユニットの現在角度を取得
@@ -762,7 +762,7 @@ void GameScene::destroyerAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  20000)) {										// ランダムでミサイルを発射
+	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemyDestroyer]->GetAngle();		// ユニットの現在角度を取得
@@ -782,7 +782,7 @@ void GameScene::submarineAI() {
 
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 
-	if(!(rand() %  10000)) {										// ランダムでミサイルを発射
+	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition) : createMissile(destroyerPosition);
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
@@ -804,7 +804,7 @@ void GameScene::submarineAI2() {
 
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 
-	if(!(rand() %  10000)) {										// ランダムでミサイルを発射
+	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition) : createMissile(destroyerPosition);
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
@@ -1214,137 +1214,219 @@ void GameScene::missileTimer() {
 
 	}
 }
-	// 自機と敵機の接触時に呼ばれる
-	void GameScene::contactUnit(PhysicsSprite* unit) {
-		CCRect player    = getCCSprite(kTag_PlayerUnit)->boundingBox();		// 自機の画面上の位置とサイズを取得
-		CCRect submarine = getCCSprite(kTag_EnemySubmarine)->boundingBox();	// 敵潜水艦の画面上の位置とサイズを取得
-		CCRect destroyer = getCCSprite(kTag_EnemyDestroyer)->boundingBox();	// 敵駆逐艦の画面上の位置とサイズを取得
+// 自機と敵機の接触時に呼ばれる
+void GameScene::contactUnit(PhysicsSprite* unit) {
+	if(areSpritesColliding(getCCSprite(kTag_PlayerUnit), getCCSprite(kTag_EnemySubmarine))) {
+		unit->setHp(1);		// 自機のhpを強制的に1にする
+		hitUnit(unit);		// hitunit関数を呼び出し残機を１減らす
+	}
+}
 
-		//	if( (abs(player.origin.x / PTM_RATIO - submarine.origin.x / PTM_RATIO) < player.size.width + submarine.size.width) &&
-		//	    (abs(player.origin.y / PTM_RATIO - submarine.origin.y / PTM_RATIO) < player.size.height + submarine.size.height) ){// abs()は絶対値を返す関数
-		//		unit->setHp(1);		// 自機のhpを強制的に1にする
-		//		hitUnit(unit);		// hitunit関数を呼び出し残機を１減らす
-		//	}
+//	// 燃料の実装
+//	void GameScene::fuelUnit() {
+//
+//	}
 
+/* 関数名 : areSpritesColliding
+ * 概要 : スプライト同士の衝突判定をtrueかfalseで返す
+ * 返却型 : bool
+ * 仮引数 : CCSprite型変数spr1
+ * 				〃		  spr2
+ *
+ */
+bool GameScene::areSpritesColliding(CCSprite* spr1, CCSprite* spr2/*, bool pp*/) {
+	bool isColliding = false;			// bool型変数isCollidingをfalseで初期化
+	CCRect intersection;				// CCRect型変数の宣言
+	CCRect r1 = spr1->boundingBox();	// 引数1の画面上の表示とサイズを取得
+	CCRect r2 = spr2->boundingBox();	// 引数2の画面上の表示とサイズを取得
 
-		// 自機と敵潜水艦、もしくは自機と駆逐艦の画像が重なったら以下
-		if(player.intersectsRect(submarine) || player.intersectsRect(destroyer) ) {
-			unit->setHp(1);		// 自機のhpを強制的に1にする
-			hitUnit(unit);		// hitunit関数を呼び出し残機を１減らす
+	// r1とr2が重なっていれば以下ブロック
+	if (r1.intersectsRect(r2)) {
+		// If we're not checking for pixel perfect collisions, return true
+//		if (!pp) {
+//			return true;
+//		}
+
+		// 新しく作るccrectの各パラメータを宣言
+		float tempX;
+		float tempY;
+		float tempWidth;
+		float tempHeight;
+
+		// r1のx座標と幅を足した値がr2のx座標より大きければ
+		if (r1.getMaxX() > r2.getMinX()) {
+			tempX = r2.getMinX();						// r2のx座標をtempXに代入
+			tempWidth = r1.getMaxX() - r2.getMinX();	// r1のx座標と幅の加算値からr2のx座標を減算した値をtempWidthに代入
+		// r2のx座標の方が大きければ以下ブロック
+		} else {
+			tempX = r1.getMinX();						// tempXにr1のx座標を代入
+			tempWidth = r2.getMaxX() - r1.getMinX();	// tempWidthにはr2のx座標と幅を加算した値からr1のx座標を減算した値を代入
 		}
-		// 問題 : 自機及び敵機が回転時に矩形になり
-		// 		　衝突判定の領域が広域になってしまう
+
+		// 以下y座標における同処理
+		if (r1.getMinY() < r2.getMaxY()) {
+			tempY = r1.getMinY();
+			tempHeight = r2.getMaxY() - r1.getMinY();
+		} else {
+			tempY = r2.getMinY();
+			tempHeight = r1.getMaxY() - r2.getMinY();
+		}
+
+		// 以上のtempX,tempY,tempWidth,tempHeightにCC_CONTENT_SCALE_FACTOR(調整用)を乗算した値でレクトを生成
+		intersection = CCRectMake(tempX * CC_CONTENT_SCALE_FACTOR(),
+									tempY  * CC_CONTENT_SCALE_FACTOR(),
+									tempWidth * CC_CONTENT_SCALE_FACTOR(),
+									tempHeight * CC_CONTENT_SCALE_FACTOR());
+
+		unsigned int x = intersection.origin.x;	// 上で作成した図形のx座標を取得
+		unsigned int y = intersection.origin.y;	// 					 y座標を取得
+		unsigned int w = intersection.size.width;	// 					 幅を取得
+		unsigned int h = intersection.size.height;	// 					 高さを取得
+
+		unsigned int numPixels = w * h;			// 作成した図形の面積を取得(必ず正の値)
+
+		if (numPixels<=0) { return false; }		// もし面積が0以下であればfalseを返却する
+
+		// Draw into the RenderTexture
+		CCRenderTexture *rt = CCRenderTexture::create(getWindowSize().width, getWindowSize().height, kCCTexture2DPixelFormat_RGBA8888);
+		rt->beginWithClear(0, 0, 0, 0);
+
+		// Render both sprites: first one in RED and second one in GREEN
+		glColorMask(1, 0, 0, 1);
+		spr1->visit();
+		glColorMask(0, 1, 0, 1);
+		spr2->visit();
+		glColorMask(1, 1, 1, 1);
+
+		// Get color values of intersection area
+		ccColor4B *buffer = (ccColor4B *)malloc( sizeof(ccColor4B) * numPixels );
+		glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+		rt->end();
+
+		// Read buffer
+		unsigned int step = 1;
+		for(unsigned int i=0; i<numPixels; i+=step) {
+			ccColor4B color = buffer[i];
+			if (color.r > 0 && color.g > 0) {
+				isColliding = true;
+				break;
+			}
+		}
+
+		// Free buffer memory
+		free(buffer);
 	}
 
-	void GameScene::fuelUnit() {
+	return isColliding;
+}
 
-	}
+///* ***********************
+// *
+// * 　その他(セッタゲッタ)
+// *
+// * ***********************/
 
-	///* ***********************
-	// *
-	// * 　その他(セッタゲッタ)
-	// *
-	// * ***********************/
+// スクロール開始関数
+void GameScene::callScroll() {
+	float dealofScrollSpead = getdealofScrollSpead();
+}
 
-	// スクロール開始関数
-	void GameScene::callScroll() {
-		float dealofScrollSpead = getdealofScrollSpead();
-	}
+// スクロール倍率を返却する
+float GameScene::getdealofScrollSpead() {
+	return dealofScrollSpead;
+}
+// ウィンドウサイズを返却する
+CCSize GameScene::getWindowSize() {
+	return CCDirector::sharedDirector()->getWinSize();					// ウィンドウサイズを取得
+}
+// 背景サイズを返却する
+CCSize GameScene::getViewSize() {
+	return CCEGLView::sharedOpenGLView()->getFrameSize();				// シーンのサイズを取得
+}
 
-	// スクロール倍率を返却する
-	float GameScene::getdealofScrollSpead() {
-		return dealofScrollSpead;
-	}
-	// ウィンドウサイズを返却する
-	CCSize GameScene::getWindowSize() {
-		return CCDirector::sharedDirector()->getWinSize();					// ウィンドウサイズを取得
-	}
-	// 背景サイズを返却する
-	CCSize GameScene::getViewSize() {
-		return CCEGLView::sharedOpenGLView()->getFrameSize();				// シーンのサイズを取得
-	}
+// tag_noのオブジェクトのスプライトを返却
+CCSprite* GameScene::getCCSprite(int tag_no) {
+	return (CCSprite*)getChildByTag(tag_no);
+}
 
-	// tag_noのオブジェクトのスプライトを返却
-	CCSprite* GameScene::getCCSprite(int tag_no) {
-		return (CCSprite*)getChildByTag(tag_no);
-	}
+// tag_noのオブジェクトの座標を返却
+CCPoint GameScene::getCCPoint(int tag_no) {
+	return getChildByTag(tag_no)->getPosition();
+}
 
-	// tag_noのオブジェクトの座標を返却
-	CCPoint GameScene::getCCPoint(int tag_no) {
-		return getChildByTag(tag_no)->getPosition();
-	}
+// tag_noのオブジェクトの角度を返却
+float GameScene::getAngle(int tag_no) {
+	return getChildByTag(tag_no)->getRotation();
+}
 
-	// tag_noのオブジェクトの角度を返却
-	float GameScene::getAngle(int tag_no) {
-		return getChildByTag(tag_no)->getRotation();
-	}
+/* ***********************
+ * 　エフェクト音
+ * ***********************/
 
-	/* ***********************
-	 * 　エフェクト音
-	 * ***********************/
-
-	/* 関数名 : explosionSound
-	 * 概要 : 爆発音の生成
-	 * 返却型 : なし
-	 * 仮引数 : なし
-	 * 14/5/6 H.U
-	 */
-	void GameScene::explosionSound() {
-		//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
-		SimpleAudioEngine::sharedEngine()->playEffect("explosion.mp3");
-		SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.05);
-	}
-	/* 関数名 : explosionSound
-	 * 概要 : 発射音の生成
-	 * 返却型 : なし
-	 * 仮引数 : なし
-	 * 14/5/6 H.U
-	 */
-	void GameScene::missileShot() {
-		//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
-		SimpleAudioEngine::sharedEngine()->playEffect("missileShot.mp3");
-		SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.01);
-	}
+/* 関数名 : explosionSound
+ * 概要 : 爆発音の生成
+ * 返却型 : なし
+ * 仮引数 : なし
+ * 14/5/6 H.U
+ */
+void GameScene::explosionSound() {
+	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
+	SimpleAudioEngine::sharedEngine()->playEffect("explosion.mp3");
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.05);
+}
+/* 関数名 : explosionSound
+ * 概要 : 発射音の生成
+ * 返却型 : なし
+ * 仮引数 : なし
+ * 14/5/6 H.U
+ */
+void GameScene::missileShot() {
+	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
+	SimpleAudioEngine::sharedEngine()->playEffect("missileShot.mp3");
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.01);
+}
 
 
-	///* ***********************
-	// * テスト用(後で消す)
-	// * ***********************/
-	//// 自機の背景に重ねる
-	//void GameScene::testPlayerBack() {
-	//	CCSprite* backSprite =  CCSprite::create("playerBack.png");
-	//	backSprite->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
-	//	this->addChild(backSprite, kZOrder_Seabed, kTag_testPlayerUnit);
-	//	CCSprite* backSprite2 =  CCSprite::create("playerBack2.png");
-	//	backSprite2->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
-	//	this->addChild(backSprite2, kZOrder_Label, kTag_testPlayerUnit2);
-	//}
-	//
-	//// 敵潜水艦の背景に重ねる
-	//void GameScene::testSubmarineBack() {
-	//	CCSprite* backSprite =  CCSprite::create("stage2Back.png");
-	//	backSprite->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
-	//	this->addChild(backSprite, kZOrder_Seabed, kTag_testEnemeyUnit);
-	//	CCSprite* backSprite2 =  CCSprite::create("stage2Back2.png");
-	//	backSprite2->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
-	//	this->addChild(backSprite2, kZOrder_Label, kTag_testEnemeyUnit2);
-	//}
-	//
-	//// ユニットの中心座標を基準に追従する背景画像
-	//void GameScene::movePlayerBack(int tag_no) {
-	//	CCSprite* Unit = getCCSprite(kTag_testPlayerUnit);
-	//	Unit->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
-	//	this->addChild(Unit);
-	//	CCSprite* Unit2 = getCCSprite(kTag_testPlayerUnit2);
-	//	Unit2->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
-	//	this->addChild(Unit2);
-	//}
-	//// 敵潜水艦ユニットの中心座標を基準に追従する背景画像
-	//void GameScene::moveEnemyBack(int tag_no) {
-	//	CCSprite* Unit = getCCSprite(kTag_testEnemeyUnit);
-	//	Unit->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
-	//	this->addChild(Unit);
-	//	CCSprite* Unit2 = getCCSprite(kTag_testEnemeyUnit2);
-	//	Unit2->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
-	//	this->addChild(Unit2);
-	//}
+
+///* ***********************
+// * テスト用(後で消す)
+// * ***********************/
+//// 自機の背景に重ねる
+//void GameScene::testPlayerBack() {
+//	CCSprite* backSprite =  CCSprite::create("playerBack.png");
+//	backSprite->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
+//	this->addChild(backSprite, kZOrder_Seabed, kTag_testPlayerUnit);
+//	CCSprite* backSprite2 =  CCSprite::create("playerBack2.png");
+//	backSprite2->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
+//	this->addChild(backSprite2, kZOrder_Label, kTag_testPlayerUnit2);
+//}
+//
+//// 敵潜水艦の背景に重ねる
+//void GameScene::testSubmarineBack() {
+//	CCSprite* backSprite =  CCSprite::create("stage2Back.png");
+//	backSprite->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
+//	this->addChild(backSprite, kZOrder_Seabed, kTag_testEnemeyUnit);
+//	CCSprite* backSprite2 =  CCSprite::create("stage2Back2.png");
+//	backSprite2->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
+//	this->addChild(backSprite2, kZOrder_Label, kTag_testEnemeyUnit2);
+//}
+//
+//// ユニットの中心座標を基準に追従する背景画像
+//void GameScene::movePlayerBack(int tag_no) {
+//	CCSprite* Unit = getCCSprite(kTag_testPlayerUnit);
+//	Unit->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
+//	this->addChild(Unit);
+//	CCSprite* Unit2 = getCCSprite(kTag_testPlayerUnit2);
+//	Unit2->setPosition(getCCSprite(kTag_PlayerUnit)->getPosition());
+//	this->addChild(Unit2);
+//}
+//// 敵潜水艦ユニットの中心座標を基準に追従する背景画像
+//void GameScene::moveEnemyBack(int tag_no) {
+//	CCSprite* Unit = getCCSprite(kTag_testEnemeyUnit);
+//	Unit->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
+//	this->addChild(Unit);
+//	CCSprite* Unit2 = getCCSprite(kTag_testEnemeyUnit2);
+//	Unit2->setPosition(getCCSprite(kTag_EnemySubmarine)->getPosition());
+//	this->addChild(Unit2);
+//}
