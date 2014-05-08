@@ -192,7 +192,7 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.8 / 2 / PTM_RATIO,
 				pNode->getContentSize().height * 0.8 / 2 / PTM_RATIO);														// 角形の範囲を設定
 	} else {																		// shapeが0でない場合
-		CircleShape.m_radius = pNode->getContentSize().width * 0.4 / PTM_RATIO;	// 円形の範囲を設定
+		CircleShape.m_radius = pNode->getContentSize().width * 0.2 / PTM_RATIO;	// 円形の範囲を設定
 	}
 
 	!shape ? physicsFixturedef.shape = &PolygonShape :
@@ -428,7 +428,7 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 	this->addChild(bombAction, kZOrder_Countdown);								// 爆発アニメーションの実装
 
 	if (unit == unitData[kTag_PlayerUnit]) {
-		if(unit->getHp() == 0) {												// hpがなくなった場合
+		if(unit->getHp() <= 0) {												// hpがなくなった場合
 			defeatPlayer();														// 残機を減らす処理へ
 			// hpが0でなければ以下の処理
 		} else {
@@ -448,9 +448,13 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 // 自機撃沈関数
 void GameScene::defeatPlayer () {
 	this->lifepoint--;									// 残機を減らす
-	if (lifepoint == 0) {								// 残機がなくなった場合
+	if (lifepoint <= 0) {								// 残機がなくなった場合
 		finishGame();								// ゲームオーバー
 	}else {
+		this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+		this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+		this->unschedule(schedule_selector(GameScene::forwardUnit));
+		this->unschedule(schedule_selector(GameScene::backUnit));
 		removeObject(unitData[kTag_PlayerUnit], (void*)unitPhysicsData[kTag_PlayerUnit]);						// 撃沈したオブジェクトを削除
 		// 自機を生成
 		createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT);
@@ -512,18 +516,29 @@ void GameScene::update(float dt) {
 		if (objectTag == kTag_Call_Scroll) {
 			// ミサイル消失タグだった場合
 		} else if (objectTag == kTag_Remove_Missile || objectTag == kTag_explosion_Missile) {
-			if(objectTag == kTag_explosion_Missile) {
-				CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
-				explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
-				explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
-				this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
-				this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
-			}
-			// 0.1秒後に消えるアクションをセットする
-			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
-//			CCSequence* action = CCSequence::createWithTwoActions(delay, func);
-			func->setTag(kTag_Remove_Missile);
-			object->runAction(func);
+						if(objectTag == kTag_explosion_Missile) {
+							CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
+							explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
+							explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+							this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+							this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
+						}
+						// 0.1秒後に消えるアクションをセットする
+						CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
+			//			CCSequence* action = CCSequence::createWithTwoActions(delay, func);
+						func->setTag(kTag_Remove_Missile);
+						object->runAction(func);
+
+//			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
+//			func->setTag(kTag_Remove_Missile);
+//			if(objectTag == kTag_explosion_Missile) {
+//				CCPoint runAnimationPoint = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
+//				object->setPosition(runAnimationPoint);
+//				CCSequence* action = CCSequence::createWithTwoActions(func, Animation::hitAnimation(hitAnimation));
+//				object->runAction(action);
+//			} else {
+//				object->runAction(func);
+//			}
 
 		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
 			removeObject(object, (void*)b);								// ミサイルを消す
@@ -538,12 +553,21 @@ void GameScene::update(float dt) {
 			} else if(myUnit->getPositionY() < getWindowSize().height / 4) {
 				// 毎フレームrotateDownAngle関数を呼び出すように設定する
 				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-			} else */if(myUnit->getPositionX() < getWindowSize().width * 0.15 || myUnit->getPositionY() > getWindowSize().height * 0.7 || myUnit->getPositionY() < getWindowSize().height * 0.3) {
+			} else */if(myUnit->getPositionX() < getWindowSize().width * 0.15){
+				myUnit->setPositionX(getWindowSize().width * 0.15);
+			} else if(myUnit->getPositionY() > getWindowSize().height * 0.7){
+				myUnit->setPositionY(getWindowSize().height * 0.7);
+			} else if(myUnit->getPositionY() < getWindowSize().height * 0.3) {
 				// 毎フレームforwardUnit関数を呼び出すように設定
-				this->unschedule(schedule_selector(GameScene::forwardUnit));
-			} else if(myUnit->getPositionX() > getWindowSize().width * 0.85 || myUnit->getPositionY() > getWindowSize().height * 3 / 4 || myUnit->getPositionY() < getWindowSize().height / 4) {
+				//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+				myUnit->setPositionY(getWindowSize().height * 0.3);
+			} else if(myUnit->getPositionX() > getWindowSize().width * 0.85){
+				myUnit->setPositionX(getWindowSize().width * 0.85);
+			} else if(myUnit->getPositionY() > getWindowSize().height * 2 / 3){
+				myUnit->setPositionY(getWindowSize().height * 2 / 3);
+			} else if(myUnit->getPositionY() < getWindowSize().height / 4) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
-				this->unschedule(schedule_selector(GameScene::backUnit));
+				myUnit->setPositionY(getWindowSize().height * 3 / 4);
 			}
 		} else if (objectTag == kTag_CollisionSubmarine) {						// 敵潜水艦に衝突判定があれば以下
 			displayScore(10);													// スコアを+10して更新
@@ -786,7 +810,7 @@ void GameScene::createMissile(b2Vec2 position) {									// を指定位置に�
 	pBomb->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.4));	// ミサイルを指定位置にセット
 	pBomb->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	bombBatchNode->addChild(pBomb, kZOrder_Missile, kTag_MissileEnemy);
-	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Circle);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pBomb->getPhysicsBody();
 	missileBody->SetLinearVelocity(b2Vec2(0.2, 0));
 }
@@ -827,12 +851,12 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();															// 使われなくなったら自動的に開放
 	pMissile->initWithTexture(missileBatchNode->getTexture());							// を指定位置にセット													// 表示上の画像を180度回転
-	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO + PTM_RATIO * 0.4));	// 画像の座標を指定(PTM_RATIOは重力世界と表示を重ねるため)
+//	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO * 0 /*+ PTM_RATIO * 0.4*/));	// 画像の座標を指定(PTM_RATIOは重力世界と表示を重ねるため)
 	pMissile->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);							// 以上の情報でミサイル画像を生成
-	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Circle);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissile->getPhysicsBody();											// オブジェクトpMissileのデータメンバを取得
-	position.Set(position.x, (position.y * PTM_RATIO + PTM_RATIO * 0.4) / PTM_RATIO);			// 重力世界の座標をセット
+	position.Set(position.x * 0.9, (position.y * 1.07)/*+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, -PI/ 10 * 9);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(-0.2, 1.0));										// x座標y座標に圧力をかける
 }
@@ -1015,15 +1039,27 @@ void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
 			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateUpAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
+				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+				this->unschedule(schedule_selector(GameScene::forwardUnit));
+				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateDownAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
+				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+				this->unschedule(schedule_selector(GameScene::forwardUnit));
+				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームforwardUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
+				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
+				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+				this->unschedule(schedule_selector(GameScene::forwardUnit));
 			}
 			// もしtouch_judgeがtrue(離した判定)であれば以下ブロック
 			if(touch_judge) {
@@ -1125,10 +1161,12 @@ void GameScene::changeMissileButton(int tag_no, int change) {
 
 void GameScene::missileTimer() {
 	reloadTime++;
-	if (reloadTime == 50) {
+	if (reloadTime == 90) {
 		reloadTime = 0;
 		reloadMissile += 3;
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+	} else {
+
 	}
 }
 ///* ***********************
