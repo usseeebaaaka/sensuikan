@@ -48,8 +48,7 @@ class GameScene : public cocos2d::CCLayer {
     CCSpriteBatchNode* lifeBatchNode;										// 残機群
     // 各種オブジェクト等をタグで管理
     enum kTag {
-    	kTag_Polygon,				// 角形物理構造
-    	kTag_Circle,				// 円形物理構造
+    	kTag_Circle = 1,				// 円形物理構造
     	kTag_StaticBody,			// 静的なボディ
     	kTag_DynamicBody,			// 動的なボディ
     	kTag_KinematicBody,			// 運動学的ボディ
@@ -86,6 +85,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_changeBegan = 100,		// タップ開始
         kTag_changeEnded = 101,		// タップ終了
         kTag_Call_Scroll = 200,		// スクロール開始フラグ
+    	kTag_Polygon = 222,				// 角形物理構造
         // テスト用
         kTag_testPlayerUnit,
         kTag_testPlayerUnit2,
@@ -112,11 +112,11 @@ public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::CCScene* scene();										//関数
     void createBackground();												// 背景および海底を生成
-    void createUnit(int hp, int kTag, int vit);				// ユニットを生成
+    void createUnit(int hp, int kTag, int vit, int unit);				// ユニットを生成
     virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
     bool stopJudge();														// ストップボタン
     // 物理構造を持ったユニットノードを作成
-    PhysicsSprite* createPhysicsBody(int bodyTag, int kTag, PhysicsSprite* pNode, int shape);
+    PhysicsSprite* createPhysicsBody(int bodyTag, int kTag, PhysicsSprite* pNode, int shape, int unit);
     void createScore();														// スコアを生成
     void createLifeCounter();														// 残りhpカウンターを生成
     void createControllerPanel();											// 操作部を生成
@@ -179,10 +179,12 @@ public:
 	void displayScore(int score);								// 入力された数値分加算減算し画面に表示
 	/*----- ここまで -----*/
 	/*----- 5/5 add 植田 -----*/
-	void contactUnit(PhysicsSprite* unit);						// 自機と敵機の接触判定
+//	void contactUnit(PhysicsSprite* unit);						// 自機と敵機の接触判定
 	void fuelUnit();											// 燃料機能の実装
 	/*----- ここまで -----*/
-
+	/*----- 5/8 add 植田 -----*/
+//	bool areSpritesColliding(cocos2d::CCSprite *spr1, cocos2d::CCSprite *spr2/*, bool pp*/);
+	/*----- ここまで -----*/
 	/*----- テスト -----*/
 	void testPlayerBack();
 	void testSubmarineBack();

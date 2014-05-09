@@ -117,5 +117,19 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 		// 両タグにミサイル除去タグをセット
 		actorA->setTag(TAG_EXPLOSION_MISSILE);
 		actorB->setTag(TAG_EXPLOSION_MISSILE);
-	}
+
+		/* ***********************
+		 *
+		 * 機体同士の衝突判定
+		 *
+		 * ***********************/
+
+		} /*else if (((tagA == TAG_PLAYER_UNIT && tagB == TAG_SUBMARINE_UNIT)			// 自ミサイルと敵ミサイル
+				|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE))			// 敵ミサイルと自ミサイル
+				/*|| (tagA == TAG_MISSILE && tagB == TAG_MISSILE)*/					// 自ミサイルと自ミサイル
+//				/*|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE_ENEMY)*/){	// 敵ミサイルと敵ミサイル
+			// 両タグにミサイル除去タグをセット
+//			actorA->setTag(TAG_EXPLOSION_MISSILE);
+//			actorB->setTag(TAG_EXPLOSION_MISSILE);
+//	}
 }
