@@ -177,7 +177,7 @@ void GameScene::createUnit(int hp, int kTag, int vit, int unit) {
 				bgSize.height * 3 / 4 ));
 	}
 	this->addChild(pUnit, kZOrder_Unit, kTag);										// タグとオブジェクトを関連づける
-	pUnit = createPhysicsBody(kTag_StaticBody, kTag, pUnit, kTag_Polygon, 0);		// オブジェクトに物理構造を持たせる
+	pUnit = createPhysicsBody(kTag_DynamicBody, kTag, pUnit, kTag_Polygon, 0);		// オブジェクトに物理構造を持たせる
 	unitData[kTag] = pUnit;												// ユニットのデータを配列に格納
 	pUnit->retain();
 	b2Vec2 a = unitPhysicsData[kTag]->GetPosition();
@@ -879,9 +879,9 @@ void GameScene::createMissileLeft(b2Vec2 position) {
 	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);							// 以上の情報でミサイル画像を生成
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Circle, 1);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissile->getPhysicsBody();											// オブジェクトpMissileのデータメンバ
-	position.Set(position.x, (position.y * PTM_RATIO - PTM_RATIO * 0.4) / PTM_RATIO);			// 重力世界と座標をセット
+	position.Set(position.x - 0.3, position.y - 0.3);			// 重力世界と座標をセット
 	missileBody->SetTransform(position, -PI/2);												// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-0.8, 0.2));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-4.0, 0.2));										// x座標y座標に圧力をかける
 }
 
 /*----- ミサイル左上発射 -----*/
@@ -898,7 +898,8 @@ void GameScene::createMissileDiagonal(b2Body* player) {
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Circle, 1);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissile->getPhysicsBody();											// オブジェクトpMissileのデータメンバを取得
 	/*----- 角度変えた際に発射位置がずれる -----*/
-	position.Set(position.x * 0.9, (position.y * 1.07)/*+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+	float a = position.y;
+	position.Set(position.x + 0.1, (position.y + 0.3)/*+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, -PI/ 10 * 9 + angle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(-0.2 - angle, 3.0));										// x座標y座標に圧力をかける
 }
