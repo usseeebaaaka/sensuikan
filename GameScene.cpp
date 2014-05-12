@@ -52,9 +52,9 @@ bool GameScene::init() {
 	// 自機を生成
 	createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT, 0);
 	// 敵駆逐艦を生成
-	createUnit(destroyer_VIT % 100, kTag_EnemyDestroyer, destroyer_VIT, 0);
+//	createUnit(destroyer_VIT % 100, kTag_EnemyDestroyer, destroyer_VIT, 0);
 	// 敵潜水艦を生成
-	createUnit(submarine_VIT % 100, kTag_EnemySubmarine, submarine_VIT, 0);
+//	createUnit(submarine_VIT % 100, kTag_EnemySubmarine, submarine_VIT, 0);
 	createLifeCounter();
 	createKey();
 	createLife();
@@ -177,7 +177,7 @@ void GameScene::createUnit(int hp, int kTag, int vit, int unit) {
 				bgSize.height * 3 / 4 ));
 	}
 	this->addChild(pUnit, kZOrder_Unit, kTag);										// タグとオブジェクトを関連づける
-	pUnit = createPhysicsBody(kTag_DynamicBody, kTag, pUnit, kTag_Polygon, 0);		// オブジェクトに物理構造を持たせる
+	pUnit = createPhysicsBody(kTag_StaticBody, kTag, pUnit, kTag_Polygon, 0);		// オブジェクトに物理構造を持たせる
 	unitData[kTag] = pUnit;												// ユニットのデータを配列に格納
 	pUnit->retain();
 	b2Vec2 a = unitPhysicsData[kTag]->GetPosition();
@@ -616,7 +616,7 @@ void GameScene::update(float dt) {
 		submarineAI4();
 	}
 	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
-		finishGame();
+//		finishGame();
 	}
 	if (!timeCounter) {
 		timeCounter += 1260;
