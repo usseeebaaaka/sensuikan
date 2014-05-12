@@ -177,7 +177,7 @@ void GameScene::createUnit(int hp, int kTag, int vit) {
 				bgSize.height * 3 / 4 ));
 	}
 	this->addChild(pUnit, kZOrder_Unit, kTag);										// タグとオブジェクトを関連づける
-	pUnit = createPhysicsBody(kTag_StaticBody, kTag, pUnit, kTag_Polygon);		// オブジェクトに物理構造を持たせる
+	pUnit = createPhysicsBody(kTag_DynamicBody, kTag, pUnit, kTag_Polygon);		// オブジェクトに物理構造を持たせる
 	unitData[kTag] = pUnit;												// ユニットのデータを配列に格納
 	pUnit->retain();
 	b2Vec2 a = unitPhysicsData[kTag]->GetPosition();
@@ -198,6 +198,7 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 	physicsBodyDef.position.Set(pNode->getPositionX() / PTM_RATIO,					// 物理オブジェクトの位置をセット
 			pNode->getPositionY() / PTM_RATIO);
 	physicsBodyDef.userData = pNode;												// ノードをデータに登録
+	physicsBodyDef.gravityScale = 0;
 	unitPhysicsData[kTag] = world->CreateBody(&physicsBodyDef);						// 物理世界に登録
 	b2FixtureDef physicsFixturedef;													// 物理形状を決める変数
 
@@ -520,7 +521,7 @@ void GameScene::update(float dt) {
 	// worldを更新する
 	world->Step(dt, velocityIterations, positionIterations);
 	timeCounter > 0 ? timeCounter-- : timeCounter++;
-	contactUnit(unitData[kTag_PlayerUnit]);
+//	contactUnit(unitData[kTag_PlayerUnit]);
 	// world内の全オブジェクトをループする
 	for (b2Body* b = world->GetBodyList(); b; b = b->GetNext()) {
 		if (!b->GetUserData()) {
@@ -615,7 +616,7 @@ void GameScene::update(float dt) {
 		submarineAI4();
 	}
 	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
-		finishGame();
+//		finishGame();
 	}
 	if (!timeCounter) {
 		timeCounter += 1260;
