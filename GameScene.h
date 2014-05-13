@@ -29,6 +29,7 @@ class GameScene : public cocos2d::CCLayer {
 	int defeatAnimation;	// 撃沈アニメーションのタグ
 	int hitAnimation;		// 被弾アニメーションのタグ
     float dealofScrollSpead;												// スクロールスピードの倍率
+    float playerAngle;
     CCArray* scoreText;														// スコアの各位のテキスト
     map<int, CCPoint> m_touchAt;											// タッチ座標
     map<int, bool> m_touchFlag;												// タッチフラグ
@@ -85,7 +86,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_changeBegan = 100,		// タップ開始
         kTag_changeEnded = 101,		// タップ終了
         kTag_Call_Scroll = 200,		// スクロール開始フラグ
-    	kTag_Polygon = 222,				// 角形物理構造
+    	kTag_Polygon = 2000,				// 角形物理構造
         // テスト用
         kTag_testPlayerUnit,
         kTag_testPlayerUnit2,
@@ -149,10 +150,10 @@ public:
     void submarineAI2();
     void submarineAI3();
     void submarineAI4();
-    void createMissile(b2Vec2 position);
-    void createMissileDiagonal(b2Body* position);
+    void createMissile(b2Vec2 position, float unitAngle);
+    void createMissileDiagonal(b2Vec2 position);
     void createMissileLeft(b2Vec2 position);
-    void createMissileSubmarine(b2Vec2 position);
+    void createMissileSubmarine(b2Vec2 position, float unitAngle);
     void missileTimer();
     CREATE_FUNC(GameScene);													//マクロ
 
@@ -170,6 +171,7 @@ public:
 	void changeMissileButton(int tag_no, int change);		// ミサイル発射ボタンのスプライトをいれかえる
 	CCSprite* getCCSprite(int tag_no);							// tag_noのオブジェクトのスプライトゲット
 	CCPoint getCCPoint(int tag_no);							// tag_noのオブジェクトの座標をゲット
+	b2Vec2 trigonometric(float length, float radian);		// 自機回転時の座標位置を求める
 	float getAngle(int tag_no);								// tag_noのオブジェクトの角度をゲット
 	/*----- 4/30 add 植田 -----*/
 	void explosionSound();									// 爆発音の実装
