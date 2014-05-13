@@ -136,4 +136,6 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 		// 両タグにミサイル除去タグをセット
 		actorA->setTag(TAG_DEFEAT_PLAYER);
 	}
+
+
 }
