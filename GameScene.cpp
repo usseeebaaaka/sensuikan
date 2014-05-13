@@ -76,7 +76,6 @@ bool GameScene::init() {
 	this->addChild(enemyMissileBatchNode);
 	// カウントダウン開始
 	this->scheduleOnce(schedule_selector(GameScene::showCountdown), 1);
-
 	return true;
 }
 
@@ -355,15 +354,19 @@ void GameScene::createLifeCounter() {
 	 * hpの色を変える
 	 */
 	// playerの残りhpによって表示するhpゲージの色を変える
-	// 100～50であれば緑色、49～20であれば黄色、19～1であれば赤色
+	// 60以上90以下であれば以下ブロック
+	// hpを緑色で表示
 	if(60 <= unitData[kTag_PlayerUnit]->getHp() && unitData[kTag_PlayerUnit]->getHp() <= 90){
 		hpGreenBatchNode = CCSpriteBatchNode::create("hpGreen.png");					// hpGreen.pngをバッチノードに登録
 		this->addChild(hpGreenBatchNode, kZOrder_Label, kTag_LifeCounter);
 		createHp(hpGreenBatchNode);
-	}else if(30 <= unitData[kTag_PlayerUnit]->getHp() && unitData[kTag_PlayerUnit]->getHp() < 59){
+	// 30以上60未満であれば以下の処理
+	// hpを黄色にして表示
+	}else if(30 <= unitData[kTag_PlayerUnit]->getHp() && unitData[kTag_PlayerUnit]->getHp() < 60){
 		hpYellowBatchNode = CCSpriteBatchNode::create("hpYellow.png");					// hpYellow.pngをバッチノードに登録
 		this->addChild(hpYellowBatchNode, kZOrder_Label, kTag_LifeCounter);
 		createHp(hpYellowBatchNode);
+	// それ以外(hp30未満)であればhpを赤色で表示
 	}else{
 		hpRedBatchNode = CCSpriteBatchNode::create("hpRed.png");						// hpRed.pngをバッチ
 		this->addChild(hpRedBatchNode, kZOrder_Label, kTag_LifeCounter);
@@ -385,27 +388,20 @@ void GameScene::createHp(CCSpriteBatchNode* hpBatchNode) {
 	}
 }
 
-//// 残りHPを生成
-//void GameScene::createLifeCounter() {
-//	// もし先に表示されているhp画像があれば削除をする
-//	if(((CCSprite*)getChildByTag(kTag_LifeCounter))) {
-//		((CCSprite*)getChildByTag(kTag_LifeCounter))->removeFromParentAndCleanup(true);
-//	}
-//	// hp.pngをバッチノードに追加
-//	hpBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hp.png");
-//	// タグとノードを関連づけ
-//	this->addChild(hpBatchNode, kZOrder_Label, kTag_LifeCounter);
-//	// playerUnitのhp分ループして繰り返す
-//	for (int i = 0; i < unitData[kTag_PlayerUnit]->getHp(); i++) {
-//		// バッチノードから画像を取得してオブジェクト化
-//		CCSprite* pLifeCounter = CCSprite::createWithTexture(hpBatchNode->getTexture());
-//		// 任意の位置に画像をセット
-//		pLifeCounter->setPosition(ccp(getWindowSize().width / 10 * (9.5 - i * 0.8),		// スコアノードの位置を設定
-//				getWindowSize().height / 15 * 13));
-//		hpBatchNode ->addChild(pLifeCounter);		// オブジェクト情報をバッチノードにセット
-//	}
-//}
-
+// 14. 5.13 H.U
+// 15秒毎にライフが1減る
+void GameScene::countMinusHp() {
+	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - 1);	// 自分の現在hpから1減らす
+	createLifeCounter();
+	// 自分のhpが1以上であれば以下のhpを1減らす処理に入る
+	if(!(unitData[kTag_PlayerUnit]->getHp())){
+		CCSprite* bombAction = CCSprite::create();									// スプライト生成
+		bombAction->setPosition(unitData[kTag_PlayerUnit]->getPosition());			// playerのオブジェクト(潜水艦)と同じ座標にセット
+		bombAction->runAction(Animation::hitAnimation(defeatAnimation));			// 被弾時のアニメーションhitAnimationを呼び出す
+		this->addChild(bombAction, kZOrder_Countdown);
+		defeatPlayer();
+	}
+}
 
 //コントローラ下地を作成
 void GameScene::createControllerPanel() {
@@ -567,6 +563,7 @@ void GameScene::showCountdown() {
 	pGo->runAction(Animation::gameStartAnimation(this, callfunc_selector(GameScene::startGame)));
 	this->addChild(pGo, kZOrder_Countdown);												//オブジェクトpGoの実装
 }
+
 // ゲームスタートの処理を行う
 void GameScene::startGame() {
 	SimpleAudioEngine::sharedEngine()->playBackgroundMusic("sonar.mp3", true);
@@ -574,6 +571,7 @@ void GameScene::startGame() {
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 	// 毎フレームupdate( )関数を呼び出すように設定する
 	scheduleUpdate();
+	this->schedule(schedule_selector(GameScene::countMinusHp), 15.0);		// 15秒に一回hpを1減らす
 }
 
 void GameScene::hitUnit(PhysicsSprite* unit){
@@ -596,6 +594,7 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 	bombAction->runAction(Animation::hitAnimation(anima));						// 被弾時のアニメーションhitAnimationを呼び出す
 	this->addChild(bombAction, kZOrder_Countdown);								// 爆発アニメーションの実装
 
+	// 自機あれば以下ブロック
 	if (unit == unitData[kTag_PlayerUnit]) {
 		if(unit->getHp() == 0) {												// hpがなくなった場合
 			defeatPlayer();														// 残機を減らす処理へ
@@ -608,10 +607,18 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		}
 		// hp0になったユニットが敵潜水艦だったら以下
 	}else if (unit == unitData[kTag_EnemySubmarine] && unit->getHp() == 0) {
+		// 自機のhpを30回復させる
+		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
+																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
 		// hp0になったユニットが敵駆逐艦だったら以下
 	}else if (unit == unitData[kTag_EnemyDestroyer] && unit->getHp() == 0) {
+		// 自機のhpを30回復させる
+		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
+																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
 	}

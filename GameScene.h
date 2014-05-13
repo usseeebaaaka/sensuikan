@@ -201,6 +201,7 @@ public:
 	void createRemainingMissile();							// 発射弾と残弾数の表示
 	void hpBar();												// hpバーの表示
 	void createHp(CCSpriteBatchNode* hpBatchNode);				// hpの生成
+	void countMinusHp();										// 15秒ごとにhpマイナス
 	#define PI 3.141592											// 円周率をマクロ定義
 };
 
