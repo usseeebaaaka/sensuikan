@@ -94,7 +94,11 @@ class GameScene : public cocos2d::CCLayer {
         kTag_Call_Scroll = 200,		// スクロール開始フラグ
         kTag_StockMissile,			// ストックのミサイル数
         kTag_FinishMissile,			// 撃ち終わったミサイル数
-        kTag_hpBar,
+        kTag_hpBar,					// hpバーのタグ
+        kTag_point,					// pointと表示するタグ
+        kTag_Bullet,				// bulletと表示させるタグ
+        kTag_LivesRemaining,		// lives remainingと表示させるタグ
+        kTag_Fuel,
 
     };
     // 画像の表示順序のタグ
@@ -190,11 +194,13 @@ public:
 	bool areSpritesColliding(cocos2d::CCSprite *spr1, cocos2d::CCSprite *spr2/*, bool pp*/);
 	/*----- ここまで -----*/
 	// 5/10.11追加
-	void point();												// POINTの表示
-	void createBulletLabel();									// 残弾数と表示
+	void lifeDisplay();										// lives remainingと表示
+	void fuelDisplay();										// fuelと表示
+	void pointDisplay();										// POINTと表示
+	void bulletLabelDisplay();								// 残弾数と表示
 	void createRemainingMissile();							// 発射弾と残弾数の表示
 	void hpBar();												// hpバーの表示
-	void createHp(CCSpriteBatchNode* hpBatchNode);											// hpの生成
+	void createHp(CCSpriteBatchNode* hpBatchNode);				// hpの生成
 	#define PI 3.141592											// 円周率をマクロ定義
 };
 
