@@ -69,6 +69,7 @@ class GameScene : public cocos2d::CCLayer {
         kTag_CollisionDestroyer,
         kTag_Remove_Missile,		// ミサイル消失
         kTag_explosion_Missile,		// ミサイル爆発
+        kTag_DefeatPlayer,
         kTag_Key_Up,				// 上キー
         kTag_Key_Down,				// 下キー
         kTag_Key_Left,				// 左キー
@@ -194,6 +195,7 @@ public:
 	void moveEnemyBack(int tag_no);
 	void moveUnit();
 	void moveEnemyUnit();
+	void unscheduleMove();
 	/*----- ここまで -----*/
 	#define PI 3.141592											// 円周率をマクロ定義
 };
