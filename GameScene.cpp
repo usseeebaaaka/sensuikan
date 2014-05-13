@@ -849,7 +849,7 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
 	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
-	missileBody->SetTransform(position, PI/2);													// 重力世界上の座標と角度を持たせ回転
+	missileBody->SetTransform(position, unitAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle / 2 - PI / 4));										// x座標y座標に圧力をかける
 
 }
@@ -868,7 +868,7 @@ void GameScene::createMissileSubmarine(b2Vec2 position, float unitAngle) {
 	float submarineUnitLength = unitData[kTag_EnemySubmarine]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(submarineUnitLength, unitAngle);
 	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
-	missileBody->SetTransform(position, PI/2);													// 重力世界上の座標と角度を持たせ回転
+	missileBody->SetTransform(position, PI / 2 + unitAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 4, unitAngle * 0.75));										// x座標y座標に圧力をかける
 }
 
@@ -878,7 +878,7 @@ void GameScene::createMissileLeft(b2Vec2 position) {
 	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();															// 使われなくなったら自動的に開放
 	pMissile->initWithTexture(missileBatchNode->getTexture());							// を指定位置にセット													// 表示上の画像を180度回転
-	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.4));	// 画像の座標を指定
+//	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.4));	// 画像の座標を指定
 	pMissile->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);							// 以上の情報でミサイル画像を生成
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Circle, 1);		// オブジェクトに物理構造を持たせる
@@ -886,7 +886,7 @@ void GameScene::createMissileLeft(b2Vec2 position) {
 	float playerUnitLength = unitData[kTag_PlayerUnit]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(playerUnitLength, playerAngle);
 	position.Set(position.x - rotatedPosition.x, position.y - rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
-	missileBody->SetTransform(position, -PI/2);												// 重力世界上の座標と角度を持たせ回転
+	missileBody->SetTransform(position, -PI / 2 + playerAngle);												// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(-1.5 * PI - playerAngle * 3, -playerAngle * 3));										// x座標y座標に圧力をかける
 }
 
@@ -896,7 +896,6 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();															// 使われなくなったら自動的に開放
 	pMissile->initWithTexture(missileBatchNode->getTexture());							// を指定位置にセット
-	// pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO + PTM_RATIO * 0.4));	// 画像の座標を指定(PTM_RATIOは重力世界と表示を重ねるため)
 	pMissile->setOpacity(200);																		// 透過設定(0…完全に透過、255…元画像のまま表示)
 	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);							// 以上の情報でミサイル画像を生成
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Circle, 1);		// オブジェクトに物理構造を持たせる
@@ -905,7 +904,7 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	float playerUnitLength = unitData[kTag_PlayerUnit]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(playerUnitLength, playerAngle);
 	position.Set(position.x - rotatedPosition.x, position.y - rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
-	missileBody->SetTransform(position, /*-PI/ 10 * 9 + angle*/-PI/2);													// 重力世界上の座標と角度を持たせ回転
+	missileBody->SetTransform(position, PI + playerAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(-playerAngle * 2, PI -playerAngle * 2));										// x座標y座標に圧力をかける
 }
 /*
