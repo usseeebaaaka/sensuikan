@@ -29,6 +29,8 @@ class GameScene : public cocos2d::CCLayer {
 	int defeatAnimation;	// 撃沈アニメーションのタグ
 	int hitAnimation;		// 被弾アニメーションのタグ
     float dealofScrollSpead;												// スクロールスピードの倍率
+    float unitSizeWidth;													// 地面に対し平行状態の自機の横幅
+    float unitSizeHeight;													// 地面に対し平衡状態の自機の高さ
     CCArray* scoreText;														// スコアの各位のテキスト
     map<int, CCPoint> m_touchAt;											// タッチ座標
     map<int, bool> m_touchFlag;												// タッチフラグ
@@ -46,6 +48,10 @@ class GameScene : public cocos2d::CCLayer {
     CCSpriteBatchNode* enemyMissileBatchNode;									// ミサイル群
     CCSpriteBatchNode* hpBatchNode;											// hp群
     CCSpriteBatchNode* lifeBatchNode;										// 残機群
+    CCSpriteBatchNode* hpGreenBatchNode;												// hpバー100～50
+    CCSpriteBatchNode* hpYellowBatchNode;											// hpバー 49～20
+    CCSpriteBatchNode* hpRedBatchNode;												// hpバー 19～ 1
+
     // 各種オブジェクト等をタグで管理
     enum kTag {
     	kTag_Polygon,				// 角形物理構造
@@ -86,12 +92,10 @@ class GameScene : public cocos2d::CCLayer {
         kTag_changeBegan = 100,		// タップ開始
         kTag_changeEnded = 101,		// タップ終了
         kTag_Call_Scroll = 200,		// スクロール開始フラグ
-        // テスト用
-        kTag_testPlayerUnit,
-        kTag_testPlayerUnit2,
-        kTag_testEnemeyUnit,
-        kTag_testEnemeyUnit2,
-        // ここまで
+        kTag_StockMissile,			// ストックのミサイル数
+        kTag_FinishMissile,			// 撃ち終わったミサイル数
+        kTag_hpBar,
+
     };
     // 画像の表示順序のタグ
     enum kZOrder {
@@ -185,14 +189,12 @@ public:
 	/*----- 5/8 add 植田 -----*/
 	bool areSpritesColliding(cocos2d::CCSprite *spr1, cocos2d::CCSprite *spr2/*, bool pp*/);
 	/*----- ここまで -----*/
-	/*----- テスト -----*/
-	void testPlayerBack();
-	void testSubmarineBack();
-	void movePlayerBack(int tag_no);
-	void moveEnemyBack(int tag_no);
-	void moveUnit();
-	void moveEnemyUnit();
-	/*----- ここまで -----*/
+	// 5/10.11追加
+	void point();												// POINTの表示
+	void createBulletLabel();									// 残弾数と表示
+	void createRemainingMissile();							// 発射弾と残弾数の表示
+	void hpBar();												// hpバーの表示
+	void createHp(CCSpriteBatchNode* hpBatchNode);											// hpの生成
 	#define PI 3.141592											// 円周率をマクロ定義
 };
 
