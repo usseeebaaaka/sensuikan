@@ -196,6 +196,7 @@ public:
 	void moveUnit();
 	void moveEnemyUnit();
 	void unscheduleMove();
+	void createWterMine();
 	/*----- ここまで -----*/
 	#define PI 3.141592											// 円周率をマクロ定義
 };
