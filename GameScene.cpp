@@ -14,10 +14,10 @@ GameScene::GameScene()
 :arrow_key(4),
  reloadMissile(3),
  enemyUnit_num(2),
- player_VIT(3),
+ player_VIT(90),
  submarine_VIT(1515),
  destroyer_VIT(1515),
- score_and_Maxplace(100.3),
+ score_and_Maxplace(0.3),
  dealofScrollSpead(0.2),
  buttons_sum(11),
  playerUnit(NULL),
@@ -47,10 +47,13 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	//	sleep(15);
+	//		sleep(15);
 	initPhysics();
 	createControllerPanel();
 	createBackground();
+	pointDisplay();
+	bulletLabelDisplay();
+	lifeDisplay();
 	createScore();
 	// 自機を生成
 	createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT, 0);
@@ -58,10 +61,14 @@ bool GameScene::init() {
 	createUnit(destroyer_VIT % 100, kTag_EnemyDestroyer, destroyer_VIT, 0);
 	// 敵潜水艦を生成
 	createUnit(submarine_VIT % 100, kTag_EnemySubmarine, submarine_VIT, 0);
-	createLifeCounter();
 	createKey();
 	createLife();
 	createRetryButton();
+	fuelDisplay();
+	hpBar();																		// hpバーの表示
+	createLifeCounter();
+	this->schedule(schedule_selector(GameScene::createRemainingMissile), 20.0 / 60.0 );		// 残弾数を表示、1/3秒の毎に更新
+
 	// ミサイルの準備
 	missileBatchNode = CCSpriteBatchNode::create("Missile.png");			// ミサイルの画像をセット
 	this->addChild(missileBatchNode);									// ミサイル群をシーンに追加
@@ -78,7 +85,168 @@ bool GameScene::init() {
 	//	// ここまで
 	return true;
 }
+// 14. 5.12 h.u
+// hpバーの表示
+void GameScene::hpBar() {
+	CCSprite* pHpBar = CCSprite::create("hpBar.png");				// switch.pngファイルを取得
+	pHpBar->setAnchorPoint(ccp(1.0, 0.5));							// 図形右下を中心座標にする
+	pHpBar->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width,					// 位置を設定
+			getCCPoint(kTag_Retry).y - getCCSprite(kTag_Retry)->getContentSize().height));
+	this->addChild(pHpBar, kZOrder_Controller_Base, kTag_HpBar);
+}
 
+// 14. 5.12 H.U
+// hpを一つずつ生成
+void GameScene::createLifeCounter() {
+
+	// もし先に表示されているhp画像があれば削除をする
+	if((CCSprite*)getChildByTag(kTag_LifeCounter)) {
+		((CCSprite*)getChildByTag(kTag_LifeCounter))->removeFromParentAndCleanup(true);
+	}
+	/* 残りhpのパーセンテージによって
+	 * hpの色を変える
+	 */
+	// playerの残りhpによって表示するhpゲージの色を変える
+	// 60以上90以下であれば以下ブロック
+	// hpを緑色で表示
+	if(60 <= unitData[kTag_PlayerUnit]->getHp() && unitData[kTag_PlayerUnit]->getHp() <= 90){
+		hpGreenBatchNode = CCSpriteBatchNode::create("hpGreen.png");					// hpGreen.pngをバッチノードに登録
+		this->addChild(hpGreenBatchNode, kZOrder_Label, kTag_LifeCounter);
+		createHp(hpGreenBatchNode);
+		// 30以上60未満であれば以下の処理
+		// hpを黄色にして表示
+	}else if(30 <= unitData[kTag_PlayerUnit]->getHp() && unitData[kTag_PlayerUnit]->getHp() < 60){
+		hpYellowBatchNode = CCSpriteBatchNode::create("hpYellow.png");					// hpYellow.pngをバッチノードに登録
+		this->addChild(hpYellowBatchNode, kZOrder_Label, kTag_LifeCounter);
+		createHp(hpYellowBatchNode);
+		// それ以外(hp30未満)であればhpを赤色で表示
+	}else{
+		hpRedBatchNode = CCSpriteBatchNode::create("hpRed.png");						// hpRed.pngをバッチ
+		this->addChild(hpRedBatchNode, kZOrder_Label, kTag_LifeCounter);
+		createHp(hpRedBatchNode);
+	}
+}
+
+// 14. 5.12 h.u
+// hpの生成、表示
+void GameScene::createHp(CCSpriteBatchNode* hpBatchNode) {
+	// playerUnitのhp分ループして繰り返す
+	for (int i = 0; i < unitData[kTag_PlayerUnit]->getHp(); i++) {
+		// バッチノードから画像を取得してオブジェクト化
+		CCSprite* pLifeCounter = CCSprite::createWithTexture(hpBatchNode->getTexture());
+		// 任意の位置に画像をセット
+		pLifeCounter->setPosition(ccp(getCCPoint(kTag_HpBar).x - hpBatchNode->getTexture()->getContentSize().width / 2 - hpBatchNode->getTexture()->getContentSize().width * i,		// スコアノードの位置を設定
+				getCCPoint(kTag_HpBar).y));
+		hpBatchNode ->addChild(pLifeCounter);		// オブジェクト情報をバッチノードにセット
+	}
+}
+void GameScene::createRetryButton() {
+	CCSprite* pRetry = CCSprite::create("retry.png");		// retry.pngのスプライトを生成
+	//座標をセット 右上ジャストにはまるよう設定//座標をセット x座標はスコア2桁目と同じ座標
+	pRetry->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width - (pRetry->getContentSize().width / 2),
+			getCCSprite(kTag_Background)->getContentSize().height - (pRetry->getContentSize().height / 2)));
+	this->addChild(pRetry, kZOrder_Label, kTag_Retry);							//配置順kZOrder_Labelで実装
+
+}
+// 14. 5.13 H.U
+// 15秒毎にライフが1減る
+void GameScene::countMinusHp() {
+	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - 1);	// 自分の現在hpから1減らす
+	createLifeCounter();
+	// 自分のhpが1以上であれば以下のhpを1減らす処理に入る
+	if(!(unitData[kTag_PlayerUnit]->getHp())){
+		CCSprite* bombAction = CCSprite::create();									// スプライト生成
+		bombAction->setPosition(unitData[kTag_PlayerUnit]->getPosition());			// playerのオブジェクト(潜水艦)と同じ座標にセット
+		bombAction->runAction(Animation::hitAnimation(defeatAnimation));			// 被弾時のアニメーションhitAnimationを呼び出す
+		this->addChild(bombAction, kZOrder_Countdown);
+		defeatPlayer();
+	}
+}
+
+void GameScene::fuelDisplay() {
+	CCSprite* pFuel = CCSprite::create("fuel.png");
+	/* 座標の設定
+	 * x軸は左隣のbullet画像の中心座標にbullet画像の幅の1/2を加算し右端の座標を求め、
+	 * そこからlivesRemaining.png画像の幅の2/3を加算する(空白の間隔を揃える為)
+	 */
+	pFuel->setPosition(ccp(getCCPoint(kTag_LivesRemaining).x + getCCSprite(kTag_LivesRemaining)->getContentSize().width / 2
+			+ pFuel->getContentSize().width / 2 + getCCSprite(kTag_Background)->getContentSize().width / 40,
+			getCCPoint(kTag_Retry).y - getCCSprite(kTag_Retry)->getContentSize().height / 3));						//座標をセット y座標はpoint.pngと同じ座標
+	this->addChild(pFuel, kZOrder_Label, kTag_Fuel);
+}
+// 14. 5.13 H.U
+// lives remaining.pngを表示する関数
+void GameScene::lifeDisplay() {
+	CCSprite* pLivesRemaining = CCSprite::create("livesRemaining.png");
+	/* 座標の設定
+	 * x軸は左隣のbullet画像の中心座標にbullet画像の幅の1/2を加算し右端の座標を求め、
+	 * そこからlivesRemaining.png画像の幅の2/3を加算する(空白の間隔を揃える為)
+	 */
+	pLivesRemaining->setPosition(ccp(getCCPoint(kTag_Bullet).x + getCCSprite(kTag_Bullet)->getContentSize().width / 2
+			+ pLivesRemaining->getContentSize().width / 2 + getCCSprite(kTag_Background)->getContentSize().width / 40,
+			getCCPoint(kTag_point).y));						//座標をセット y座標はpoint.pngと同じ座標
+	this->addChild(pLivesRemaining, kZOrder_Label, kTag_LivesRemaining);
+}
+// 文字「POINT」を表示
+void GameScene::pointDisplay() {
+	//コントローラ部を作成
+	CCSprite* pPoint = CCSprite::create("POINT.png");					//control.pngをCCSprite型にし、pControlで初期化
+	pPoint->setPosition(ccp(pPoint->getContentSize().width / 2,
+			getCCSprite(kTag_Background)->getContentSize().height - (pPoint->getContentSize().height / 2)));
+	this->addChild(pPoint, kZOrder_Label, kTag_point);
+}
+// 14.5.12 h.u
+// bulletと表示
+void GameScene::bulletLabelDisplay() {
+	CCSprite* pRemainingBullet = CCSprite::create("bullet.png");							//switch.pngファイルを取得
+	pRemainingBullet->setPosition(ccp(getCCPoint(kTag_point).x + getCCSprite(kTag_point)->getContentSize().width / 2
+			+ pRemainingBullet->getContentSize().width / 2 + getCCSprite(kTag_Background)->getContentSize().width / 40,
+			/* getCCPoint(kTag_Bullet).x + getCCSprite(kTag_Bullet)->getContentSize().width / 2
+									+ pLivesRemaining->getContentSize().width / 2 + getCCSprite(kTag_Background)->getContentSize().width / 30 */
+			getCCPoint(kTag_point).y));						//座標をセット y座標はpoint.pngと同じ座標
+	this->addChild(pRemainingBullet, kZOrder_Label, kTag_Bullet);
+}
+// 14.5.12 h.u
+// 残弾数を表示(撃ち終わったミサイルも併せて表示)
+void GameScene::createRemainingMissile() {
+	int max = 3;	// 最大装填数
+
+	/* もしすでにストックミサイルもしくは撃ち終わったミサイルの表示がされていれば
+	 * その表示を全て削除
+	 */
+	if(((CCSprite*)getChildByTag(kTag_StockMissile))) {
+		((CCSprite*)getChildByTag(kTag_StockMissile))->removeFromParentAndCleanup(true);
+	}
+	if(((CCSprite*)getChildByTag(kTag_FinishMissile))) {
+		((CCSprite*)getChildByTag(kTag_FinishMissile))->removeFromParentAndCleanup(true);
+	}
+
+	float bullet = getCCSprite(kTag_Bullet)->getContentSize().width / (max * 2);	// 文字bulletの幅の1/6取得
+	float bulletWidth = -(bullet * 2);									// ミサイル画像をずらす基準となる数値
+
+	// ミサイル装填max数からゼロになるまで繰り返す
+	for(int i=max; 0<i; i--) {
+
+		// すでに撃ったミサイルがあれば以下ブロック
+		if(reloadMissile < i) {
+			CCSprite* finishMissile = CCSprite::create("finishMissile.png");	// 撃ち終わった後のミサイルスプライト生成
+			/* 座標の設定
+			 * x軸は文字「bullet」の中心座標をミサイル装填数の2倍の数で分割し、
+			 * 一回繰り返すごとにミサイル画像の幅だけ右にずれる
+			 */
+			finishMissile->setPosition(ccp(getCCPoint(kTag_Bullet).x + bulletWidth,
+					getCCPoint(kTag_Bullet).y - finishMissile->getContentSize().height));						// 撃ち終わった後の弾画像の座標指定
+			this->addChild(finishMissile, kZOrder_Label, kTag_FinishMissile);						// 撃ち終わった後の弾画像の表示
+		}else {
+			CCSprite* stockMissile = CCSprite::create("stockMissile.png");		// ストックミサイルのスプライト生成
+			stockMissile->setPosition(ccp(getCCPoint(kTag_Bullet).x + bulletWidth,
+					getCCPoint(kTag_Bullet).y - stockMissile->getContentSize().height));						// ストックミサイルの画像の座標指定
+			this->addChild(stockMissile, kZOrder_Label, kTag_StockMissile);						// ストックミサイルの画像の表示
+			// getCCSprite(kTag_point)->getContentSize().width * i / 4,
+		}
+		bulletWidth += bullet * 2;
+	}
+}
 void GameScene::initPhysics() {
 	b2Vec2 gravity;															// 重力の設定値を格納するための変数
 	gravity.Set(0, -0.4);													// 重力を設定
@@ -226,6 +394,28 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 }
 
 // 残機を表示
+//void GameScene::createLife() {
+//	/* もしすでに残機表示がされていれば
+//	 * その表示を全て削除
+//	 */
+//	if(((CCSprite*)getChildByTag(kTag_Life))) {
+//		((CCSprite*)getChildByTag(kTag_Life))->removeFromParentAndCleanup(true);
+//	}
+//	// 画像ファイルをバッチノード化
+//	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hp.png");
+//	this->addChild(lifeBatchNode, kZOrder_Label, kTag_Life);				// タグとノードを関連づけ
+//	// ライフの数だけ繰り返し
+//	for (int i = 0; i < lifepoint; i++) {
+//		// バッチノードから画像を取得してオブジェクト化
+//		CCSprite* pLife = CCSprite::createWithTexture(lifeBatchNode->getTexture());
+//		// 任意の位置に画像をセット
+//		pLife->setPosition(ccp(getWindowSize().width / 10 * (9.5 - i * 0.8),		// スコアノードの位置を設定
+//				getWindowSize().height / 15 * 14));
+//		lifeBatchNode ->addChild(pLife);		// オブジェクト情報をバッチノードにセット
+//	}
+//}
+
+// 残機を表示
 void GameScene::createLife() {
 	/* もしすでに残機表示がされていれば
 	 * その表示を全て削除
@@ -234,40 +424,24 @@ void GameScene::createLife() {
 		((CCSprite*)getChildByTag(kTag_Life))->removeFromParentAndCleanup(true);
 	}
 	// 画像ファイルをバッチノード化
-	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hp.png");
+	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("player.png");
 	this->addChild(lifeBatchNode, kZOrder_Label, kTag_Life);				// タグとノードを関連づけ
 	// ライフの数だけ繰り返し
-	for (int i = 0; i < lifepoint; i++) {
+	for (int i = 1; i <= lifepoint; i++) {
 		// バッチノードから画像を取得してオブジェクト化
 		CCSprite* pLife = CCSprite::createWithTexture(lifeBatchNode->getTexture());
-		// 任意の位置に画像をセット
-		pLife->setPosition(ccp(getWindowSize().width / 10 * (9.5 - i * 0.8),		// スコアノードの位置を設定
-				getWindowSize().height / 15 * 14));
-		lifeBatchNode ->addChild(pLife);		// オブジェクト情報をバッチノードにセット
+		pLife->setScale(0.6);
+		/* 座標のセット
+		 * x座標はlives remaining.pngの中心座標と同じ
+		 * y座標はミサイル残弾数のy座標(値の大きいほう)を基準にし、
+		 * 繰り返されるごとに残機の高さ分、下に移動していく
+		 * kTag_StockMissile ? kTag_StockMissile : kTag_FinishMissile
+		 */
+		pLife->setPosition(ccp(getCCPoint(kTag_LivesRemaining).x,
+				getCCPoint(kTag_LivesRemaining).y - pLife->getContentSize().height * (i + 1)));		// オブジェクト情報をバッチノードにセット
+		lifeBatchNode->addChild(pLife);
 	}
 }
-
-// 残りHPを生成
-void GameScene::createLifeCounter() {
-	// もし先に表示されているhp画像があれば削除をする
-	if(((CCSprite*)getChildByTag(kTag_LifeCounter))) {
-		((CCSprite*)getChildByTag(kTag_LifeCounter))->removeFromParentAndCleanup(true);
-	}
-	// hp.pngをバッチノードに追加
-	hpBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hp.png");
-	// タグとノードを関連づけ
-	this->addChild(hpBatchNode, kZOrder_Label, kTag_LifeCounter);
-	// playerUnitのhp分ループして繰り返す
-	for (int i = 0; i < unitData[kTag_PlayerUnit]->getHp(); i++) {
-		// バッチノードから画像を取得してオブジェクト化
-		CCSprite* pLifeCounter = CCSprite::createWithTexture(hpBatchNode->getTexture());
-		// 任意の位置に画像をセット
-		pLifeCounter->setPosition(ccp(getWindowSize().width / 10 * (9.5 - i * 0.8),		// スコアノードの位置を設定
-				getWindowSize().height / 15 * 13));
-		hpBatchNode ->addChild(pLifeCounter);		// オブジェクト情報をバッチノードにセット
-	}
-}
-
 
 //コントローラ下地を作成
 void GameScene::createControllerPanel() {
@@ -475,7 +649,7 @@ void GameScene::defeatPlayer () {
 		finishGame();									// ゲームオーバーorクリア
 	}else {
 		unscheduleMove();
-		 playerAngle = 0;
+		playerAngle = 0;
 		removeObject(unitData[kTag_PlayerUnit], (void*)unitPhysicsData[kTag_PlayerUnit]);						// 撃沈したオブジェクトを削除
 		// 自機を生成
 		createUnit(player_VIT, kTag_PlayerUnit, submarine_VIT, 0);
@@ -586,18 +760,18 @@ void GameScene::update(float dt) {
 
 			} else */if(myUnit->getPositionX() < getWindowSize().width * 0.15){
 				myUnit->setPositionX(getWindowSize().width * 0.15);
-			} else if(myUnit->getPositionY() > getWindowSize().height * 0.7){
+			} if(myUnit->getPositionY() > getWindowSize().height * 0.7){
 				myUnit->setPositionY(getWindowSize().height * 0.7);
-			} else if(myUnit->getPositionY() < getWindowSize().height * 0.3) {
+			} if(myUnit->getPositionY() < getWindowSize().height * 0.3) {
 				// 毎フレームforwardUnit関数を呼び出すように設定
 
 				//				this->unschedule(schedule_selector(GameScene::forwardUnit));
 				myUnit->setPositionY(getWindowSize().height * 0.3);
-			} else if(myUnit->getPositionX() > getWindowSize().width * 0.85){
+			} if(myUnit->getPositionX() > getWindowSize().width * 0.85){
 				myUnit->setPositionX(getWindowSize().width * 0.85);
-			} else if(myUnit->getPositionY() > getWindowSize().height * 2 / 3){
+			} if(myUnit->getPositionY() > getWindowSize().height * 2 / 3){
 				myUnit->setPositionY(getWindowSize().height * 2 / 3);
-			} else if(myUnit->getPositionY() < getWindowSize().height / 4) {
+			} if(myUnit->getPositionY() < getWindowSize().height / 4) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
 				myUnit->setPositionY(getWindowSize().height * 3 / 4);
 			}
@@ -641,19 +815,18 @@ void GameScene::update(float dt) {
 	//	// ここまで
 
 }
-
 // スコア部を生成
 void GameScene::createScore() {
 	float j = 0;																		// スコア間隔調整のための変数
 	CCLabelTTF* tmp;																	// スコアテキスト格納用変数
 	// 任意の桁数だけ繰り返し
-	for (int i = score_and_Maxplace * 10; i % 10; i-=1, j += 0.05) {
+	for (int i = score_and_Maxplace * 10; i % 10; i-=1) {
 		i % 10 != 1 ?																	// 配列の最後の要素であるか？
 				tmp = CCLabelTTF::create("0", "", NUMBER_FONT_SIZE):					// でなければ数字表示なし
-				tmp = CCLabelTTF::create("1", "", NUMBER_FONT_SIZE);					// であれば数字表示あり
-		tmp->setPosition(ccp(getWindowSize().width * (0.2 - j),
-				getWindowSize().height * 0.9));											// 座標をセット
-		tmp->setColor(ccBLACK);															// フォントカラーをセット
+				tmp = CCLabelTTF::create("0", "", NUMBER_FONT_SIZE);					// であれば数字表示あり
+		tmp->setPosition(ccp(getCCSprite(kTag_point)->getContentSize().width * i / 4,
+				getCCPoint(kTag_point).y - getCCSprite(kTag_point)->getContentSize().height * 1.5));											// 座標をセット
+		tmp->setColor(ccWHITE);															// フォントカラーをセット
 
 		scoreText->addObject(tmp);														// 配列の末尾にオブジェクトをセット
 		this->addChild((CCLabelTTF*)scoreText->lastObject(), kZOrder_Label);			// スコアノードに情報を登録
@@ -848,7 +1021,7 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	b2Body* missileBody = pBomb->getPhysicsBody();
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
-	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y - 0.1/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, unitAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle / 2 - PI / 4));										// x座標y座標に圧力をかける
 
@@ -878,7 +1051,7 @@ void GameScene::createMissileLeft(b2Vec2 position) {
 	PhysicsSprite* pMissile = new PhysicsSprite(1);										// 物理構造を持った画像オブジェクトを生成
 	pMissile->autorelease();															// 使われなくなったら自動的に開放
 	pMissile->initWithTexture(missileBatchNode->getTexture());							// を指定位置にセット													// 表示上の画像を180度回転
-//	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.4));	// 画像の座標を指定
+	//	pMissile->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO - PTM_RATIO * 0.4));	// 画像の座標を指定
 	pMissile->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	missileBatchNode->addChild(pMissile, kZOrder_Missile, kTag_Missile);							// 以上の情報でミサイル画像を生成
 	pMissile = createPhysicsBody(kTag_DynamicBody, kTag_Missile, pMissile, kTag_Circle, 1);		// オブジェクトに物理構造を持たせる
@@ -1070,7 +1243,7 @@ float GameScene::coefficientOfSpeed() {
 	float a = meterPosition[kTag_Gear4 - kTag_Gear1];
 	float b = meterPosition[kTag_Gear3 - kTag_Gear1];
 	float c = meterPosition[kTag_Gear2 - kTag_Gear1];
-	if (pSwitchPointY >= meterPosition[3] - 3) {
+	if (pSwitchPointY >= meterPosition[3] - 15) {
 		coefficientOfSpeed = 7;
 	} else if (pSwitchPointY >= meterPosition[2] + 7) {
 		coefficientOfSpeed = 5;
@@ -1214,13 +1387,6 @@ void GameScene::changeStopButton(int tag_no, int change) {
 	pushButton->setPosition(getCCPoint(tag_no));
 	pushButton->setRotation(getAngle(tag_no));
 	pushButton->setTexture(pTexture);
-}
-void GameScene::createRetryButton() {
-	CCSprite* pRetry = CCSprite::create("retry.png");
-	CCSize size = getCCSprite(kTag_Background)->getContentSize();
-	pRetry->setPosition(ccp(size.width * (0.2 - 0.05), size.height / 20 * 19));	//座標をセット x座標はスコア2桁目と同じ座標
-	this->addChild(pRetry, kZOrder_Label, kTag_Retry);							//配置順kZOrder_Labelで実装
-
 }
 /* 関数名 : changeMissleButton
  * 返却型 : void
