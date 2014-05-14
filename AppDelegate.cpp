@@ -22,7 +22,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     pDirector->setOpenGLView(pEGLView);
 
     // デザインサイズの設定
-    pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionNoBorder);
+    pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionShowAll);
 
     CCSize frameSize = pEGLView->getFrameSize();
 
@@ -79,4 +79,3 @@ void AppDelegate::applicationWillEnterForeground() {
     // BGM・SE再開
     SimpleAudioEngine::sharedEngine()->resumeBackgroundMusic();
     SimpleAudioEngine::sharedEngine()->resumeAllEffects();
-}
