@@ -15,6 +15,7 @@ GameScene::GameScene()
  reloadMissile(3),
  enemyUnit_num(2),
  player_VIT(90),
+ missileDamage(1),
  submarine_VIT(1515),
  destroyer_VIT(1515),
  score_and_Maxplace(0.3),
@@ -47,7 +48,7 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	//		sleep(15);
+//			sleep(15);
 	initPhysics();
 	createBackground();
 	createControllerPanel();
@@ -376,14 +377,14 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 
 	b2PolygonShape PolygonShape;
 	b2CircleShape CircleShape;
-	if (!shape) {																	// shapeが0の場合
-		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.1 / PTM_RATIO,
-				pNode->getContentSize().height * 0.1 / PTM_RATIO);														// 角形の範囲を設定
+	if (shape == 2000) {																	// shapeが0の場合
+		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.45 / PTM_RATIO,
+				pNode->getContentSize().height * 0.45 / PTM_RATIO);														// 角形の範囲を設定
 	} else {																		// shapeが0でない場合
 		CircleShape.m_radius = pNode->getContentSize().width * 0.4 / PTM_RATIO;	// 円形の範囲を設定
 	}
 
-	!shape ? physicsFixturedef.shape = &PolygonShape :
+	shape == 2000 ? physicsFixturedef.shape = &PolygonShape :
 			physicsFixturedef.shape = &CircleShape;
 	physicsFixturedef.density = shape;													// オブジェクトの密度を設定
 	physicsFixturedef.friction = 1;												// オブジェクトの摩擦を設定
@@ -624,8 +625,8 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		/* 自機の衝突判定があれば自機hpから10ずつ減算する(ダメージ)
 		 * hpが10未満であった場合は残りhpだけダメージを与えゲームオーバに遷移
 	 	 */
-		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() >= 30 ?
-			unitData[kTag_PlayerUnit]->getHp() - 30
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() >= missileDamage ?
+			unitData[kTag_PlayerUnit]->getHp() - missileDamage
 			: unitData[kTag_PlayerUnit]->getHp() - unitData[kTag_PlayerUnit]->getHp());
 		createLifeCounter();													// 自機hpを再表示
 	}else{
@@ -652,8 +653,8 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 	}else if (unit == unitData[kTag_EnemySubmarine] && unit->getHp() == 0) {
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
-		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
-																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
+																player_VIT - unitData[kTag_PlayerUnit]->getHp() : missileDamage);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
 		// hp0になったユニットが敵駆逐艦だったら以下
@@ -661,7 +662,7 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
 		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
-																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
+																player_VIT - unitData[kTag_PlayerUnit]->getHp() : missileDamage);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
 	}
@@ -955,7 +956,7 @@ void GameScene::destroyerAI() {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  200)) {											// ランダムでミサイルを発射
+	if(!(rand() %  100)) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.2;		// ユニットの進むべきX座標を計算
@@ -970,7 +971,7 @@ void GameScene::destroyerAI2() {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  200)) {										// ランダムでミサイルを発射
+	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.2;		// ユニットの進むべきX座標を計算

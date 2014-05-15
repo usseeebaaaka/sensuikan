@@ -16,6 +16,7 @@ class GameScene : public cocos2d::CCLayer {
 	float score_and_Maxplace;												// 整数部は得点で小数部は得点の桁
 	int timeCounter;
 	int reloadTime;
+	int missileDamage;														// 2014.05.15.I ミサイルの威力
 	int reloadMissile;
 	int arrow_key;
 	int tag_no;
