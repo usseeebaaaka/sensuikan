@@ -49,8 +49,8 @@ bool GameScene::init() {
 	}
 	//		sleep(15);
 	initPhysics();
-	createControllerPanel();
 	createBackground();
+	createControllerPanel();
 	pointDisplay();
 	bulletLabelDisplay();
 	lifeDisplay();
@@ -447,7 +447,8 @@ void GameScene::createLife() {
 void GameScene::createControllerPanel() {
 	//コントローラ部を作成
 	CCSprite* pControl = CCSprite::create("control.png");					//control.pngをCCSprite型にし、pControlで初期化
-	pControl->setPosition(ccp(getWindowSize().width / 2, getWindowSize().height / 8));				//座標のセット
+	pControl->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 2,
+			getCCSprite(kTag_Background)->getContentSize().height / 8));				//座標のセット
 	this->addChild(pControl, kZOrder_Controller_Base);						//配置順kZOrder_Controller_Baseで実装
 }
 
@@ -479,23 +480,22 @@ void GameScene::arrowKey() {
 		CCSprite* pKey = CCSprite::create("arrow.png");							//tri.pngをCCSprite型で生成
 		switch(arrow_key) {
 		//上キーの実装
-		case 3 : pKey->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8 + stopSize * 0.9));	//座標のセット
-		pKey->setRotation(315);
+		case 3 : pKey->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8 + stopSize));	//座標のセット
 		this->addChild(pKey, kZOrder_Label, kTag_Key_Up);					//配置順kZOrder_Lavelで実装
 		break;
 		//下キーの実装
-		case 2 : pKey->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8 - stopSize * 0.9));	//座標のセット
-		pKey->setRotation(135);													//180度回転
+		case 2 : pKey->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8 - stopSize));	//座標のセット
+		pKey->setRotation(180);													//180度回転
 		this->addChild(pKey, kZOrder_Label, kTag_Key_Down);						//配置順kZOrder_Lavelで実装
 		break;
 		//左キーの実装
-		case 1 : pKey->setPosition(ccp(getWindowSize().width / 4 - stopSize * 0.9, getWindowSize().height / 8));	//座標のセット
-		pKey->setRotation(225);													//270度回転
+		case 1 : pKey->setPosition(ccp(getWindowSize().width / 4 - stopSize, getWindowSize().height / 8));	//座標のセット
+		pKey->setRotation(270);													//270度回転
 		this->addChild(pKey, kZOrder_Label, kTag_Key_Left);						//配置順kZOrder_Lavelで実装
 		break;
 		//右キーの実装
-		case 0 : pKey->setPosition(ccp(getWindowSize().width / 4 + stopSize * 0.9, getWindowSize().height / 8));	//座標のセット
-		pKey->setRotation(45);													//90度回転
+		case 0 : pKey->setPosition(ccp(getWindowSize().width / 4 + stopSize, getWindowSize().height / 8));	//座標のセット
+		pKey->setRotation(90);													//90度回転
 		this->addChild(pKey, kZOrder_Label, kTag_Key_Right);					//配置順kZOrder_Lavelで実装
 		break;
 		}
@@ -542,13 +542,15 @@ void GameScene::missileButton() {
 
 	/*----- missile 上キーの実装 -----*/
 	CCSprite* pMissileUp = CCSprite::create("MissileButton.png");						//missile_up.pngをCCSprite型で生成
-	pMissileUp->setPosition(ccp(getWindowSize().width / 8 * 7, key_downHeight * 3.5));	//座標のセット
+	pMissileUp->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 8 * 7,
+								getCCPoint(kTag_Background).y / 8 * 3));	//座標のセット
 	this->addChild(pMissileUp, kZOrder_Label, kTag_Shoot_Vertical);					//配置順kZOrder_Labelで実装
 
 	/*----- missile 左キーの実装 -----*/
 	CCSprite* pMissileLeft = CCSprite::create("MissileButton.png");					//missile_left.pngをCCSprite型で生成
 	pMissileLeft->setRotation(270);
-	pMissileLeft->setPosition(ccp(getWindowSize().width / 8 * 7, key_downHeight));	//座標のセット
+	pMissileLeft->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 8 * 7,
+									getCCPoint(kTag_Background).y / 8 * 1));	//座標のセット
 	this->addChild(pMissileLeft, kZOrder_Label, kTag_Shoot_Horizontal);				//配置順kZOrder_Labelで実装
 }
 
@@ -1494,7 +1496,7 @@ float GameScene::getAngle(int tag_no) {
 void GameScene::explosionSound() {
 	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
 	SimpleAudioEngine::sharedEngine()->playEffect("explosion.mp3");
-	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.05);
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.075);
 }
 /* 関数名 : explosionSound
  * 概要 : 発射音の生成
@@ -1505,7 +1507,7 @@ void GameScene::explosionSound() {
 void GameScene::missileShot() {
 	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
 	SimpleAudioEngine::sharedEngine()->playEffect("missileShot.mp3");
-	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.01);
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.05);
 }
 
 

@@ -79,3 +79,4 @@ void AppDelegate::applicationWillEnterForeground() {
     // BGM・SE再開
     SimpleAudioEngine::sharedEngine()->resumeBackgroundMusic();
     SimpleAudioEngine::sharedEngine()->resumeAllEffects();
+}
