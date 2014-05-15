@@ -614,15 +614,29 @@ void GameScene::startGame() {
 	scheduleUpdate();
 }
 
+// mod 14. 5.15 H.U
+// 被ダメージ３０と敵撃破時に３０回復させる
 void GameScene::hitUnit(PhysicsSprite* unit){
 	this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
-	unit->setHp(unit->getHp() - 1);												// hpを-1してセット
+
+	if(unit == unitData[kTag_PlayerUnit]) {
+		/* 自機の衝突判定があれば自機hpから10ずつ減算する(ダメージ)
+		 * hpが10未満であった場合は残りhpだけダメージを与えゲームオーバに遷移
+	 	 */
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() >= 30 ?
+			unitData[kTag_PlayerUnit]->getHp() - 30
+			: unitData[kTag_PlayerUnit]->getHp() - unitData[kTag_PlayerUnit]->getHp());
+		createLifeCounter();													// 自機hpを再表示
+	}else{
+		unit->setHp(unit->getHp() - 1);											// 敵機hpを-1してセット
+	}
 	CCSprite* bombAction = CCSprite::create();									// スプライト生成
 	bombAction->setPosition(unit->getPosition());								// playerのオブジェクト(潜水艦)と同じ座標にセット
 	int anima = unit->getHp() != 0 ? hitAnimation : defeatAnimation;
 	bombAction->runAction(Animation::hitAnimation(anima));						// 被弾時のアニメーションhitAnimationを呼び出す
 	this->addChild(bombAction, kZOrder_Countdown);								// 爆発アニメーションの実装
 
+	// 自機あれば以下ブロック
 	if (unit == unitData[kTag_PlayerUnit]) {
 		if(unit->getHp() == 0) {												// hpがなくなった場合
 			defeatPlayer();														// 残機を減らす処理へ
@@ -631,14 +645,22 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 			if (unit->getHp() < 0) {
 				unit->setHp(0);
 			}
-			createLifeCounter();												// 自機life表示を再生性
+			//			createLifeCounter();												// 自機life表示を再生性
 		}
 		// hp0になったユニットが敵潜水艦だったら以下
 	}else if (unit == unitData[kTag_EnemySubmarine] && unit->getHp() == 0) {
+		// 自機のhpを30回復させる
+		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
+																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
 		// hp0になったユニットが敵駆逐艦だったら以下
 	}else if (unit == unitData[kTag_EnemyDestroyer] && unit->getHp() == 0) {
+		// 自機のhpを30回復させる
+		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
+																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
 	}
@@ -1507,7 +1529,7 @@ void GameScene::explosionSound() {
 void GameScene::missileShot() {
 	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
 	SimpleAudioEngine::sharedEngine()->playEffect("missileShot.mp3");
-	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.05);
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.1);
 }
 
 

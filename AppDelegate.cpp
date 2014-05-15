@@ -51,7 +51,6 @@ bool AppDelegate::applicationDidFinishLaunching() {
     CCFileUtils::sharedFileUtils()->setSearchPaths(searchPath);
     pDirector->setDisplayStats(true);
     pDirector->setAnimationInterval(1.0 / 60);
-    pDirector->setDisplayStats(false);
     CCScene* pScene = GameScene::scene();
     pDirector->runWithScene(pScene);
 
