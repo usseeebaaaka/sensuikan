@@ -1441,7 +1441,6 @@ void GameScene::missileTimer() {
 	} else if (reloadTime == 12 && reloadMissile){						// 計測から0.2秒経ち、かつミサイルが発射可能な場合(ミサイル発射間隔に0.2秒のラグをつける)
 		reloadTime = 0;													// 数値をリセットする
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// 時間計測をストップし、ミサイルを発射可能にする
-
 	}
 }
 
