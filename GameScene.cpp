@@ -960,7 +960,7 @@ void GameScene::destroyerAI() {
 	if(!(rand() %  100)) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
-		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.2;		// ユニットの進むべきX座標を計算
+		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.4;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(forward, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
@@ -975,7 +975,7 @@ void GameScene::destroyerAI2() {
 	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
-		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.2;		// ユニットの進むべきX座標を計算
+		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.4;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(back, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
