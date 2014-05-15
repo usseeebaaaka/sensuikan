@@ -23,5 +23,6 @@
 #define TAG_COLLISION_DESTROYER 37	// 敵駆逐艦の衝突判定タグ
 #define TAG_REMOVE_MISSILE 38		// ミサイル消失タグ
 #define TAG_EXPLOSION_MISSILE 39	// ミサイル爆発タグ
+#define TAG_DEFEAT_PLAYER 40		// 自機撃沈タグ
 #define TAG_CALL_SCROLL 200			// スクロール開始タグ
 #endif /* CONFIG_H_ */
