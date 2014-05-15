@@ -67,7 +67,8 @@ bool GameScene::init() {
 	fuelDisplay();
 	hpBar();																		// hpバーの表示
 	createLifeCounter();
-	this->schedule(schedule_selector(GameScene::createRemainingMissile), 20.0 / 60.0 );		// 残弾数を表示、1/3秒の毎に更新
+	createRemainingMissile();
+//	this->schedule(schedule_selector(GameScene::createRemainingMissile), 20.0 / 60.0 );		// 残弾数を表示、1/3秒の毎に更新
 
 	// ミサイルの準備
 	missileBatchNode = CCSpriteBatchNode::create("Missile.png");			// ミサイルの画像をセット
@@ -1195,9 +1196,11 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 					createMissileDiagonal(playerPosition);	//MOD 14/5/6 H.U
 					//createMissileDiagonal(unitPhysicsData[kTag_PlayerUnit]);	//MOD 14/5/6 H.U
 				}
+				this->scheduleOnce(schedule_selector(GameScene::createRemainingMissile), 0);		// ミサイル発射した0秒後にミサイル表示関数を一度だけ呼ぶ
 				if (!reloadMissile) {
 					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
 				}
+
 				// retryボタンをタップしたら以下処理
 			} else if(tag_no == kTag_Retry && i->boundingBox().containsPoint(loc)) {
 				GameScene::moveToNextScene();									// moveToNextSceneを呼び出しシーンの再生成
@@ -1429,17 +1432,19 @@ void GameScene::changeMissileButton(int tag_no, int change) {
 }
 
 void GameScene::missileTimer() {
-	reloadTime++;
-	if (reloadTime == 90) {
+	reloadTime++;														// リロード時間を計測する
+	if (reloadTime == 90) {												// 90/60秒経ったら数値をリセット
 		reloadTime = 0;
-		reloadMissile += 3;
-		this->unschedule(schedule_selector(GameScene::missileTimer));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-	} else if (reloadTime == 12 && reloadMissile){
-		reloadTime = 0;
-		this->unschedule(schedule_selector(GameScene::missileTimer));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-
+		reloadMissile += 3;												// 発射可能なミサイルの数を3に戻す
+		this->scheduleOnce(schedule_selector(GameScene::createRemainingMissile), 0);	// ミサイル数を3に戻した0秒後に一度だけミサイル表示関数を呼び出す
+		this->unschedule(schedule_selector(GameScene::missileTimer));	// リロード時間の計測をストップ
+	} else if (reloadTime == 12 && reloadMissile){						// 計測から0.2秒経ち、かつミサイルが発射可能な場合(ミサイル発射間隔に0.2秒のラグをつける)
+		reloadTime = 0;													// 数値をリセットする
+		this->unschedule(schedule_selector(GameScene::missileTimer));	// 時間計測をストップし、ミサイルを発射可能にする
 	}
 }
+
+
 // 自機と敵機の接触時に呼ばれる
 //	void GameScene::contactUnit(PhysicsSprite* unit) {
 //		CCRect player    = getCCSprite(kTag_PlayerUnit)->boundingBox();		// 自機の画面上の位置とサイズを取得
@@ -1518,7 +1523,7 @@ float GameScene::getAngle(int tag_no) {
 void GameScene::explosionSound() {
 	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
 	SimpleAudioEngine::sharedEngine()->playEffect("explosion.mp3");
-	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.075);
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.1);
 }
 /* 関数名 : explosionSound
  * 概要 : 発射音の生成
@@ -1529,7 +1534,7 @@ void GameScene::explosionSound() {
 void GameScene::missileShot() {
 	//SimpleAudioEngineクラスのsharedEngine関数の中のplayEffect関数にmp3をセット
 	SimpleAudioEngine::sharedEngine()->playEffect("missileShot.mp3");
-	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.1);
+	SimpleAudioEngine::sharedEngine()->setEffectsVolume(0.08);
 }
 
 

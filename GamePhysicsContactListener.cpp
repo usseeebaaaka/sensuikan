@@ -31,7 +31,7 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 			|| (tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE)){
 		//ミサイルタグにミサイル除去タグをセット
 		tagA == TAG_MISSILE ? actorA->setTag(TAG_REMOVE_MISSILE)
-				: actorB->setTag(TAG_REMOVE_MISSILE);
+				: actorB->setTag(TAG_EXPLOSION_MISSILE);
 
 	// 自機ミサイルと海底もしくは海底と自機ミサイルの衝突
 	} else if ((tagA == TAG_MISSILE && tagB == TAG_SEABED)
@@ -78,8 +78,8 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 	} else if ((tagA == TAG_MISSILE_ENEMY && tagB == TAG_SUBMARINE_UNIT)
 			|| (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_MISSILE_ENEMY)){
 		// 敵ミサイルタグにミサイル除去タグをセット
-		tagA == TAG_MISSILE_ENEMY ? actorA->setTag(TAG_REMOVE_MISSILE)
-				: actorB->setTag(TAG_REMOVE_MISSILE);
+		tagA == TAG_MISSILE_ENEMY ? actorA->setTag(TAG_EXPLOSION_MISSILE)
+				: actorB->setTag(TAG_EXPLOSION_MISSILE);
 
 
 	/* ***********************
@@ -112,12 +112,24 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 
 	} else if (((tagA == TAG_MISSILE && tagB == TAG_MISSILE_ENEMY)			// 自ミサイルと敵ミサイル
 			|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE))			// 敵ミサイルと自ミサイル
-			/*|| (tagA == TAG_MISSILE && tagB == TAG_MISSILE)*/					// 自ミサイルと自ミサイル
-			/*|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE_ENEMY)*/){	// 敵ミサイルと敵ミサイル
+			|| (tagA == TAG_MISSILE && tagB == TAG_MISSILE)					// 自ミサイルと自ミサイル
+			|| (tagA == TAG_MISSILE_ENEMY && tagB == TAG_MISSILE_ENEMY)){	// 敵ミサイルと敵ミサイル
 		// 両タグにミサイル除去タグをセット
 		actorA->setTag(TAG_EXPLOSION_MISSILE);
 		actorB->setTag(TAG_EXPLOSION_MISSILE);
-	}
 
+
+	/* ***********************
+	 *
+	 * 機体同士の衝突判定
+	 *
+	 * ***********************/
+
+	 } else if ((tagA == TAG_PLAYER_UNIT && tagB == TAG_SUBMARINE_UNIT)
+			 || (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_PLAYER_UNIT)){		// 自機と敵潜水艦
+	 		// 敵ミサイルと敵ミサイル
+	 		// 両タグにミサイル除去タグをセット
+	 		actorA->setTag(TAG_DEFEAT_PLAYER);
+	 			}
 
 }
