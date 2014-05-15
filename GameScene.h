@@ -13,6 +13,7 @@ class GameScene : public cocos2d::CCLayer {
 	GamePhysicsContactListener* mGamePhysicsContactListener;
 	GamePhysicsContactListener* mGamePhysicsContactListener2;
 	GamePhysicsContactListener* mGamePhysicsContactListener3;
+	bool missileLaunchableFlag;
 	float score_and_Maxplace;												// 整数部は得点で小数部は得点の桁
 	int timeCounter;
 	int reloadTime;

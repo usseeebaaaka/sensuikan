@@ -12,6 +12,7 @@ USING_NS_CC;
 // コンストラクタ
 GameScene::GameScene()
 :arrow_key(4),
+ missileLaunchableFlag(1),
  reloadMissile(3),
  enemyUnit_num(2),
  player_VIT(90),
@@ -1048,7 +1049,7 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	b2Body* missileBody = pBomb->getPhysicsBody();
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
-	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y - 0.1/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, unitAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle / 2 - PI / 4));										// x座標y座標に圧力をかける
 
@@ -1187,12 +1188,14 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 			if((tag_no == kTag_Shoot_Vertical || tag_no == kTag_Shoot_Horizontal)
 					&& i->boundingBox().containsPoint(loc)) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
-				if(tag_no == kTag_Shoot_Horizontal && reloadMissile) {
+				if(tag_no == kTag_Shoot_Horizontal && reloadMissile && missileLaunchableFlag) {
 					reloadMissile--;
+					missileLaunchableFlag = 0;
 					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
 					createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
-				} else if (reloadMissile){
+				} else if (reloadMissile && missileLaunchableFlag){
 					reloadMissile--;
+					missileLaunchableFlag = 0;
 					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
 					createMissileDiagonal(playerPosition);	//MOD 14/5/6 H.U
 					//createMissileDiagonal(unitPhysicsData[kTag_PlayerUnit]);	//MOD 14/5/6 H.U
@@ -1435,12 +1438,13 @@ void GameScene::changeMissileButton(int tag_no, int change) {
 void GameScene::missileTimer() {
 	reloadTime++;														// リロード時間を計測する
 	if (reloadTime == 90) {												// 90/60秒経ったら数値をリセット
-
+		missileLaunchableFlag = 1;
 		reloadTime = 0;
 		reloadMissile += 3;												// 発射可能なミサイルの数を3に戻す
 		this->scheduleOnce(schedule_selector(GameScene::createRemainingMissile), 0);	// ミサイル数を3に戻した0秒後に一度だけミサイル表示関数を呼び出す
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// リロード時間の計測をストップ
 	} else if (reloadTime == 12 && reloadMissile){						// 計測から0.2秒経ち、かつミサイルが発射可能な場合(ミサイル発射間隔に0.2秒のラグをつける)
+		missileLaunchableFlag = 1;
 		reloadTime = 0;													// 数値をリセットする
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// 時間計測をストップし、ミサイルを発射可能にする
 
