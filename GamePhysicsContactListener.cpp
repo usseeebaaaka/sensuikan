@@ -129,7 +129,9 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 			 || (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_PLAYER_UNIT)){		// 自機と敵潜水艦
 	 		// 敵ミサイルと敵ミサイル
 	 		// 両タグにミサイル除去タグをセット
-	 		actorA->setTag(TAG_DEFEAT_PLAYER);
+			tagA == TAG_PLAYER_UNIT ? actorA->setTag(TAG_DEFEAT_PLAYER)
+					: actorB->setTag(TAG_DEFEAT_PLAYER);
+
 	 			}
 
 }
