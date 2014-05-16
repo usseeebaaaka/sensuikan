@@ -679,7 +679,7 @@ void GameScene::defeatPlayer () {
 		removeObject(unitData[kTag_PlayerUnit], (void*)unitPhysicsData[kTag_PlayerUnit]);
 		finishGame();									// ゲームオーバーorクリア
 	}else {
-		unscheduleMove();
+
 		playerAngle = 0;
 		removeObject(unitData[kTag_PlayerUnit], (void*)unitPhysicsData[kTag_PlayerUnit]);						// 撃沈したオブジェクトを削除
 		// 自機を生成
@@ -699,11 +699,13 @@ void GameScene::removeObject(CCNode* pObject, void* body = 0) {
 
 // 終了時clearもしくはgameoverの画像を表示
 void GameScene::finishGame() {
+	unscheduleMove();					// 自機の動きを止める
+	this->setTouchEnabled(false);		// タップを受け入れないようfalseに設定
 	// update( )関数の呼び出しを停止する
-	unscheduleMove();
+
 	unscheduleUpdate();
 	const char* fileName = unitData[kTag_PlayerUnit]->getHp() == 0
-			? "gameover.png" : "Clear.png";	// lifepointが0であればgameover.pngを、違うならclear.pngで初期化
+			? "gameover.png" : "CLEAR.png";	// lifepointが0であればgameover.pngを、違うならclear.pngで初期化
 
 	// 「Game Over」を表示する
 	CCSprite* gameOver = CCSprite::create(fileName);
@@ -839,6 +841,7 @@ void GameScene::update(float dt) {
 		destroyerAI2();
 	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
 		destroyerAI();
+
 	} if (this->getChildByTag(kTag_EnemySubmarine) && (timeCounter > 1140 || (timeCounter > 1020 && timeCounter < 1080)|| (timeCounter > 660 && timeCounter < 780)|| (timeCounter > 300 && timeCounter < 420))) {
 		submarineAI();
 	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 840 && timeCounter < 960)|| (timeCounter > 420 && timeCounter < 600) || (timeCounter > 240 && timeCounter < 300) || (timeCounter > 0 && timeCounter < 120))) {
