@@ -17,8 +17,8 @@ GameScene::GameScene()
  enemyUnit_num(2),
  player_VIT(90),
  missileDamage(30),
- submarine_VIT(1515),
- destroyer_VIT(1515),
+ submarine_VIT(1503),
+ destroyer_VIT(1503),
  score_and_Maxplace(0.3),
  dealofScrollSpead(0.2),
  buttons_sum(11),
@@ -702,7 +702,7 @@ void GameScene::finishGame() {
 	// update( )関数の呼び出しを停止する
 	unscheduleUpdate();
 	const char* fileName = unitData[kTag_PlayerUnit]->getHp() == 0
-			? "gameover.png" : "clear.png";	// lifepointが0であればgameover.pngを、違うならclear.pngで初期化
+			? "gameover.png" : "CLEAR.png";	// lifepointが0であればgameover.pngを、違うならCLEAR.pngで初期化
 
 	// 「Game Over」を表示する
 	CCSprite* gameOver = CCSprite::create(fileName);
@@ -756,17 +756,6 @@ void GameScene::update(float dt) {
 			//			CCSequence* action = CCSequence::createWithTwoActions(delay, func);
 			func->setTag(kTag_Remove_Missile);
 			object->runAction(func);
-
-			//			CCCallFuncND* func = CCCallFuncND::create(this, callfuncND_selector(GameScene::removeObject), (void*)b);
-			//			func->setTag(kTag_Remove_Missile);
-			//			if(objectTag == kTag_explosion_Missile) {
-			//				CCPoint runAnimationPoint = ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO);
-			//				object->setPosition(runAnimationPoint);
-			//				CCSequence* action = CCSequence::createWithTwoActions(func, Animation::hitAnimation(hitAnimation));
-			//				object->runAction(action);
-			//			} else {
-			//				object->runAction(func);
-			//			}
 		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
 			CCSprite* explosion = CCSprite::create();						// スプライトを生成
 			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
