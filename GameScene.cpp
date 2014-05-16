@@ -836,9 +836,9 @@ void GameScene::update(float dt) {
 		}
 	}
 	if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter > 629) {
-		destroyerAI();
-	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
 		destroyerAI2();
+	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
+		destroyerAI();
 	} if (this->getChildByTag(kTag_EnemySubmarine) && (timeCounter > 1140 || (timeCounter > 1020 && timeCounter < 1080)|| (timeCounter > 660 && timeCounter < 780)|| (timeCounter > 300 && timeCounter < 420))) {
 		submarineAI();
 	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 840 && timeCounter < 960)|| (timeCounter > 420 && timeCounter < 600) || (timeCounter > 240 && timeCounter < 300) || (timeCounter > 0 && timeCounter < 120))) {
@@ -981,8 +981,8 @@ void GameScene::destroyerAI() {
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  100)) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
-	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
-		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.4;		// ユニットの進むべきX座標を計算
+	} else if(destroyerPositions.x > getWindowSize().width  * 2 /10) {									// ランダムで移動
+		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.5;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(forward, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
@@ -996,8 +996,8 @@ void GameScene::destroyerAI2() {
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
-	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
-		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.4;		// ユニットの進むべきX座標を計算
+	}  else if(destroyerPositions.x < getWindowSize().width * 8 / 10) {									// ランダムで移動
+		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.5;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(back, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
