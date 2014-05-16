@@ -329,6 +329,14 @@ void GameScene::createBackground() {
 			b2Vec2(pBgUnder->getContentSize().width / PTM_RATIO, 0));
 	// 指定した境界線と密度を海底オブジェクトに登録
 	borderlineBody->CreateFixture(&borderlineBox, seabedHeight);
+
+	/*----- 画面の右端より奥に行けなくなるように設定 -----*/
+	/* 一つ目のb2Vec2で左辺のx座標とy座標を
+	 * 二つ目のb2Vec2で右辺のx座標とy座標をセット */
+	borderlineBox.Set(b2Vec2(pBgUnder->getContentSize().width / PTM_RATIO, pBgUnder->getContentSize().height / PTM_RATIO),
+			b2Vec2(pBgUnder->getContentSize().width / PTM_RATIO, 0));
+	// 指定した境界線と密度を海底オブジェクトに登録
+	borderlineBody->CreateFixture(&borderlineBox, seabedHeight);
 }
 
 // ユニットを生成する
@@ -347,7 +355,7 @@ void GameScene::createUnit(int hp, int kTag, int vit, int unit) {
 				bgSize.height * 0.6 /*- (bgSize.height - getWindowSize().height) / 4*/));
 	} else {																		// 潜水艦でない場合
 		pUnit->initWithFile("stage1.png");										// 駆逐艦画像を取得し、オブジェクトに格納
-		pUnit->setPosition(ccp(bgSize.width * 0.5,									// 任意の位置にオブジェクトをセット
+		pUnit->setPosition(ccp(pUnit->getContentSize().width / 2,									// 任意の位置にオブジェクトをセット
 				bgSize.height * 3 / 4 ));
 	}
 	this->addChild(pUnit, kZOrder_Unit, kTag);										// タグとオブジェクトを関連づける
@@ -985,7 +993,7 @@ void GameScene::destroyerAI() {
 	if(!(rand() %  100)) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width  * 2 /10) {									// ランダムで移動
-		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.5;		// ユニットの進むべきX座標を計算
+		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.8;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(forward, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
@@ -1000,7 +1008,7 @@ void GameScene::destroyerAI2() {
 	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 8 / 10) {									// ランダムで移動
-		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.5;		// ユニットの進むべきX座標を計算
+		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.8;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(back, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
