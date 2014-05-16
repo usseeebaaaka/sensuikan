@@ -382,16 +382,16 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.45 / PTM_RATIO,
 				pNode->getContentSize().height * 0.45 / PTM_RATIO);														// 角形の範囲を設定
 	} else {																		// shapeが0でない場合
-		CircleShape.m_radius = pNode->getContentSize().width * 0.4 / PTM_RATIO;	// 円形の範囲を設定
+		CircleShape.m_radius = pNode->getContentSize().width * 0.4 / PTM_RATIO;		// 円形の範囲を設定
 	}
 
 	shape == 2000 ? physicsFixturedef.shape = &PolygonShape :
 			physicsFixturedef.shape = &CircleShape;
-	physicsFixturedef.density = shape;													// オブジェクトの密度を設定
-	physicsFixturedef.friction = 1;												// オブジェクトの摩擦を設定
+	physicsFixturedef.density = shape;												// オブジェクトの密度を設定
+	physicsFixturedef.friction = 1;													// オブジェクトの摩擦を設定
 
-	unitPhysicsData[kTag]->CreateFixture(&physicsFixturedef);										// 構造体に情報を登録
-	pNode->setPhysicsBody(unitPhysicsData[kTag]);													// ノードに構造体を登録
+	unitPhysicsData[kTag]->CreateFixture(&physicsFixturedef);						// 構造体に情報を登録
+	pNode->setPhysicsBody(unitPhysicsData[kTag]);									// ノードに構造体を登録
 	b2Vec2 a = unitPhysicsData[kTag]->GetPosition();
 	return pNode;																	// 作成したノードを返却
 }
