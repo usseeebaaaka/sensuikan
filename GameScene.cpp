@@ -23,7 +23,7 @@ GameScene::GameScene()
  dealofScrollSpead(0.2),
  buttons_sum(11),
  playerUnit(NULL),
- lifepoint(2),
+ lifepoint(10),
  defeatAnimation(8),
  reloadTime(0),
  timeCounter(1260),
@@ -700,6 +700,7 @@ void GameScene::removeObject(CCNode* pObject, void* body = 0) {
 // 終了時clearもしくはgameoverの画像を表示
 void GameScene::finishGame() {
 	// update( )関数の呼び出しを停止する
+	unscheduleMove();
 	unscheduleUpdate();
 	const char* fileName = unitData[kTag_PlayerUnit]->getHp() == 0
 			? "gameover.png" : "Clear.png";	// lifepointが0であればgameover.pngを、違うならclear.pngで初期化
@@ -732,6 +733,9 @@ void GameScene::update(float dt) {
 	for (b2Body* b = world->GetBodyList(); b; b = b->GetNext()) {
 		if (!b->GetUserData()) {
 			continue;													// オブジェクトが見つからない場合は次のループへ
+		}
+		if (!(b->IsAwake())) {
+			b->SetAwake(true);
 		}
 		CCNode* object = (CCNode*)b->GetUserData();						// オブジェクトを取得
 		if (!(object->getTag())) {
@@ -1063,7 +1067,7 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	pBomb->initWithTexture(bombBatchNode->getTexture());						// を指定位置にセット
 	pBomb->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	bombBatchNode->addChild(pBomb, kZOrder_Missile, kTag_MissileEnemy);
-	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Circle, 1);		// オブジェクトに物理構造を持たせる
+	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Circle, 0);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pBomb->getPhysicsBody();
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
@@ -1082,13 +1086,13 @@ void GameScene::createMissileSubmarine(b2Vec2 position, float unitAngle) {
 	pMissileSubmarine->initWithTexture(enemyMissileBatchNode->getTexture());							// を指定位置にセット
 	pMissileSubmarine->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	enemyMissileBatchNode->addChild(pMissileSubmarine, kZOrder_Missile, kTag_MissileEnemy);						// 以上の情報でミサイル画像を生成
-	pMissileSubmarine = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pMissileSubmarine, kTag_Circle, 1);	// オブジェクトに物理構造を持たせる
+	pMissileSubmarine = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pMissileSubmarine, kTag_Circle, 0);	// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissileSubmarine->getPhysicsBody();											// オブジェクトpMissileのデータメンバ
 	float submarineUnitLength = unitData[kTag_EnemySubmarine]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(submarineUnitLength, unitAngle);
 	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, PI / 2 + unitAngle);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 4, unitAngle * 0.75));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 8, unitAngle * 3 / 8));										// x座標y座標に圧力をかける
 }
 
 /*----- 自機の左ミサイル発射ボタンに対応 -----*/
@@ -1294,11 +1298,11 @@ float GameScene::coefficientOfSpeed() {
 	float b = meterPosition[kTag_Gear3 - kTag_Gear1];
 	float c = meterPosition[kTag_Gear2 - kTag_Gear1];
 	if (pSwitchPointY >= meterPosition[3] - 15) {
-		coefficientOfSpeed = 7;
+		coefficientOfSpeed = 4;
 	} else if (pSwitchPointY >= meterPosition[2] + 7) {
-		coefficientOfSpeed = 5;
-	} else if (pSwitchPointY >= meterPosition[1] + 7) {
 		coefficientOfSpeed = 3;
+	} else if (pSwitchPointY >= meterPosition[1] + 7) {
+		coefficientOfSpeed = 2;
 	} else {
 		coefficientOfSpeed = 1;
 	}
