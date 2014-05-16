@@ -154,7 +154,17 @@ void GameScene::createRetryButton() {
 // 14. 5.13 H.U
 // 15秒毎にライフが1減る
 void GameScene::countMinusHp() {
-	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - getdealofScrollSpead());	// 自分の現在hpから1減らす
+	int minusHp;
+	if ((int)coefficientOfSpeed() == 1) {
+		minusHp = 1;
+	}else if((int)coefficientOfSpeed() == 2) {
+		minusHp = 3;
+	}else if((int)coefficientOfSpeed() == 3) {
+		minusHp = 5;
+	}else{
+		minusHp = 10;
+	}
+	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - minusHp);	// 自分の現在hpから1減らす
 	createLifeCounter();
 	// 自分のhpが1以上であれば以下のhpを1減らす処理に入る
 	if(!(unitData[kTag_PlayerUnit]->getHp())){
@@ -615,7 +625,7 @@ void GameScene::startGame() {
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 	// 毎フレームupdate( )関数を呼び出すように設定する
 	scheduleUpdate();
-	this->schedule(schedule_selector(GameScene::countMinusHp), 900.0 / 60.0 );
+	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );	// 5秒ごとにhpを減らす(初期設定1)
 }
 
 // mod 14. 5.15 H.U
@@ -1307,8 +1317,8 @@ float GameScene::coefficientOfSpeed() {
 	} else {
 		coefficientOfSpeed = 1;
 	}
-	this->unschedule(schedule_selector(GameScene::countMinusHp));
-	this->schedule(schedule_selector(GameScene::countMinusHp), 900.0 / 60.0 );
+//	this->unschedule(schedule_selector(GameScene::countMinusHp));
+//	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );
 
 	return coefficientOfSpeed;
 }
