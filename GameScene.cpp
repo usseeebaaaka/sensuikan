@@ -615,6 +615,7 @@ void GameScene::startGame() {
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 	// 毎フレームupdate( )関数を呼び出すように設定する
 	scheduleUpdate();
+	this->schedule(schedule_selector(GameScene::countMinusHp), 900.0 / 60.0 );
 }
 
 // mod 14. 5.15 H.U
