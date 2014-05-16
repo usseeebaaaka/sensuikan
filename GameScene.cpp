@@ -11,24 +11,24 @@ USING_NS_CC;
 
 // コンストラクタ
 GameScene::GameScene()
-:arrow_key(4),
- missileLaunchableFlag(1),
- reloadMissile(3),
- enemyUnit_num(2),
- player_VIT(90),
- missileDamage(1),
- submarine_VIT(1515),
- destroyer_VIT(1515),
- score_and_Maxplace(0.3),
- dealofScrollSpead(0.2),
- buttons_sum(11),
- playerUnit(NULL),
- lifepoint(10),
- defeatAnimation(8),
- reloadTime(0),
- timeCounter(1260),
- playerAngle(0),
- hitAnimation(14){
+:arrow_key(4),							// 十字キー(４方向)
+ missileLaunchableFlag(1),				// 自機がミサイルを撃った撃ってないのフラグ
+ reloadMissile(3),						// ミサイル最大保持数
+ enemyUnit_num(2),						// 敵の数
+ player_VIT(90),						// 自機を生成する際に基準とするhp
+ missileDamage(3),						// ミサイル当たった際の自機ダメージ
+ submarine_VIT(1515),					// 敵潜水艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ destroyer_VIT(1515),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ score_and_Maxplace(0.3),				// スコアの数値を保持　少数部は桁数に利用
+ dealofScrollSpead(0.2),				// スクロールスピード
+ buttons_sum(11),						// タップできるボタンの合計数(全11ボタン)
+ playerUnit(NULL),						//
+ lifepoint(2),							// 自機の残機
+ defeatAnimation(8),					// 機体爆破時のpng枚数(アニメーションを再生する際に使用)
+ reloadTime(0),							// 自機ミサイルのリロードタイムに利用
+ timeCounter(1260),						// 敵AIのシードとして利用
+ playerAngle(0),						// playerの角度を保持
+ hitAnimation(14){						// 爆発アニメーションpng枚数(アニメーションを再生する際に使用)
 	scoreText = new CCArray();
 	srand((unsigned int)time(NULL));
 	unitPhysicsData[kTag_PlayerUnit] = playerUnit;
@@ -154,7 +154,17 @@ void GameScene::createRetryButton() {
 // 14. 5.13 H.U
 // 15秒毎にライフが1減る
 void GameScene::countMinusHp() {
-	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - 1);	// 自分の現在hpから1減らす
+	int minusHp;
+	if ((int)coefficientOfSpeed() == 1) {
+		minusHp = 1;
+	}else if((int)coefficientOfSpeed() == 2) {
+		minusHp = 3;
+	}else if((int)coefficientOfSpeed() == 3) {
+		minusHp = 5;
+	}else{
+		minusHp = 10;
+	}
+	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - minusHp);	// 自分の現在hpから1減らす
 	createLifeCounter();
 	// 自分のhpが1以上であれば以下のhpを1減らす処理に入る
 	if(!(unitData[kTag_PlayerUnit]->getHp())){
@@ -623,6 +633,7 @@ void GameScene::startGame() {
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 	// 毎フレームupdate( )関数を呼び出すように設定する
 	scheduleUpdate();
+	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );	// 5秒ごとにhpを減らす(初期設定1)
 }
 
 // mod 14. 5.15 H.U
@@ -666,15 +677,15 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
 		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
-																player_VIT - unitData[kTag_PlayerUnit]->getHp() : missileDamage);
+																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
 		// hp0になったユニットが敵駆逐艦だったら以下
 	}else if (unit == unitData[kTag_EnemyDestroyer] && unit->getHp() == 0) {
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
-		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
-																player_VIT - unitData[kTag_PlayerUnit]->getHp() : missileDamage);
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
+																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
 		displayScore(50);
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
 	}
@@ -687,7 +698,7 @@ void GameScene::defeatPlayer () {
 		removeObject(unitData[kTag_PlayerUnit], (void*)unitPhysicsData[kTag_PlayerUnit]);
 		finishGame();									// ゲームオーバーorクリア
 	}else {
-
+		unscheduleMove();
 		playerAngle = 0;
 		removeObject(unitData[kTag_PlayerUnit], (void*)unitPhysicsData[kTag_PlayerUnit]);						// 撃沈したオブジェクトを削除
 		// 自機を生成
@@ -846,6 +857,7 @@ void GameScene::update(float dt) {
 		}
 	}
 	if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter > 629) {
+
 		destroyerAI2();
 	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
 		destroyerAI();
@@ -1311,12 +1323,16 @@ float GameScene::coefficientOfSpeed() {
 	if (pSwitchPointY >= meterPosition[3] - 15) {
 		coefficientOfSpeed = 4;
 	} else if (pSwitchPointY >= meterPosition[2] + 7) {
+
 		coefficientOfSpeed = 3;
 	} else if (pSwitchPointY >= meterPosition[1] + 7) {
 		coefficientOfSpeed = 2;
 	} else {
 		coefficientOfSpeed = 1;
 	}
+//	this->unschedule(schedule_selector(GameScene::countMinusHp));
+//	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );
+
 	return coefficientOfSpeed;
 }
 
