@@ -728,6 +728,8 @@ void GameScene::finishGame() {
 
 	// 「Game Over」を表示する
 	CCSprite* gameOver = CCSprite::create(fileName);
+	float a = getWindowSize().width;
+	float b = getWindowSize().height;
 	gameOver->setPosition(ccp(getWindowSize().width * 0.5, getWindowSize().height * 0.5));
 	gameOver->setScale(0);
 	gameOver->runAction(Animation::gameOverAnimation(this, callfunc_selector(GameScene::moveToNextScene)));
@@ -1043,6 +1045,7 @@ void GameScene::submarineAI() {
 		if (up > getWindowSize().height * 0.65 ) {
 			up = getWindowSize().height * 0.65;
 		}
+		CCPoint a = unitData[kTag_EnemySubmarine]->getPosition();			// 画像の座標を設定
 		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_EnemySubmarine]->GetAngle());
@@ -1094,7 +1097,9 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	b2Body* missileBody = pBomb->getPhysicsBody();
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
-	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+	rand() % 2 ?
+	position.Set(position.x + rotatedPosition.x - 0.1, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
+	position.Set(position.x - rotatedPosition.x + 0.1, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, unitAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle / 2 - PI / 8));										// x座標y座標に圧力をかける
 
