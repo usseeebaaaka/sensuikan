@@ -15,6 +15,7 @@ class GameScene : public cocos2d::CCLayer {
 	GamePhysicsContactListener* mGamePhysicsContactListener3;
 	bool missileLaunchableFlag;
 	float score_and_Maxplace;												// 整数部は得点で小数部は得点の桁
+	int chooseScenario;													// シナリオ
 	int timeCounter;
 	int reloadTime;
 	int missileDamage;														// 2014.05.15.I ミサイルの威力
