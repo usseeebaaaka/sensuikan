@@ -28,6 +28,7 @@ GameScene::GameScene()
  reloadTime(0),							// 自機ミサイルのリロードタイムに利用
  timeCounter(1260),						// 敵AIのシードとして利用
  playerAngle(0),						// playerの角度を保持
+ chooseScenario(0),						//
  hitAnimation(14){						// 爆発アニメーションpng枚数(アニメーションを再生する際に使用)
 	scoreText = new CCArray();
 	srand((unsigned int)time(NULL));
@@ -864,36 +865,44 @@ void GameScene::update(float dt) {
 		}
 	}
 	if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter > 629) {
-
 		destroyerAI2();
 	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
 		destroyerAI();
 
-	} if (this->getChildByTag(kTag_EnemySubmarine) && (timeCounter > 1140 || (timeCounter > 1020 && timeCounter < 1080)|| (timeCounter > 660 && timeCounter < 780)|| (timeCounter > 300 && timeCounter < 420))) {
+	} if (this->getChildByTag(kTag_EnemySubmarine) && !(chooseScenario) && (timeCounter > 1140 || (timeCounter > 1020 && timeCounter < 1080)|| (timeCounter > 660 && timeCounter < 780)|| (timeCounter > 300 && timeCounter < 420))) {
 		submarineAI();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 840 && timeCounter < 960)|| (timeCounter > 420 && timeCounter < 600) || (timeCounter > 240 && timeCounter < 300) || (timeCounter > 0 && timeCounter < 120))) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine) &&  !(chooseScenario) && ((timeCounter > 840 && timeCounter < 960)|| (timeCounter > 420 && timeCounter < 600) || (timeCounter > 240 && timeCounter < 300) || (timeCounter > 0 && timeCounter < 120))) {
 		submarineAI2();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 1080 && timeCounter < 1140) || (timeCounter > 960 && timeCounter < 1020) || (timeCounter > 780 && timeCounter < 840))) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && !(chooseScenario) &&  ((timeCounter > 1080 && timeCounter < 1140) || (timeCounter > 960 && timeCounter < 1020) || (timeCounter > 780 && timeCounter < 840))) {
 		submarineAI3();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 600 && timeCounter < 660) || (timeCounter > 180 && timeCounter < 240) || (timeCounter > 120 && timeCounter < 180))) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && !(chooseScenario) &&  ((timeCounter > 600 && timeCounter < 660) || (timeCounter > 180 && timeCounter < 240) || (timeCounter > 120 && timeCounter < 180))) {
 		submarineAI4();
 	}
+	if (this->getChildByTag(kTag_EnemySubmarine) && chooseScenario == 1 && ((timeCounter > 960 && timeCounter < 1200)|| (timeCounter > 600 && timeCounter < 840) || (timeCounter > 150 && timeCounter < 210))) {
+			submarineAI();
+		} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 1 && ((timeCounter > 240 && timeCounter < 540) || (timeCounter < 150))) {
+			submarineAI2();
+		} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 840 && timeCounter < 960))) {
+			submarineAI3();
+		} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 1200) || (timeCounter > 540 && timeCounter < 600) || (timeCounter > 210 && timeCounter < 240))) {
+			submarineAI4();
+		}
+	if (this->getChildByTag(kTag_EnemySubmarine) && chooseScenario == 2 && ((timeCounter > 900 && timeCounter < 1200)|| (timeCounter > 60 && timeCounter < 120))) {
+				submarineAI();
+			} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 2 && ((timeCounter > 360 && timeCounter < 660) || (timeCounter < 60))) {
+				submarineAI2();
+			} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 780 && timeCounter < 900) || (timeCounter > 240 && timeCounter < 360))) {
+				submarineAI3();
+			} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 660 && timeCounter < 780) || (timeCounter > 120 && timeCounter < 240))) {
+				submarineAI4();
+			}
 	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
 		finishGame();
 	}
 	if (!timeCounter) {
+		chooseScenario == 2 ? chooseScenario = 0 : chooseScenario++;
 		timeCounter += 1260;
 	}
-
-	//	// テスト用コード
-	//	if(this->getChildByTag(kTag_PlayerUnit)) {
-	//		this->schedule(schedule_selector(GameScene::movePlayerBack), 1.0 / 60.0 );
-	//	}else {
-	//		this->unschedule(schedule_selector(GameScene::movePlayerBack));
-	//	}
-	//	this->schedule(schedule_selector(GameScene::moveEnemyBack), 1.0 / 60.0 );
-	//	// ここまで
-
 }
 // スコア部を生成
 void GameScene::createScore() {
