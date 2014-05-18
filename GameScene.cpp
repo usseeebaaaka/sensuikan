@@ -13,7 +13,7 @@ USING_NS_CC;
 GameScene::GameScene()
 :arrow_key(4),							// 十字キー(４方向)
  missileLaunchableFlag(1),				// 自機がミサイルを撃った撃ってないのフラグ
- reloadMissile(30),						// ミサイル最大保持数
+ reloadMissile(3),						// ミサイル最大保持数
  enemyUnit_num(2),						// 敵の数
  player_VIT(90),						// 自機を生成する際に基準とするhp
  missileDamage(30),						// ミサイル当たった際の自機ダメージ
@@ -23,8 +23,9 @@ GameScene::GameScene()
  dealofScrollSpead(0.2),				// スクロールスピード
  buttons_sum(11),						// タップできるボタンの合計数(全11ボタン)
  playerUnit(NULL),						//
+
  lifepoint(2),							// 自機の残機
- defeatAnimation(8),					// 機体爆破時のpng枚数(アニメーションを再生する際に使用)
+ defeatAnimation(15),					// 機体爆破時のpng枚数(アニメーションを再生する際に使用)
  reloadTime(0),							// 自機ミサイルのリロードタイムに利用
  timeCounter(1260),						// 敵AIのシードとして利用
  playerAngle(0),						// playerの角度を保持
@@ -724,6 +725,7 @@ void GameScene::removeObject(CCNode* pObject, void* body = 0) {
 
 // 終了時clearもしくはgameoverの画像を表示
 void GameScene::finishGame() {
+	this->unschedule(schedule_selector(GameScene::countMinusHp));	// 5秒ごとにhpを減らす(初期設定1)
 	unscheduleMove();					// 自機の動きを止める
 	this->setTouchEnabled(false);		// タップを受け入れないようfalseに設定
 	// update( )関数の呼び出しを停止する
@@ -813,7 +815,7 @@ void GameScene::update(float dt) {
 		}  else if (objectTag == kTag_DefeatPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
 			CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
 			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
-			explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+			explosion->runAction(Animation::hitAnimation(defeatAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
 			this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
 			this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
 			unitData[kTag_PlayerUnit]->setHp(0);
@@ -1135,6 +1137,8 @@ void GameScene::createMissileSubmarine(b2Vec2 position, float unitAngle) {
 	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, PI / 2 + unitAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 8, unitAngle * 3 / 8));										// x座標y座標に圧力をかける
+//	missileBody->SetLinearVelocity(b2Vec2(3 / 2 * -(PI + (unitAngle >= 0) ? unitAngle : -unitAngle) * 3, unitAngle));										// x座標y座標に圧力をかける
+
 }
 
 /*----- 自機の左ミサイル発射ボタンに対応 -----*/
@@ -1274,7 +1278,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				GameScene::moveToNextScene();									// moveToNextSceneを呼び出しシーンの再生成
 
 				// stopボタンをタップしたら以下処理
-			} else if(tag_no == kTag_Key_Center) {
+			} else if(tag_no == kTag_Key_Center && i->boundingBox().containsPoint(loc)) {
 				unscheduleMove();
 			}
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
