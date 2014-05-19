@@ -126,7 +126,9 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 	 * ***********************/
 
 	 } else if ((tagA == TAG_PLAYER_UNIT && tagB == TAG_SUBMARINE_UNIT)
-			 || (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_PLAYER_UNIT)){		// 自機と敵潜水艦
+			 || (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_PLAYER_UNIT)
+			 || (tagA == TAG_SEABED && tagB == TAG_PLAYER_UNIT)
+			 || (tagA == TAG_PLAYER_UNIT && tagB == TAG_SEABED)){		// 自機と敵潜水艦
 	 		// 敵ミサイルと敵ミサイル
 	 		// 両タグにミサイル除去タグをセット
 			tagA == TAG_PLAYER_UNIT ? actorA->setTag(TAG_DEFEAT_PLAYER)

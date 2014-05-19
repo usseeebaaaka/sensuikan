@@ -12,7 +12,7 @@ USING_NS_CC;
 // コンストラクタ
 GameScene::GameScene()
 :arrow_key(4),							// 十字キー(４方向)
- game_level(3),
+ game_level(2),
  missileLaunchableFlag(1),				// 自機がミサイルを撃った撃ってないのフラグ
  reloadMissile(3),						// ミサイル最大保持数
  enemyUnit_num(2),						// 敵の数
@@ -157,11 +157,11 @@ void GameScene::createRetryButton() {
 // 15秒毎にライフが1減る
 void GameScene::countMinusHp() {
 	int minusHp;
-	if ((int)coefficientOfSpeed() == 1) {
+	if ((int)coefficientOfSpeed() == 1 + game_level - 1) {
 		minusHp = 1;
-	}else if((int)coefficientOfSpeed() == 2) {
+	}else if((int)coefficientOfSpeed() == 2 + game_level - 1) {
 		minusHp = 3;
-	}else if((int)coefficientOfSpeed() == 3) {
+	}else if((int)coefficientOfSpeed() == 3 + game_level - 1) {
 		minusHp = 5;
 	}else{
 		minusHp = 10;
@@ -444,7 +444,15 @@ void GameScene::createLife() {
 		 */
 		pLife->setPosition(ccp(getCCPoint(kTag_LivesRemaining).x,
 				getCCPoint(kTag_LivesRemaining).y - pLife->getContentSize().height * (i + 1)));		// オブジェクト情報をバッチノードにセット
-		lifeBatchNode->addChild(pLife);
+
+		ccColor3B color = ccc3(155, 213, 240);					// level1の時は水色をセット(rgb基準)
+		if(game_level == 2) {									// level2(デフォルト)の時は
+			 color = ccc3(255, 255, 072);						// 黄色をセット
+		}else if(game_level == 3) {								// level3の時は
+			 color = ccc3(237, 063, 072);						// 赤色をセット
+		}
+		pLife->setColor(color);									// 色をセット
+		lifeBatchNode->addChild(pLife);							// スプライトの実装
 	}
 }
 
@@ -812,18 +820,10 @@ void GameScene::update(float dt) {
 				myUnit->setPositionX(getWindowSize().width * 0.15);
 			} if(myUnit->getPositionY() > getWindowSize().height * 0.7){
 				myUnit->setPositionY(getWindowSize().height * 0.7);
-			} if(myUnit->getPositionY() < getWindowSize().height * 0.31) {
-				// 毎フレームforwardUnit関数を呼び出すように設定
-
-				//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-				myUnit->setPositionY(getWindowSize().height * 0.31);
 			} if(myUnit->getPositionX() > getWindowSize().width * 0.85){
 				myUnit->setPositionX(getWindowSize().width * 0.85);
 			} if(myUnit->getPositionY() > getWindowSize().height * 2 / 3){
 				myUnit->setPositionY(getWindowSize().height * 2 / 3);
-			} if(myUnit->getPositionY() < getWindowSize().height / 4) {
-				// 毎フレームbackUnit関数を呼び出すように設定する
-				myUnit->setPositionY(getWindowSize().height * 3 / 4);
 			}
 		} else if (objectTag == kTag_CollisionSubmarine) {						// 敵潜水艦に衝突判定があれば以下
 			displayScore(10);													// スコアを+10して更新
@@ -1276,6 +1276,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				} else {
 					game_level = 1;
 				}
+				createLife();
 			}
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
 			if(touch_judge) {
@@ -1340,14 +1341,14 @@ float GameScene::coefficientOfSpeed() {
 	float b = meterPosition[kTag_Gear3 - kTag_Gear1];
 	float c = meterPosition[kTag_Gear2 - kTag_Gear1];
 	if (pSwitchPointY >= meterPosition[3] - 15) {
-		coefficientOfSpeed = 4;
+		coefficientOfSpeed = 4 + game_level - 1;
 	} else if (pSwitchPointY >= meterPosition[2] + 7) {
 
-		coefficientOfSpeed = 3;
+		coefficientOfSpeed = 3 + game_level - 1;
 	} else if (pSwitchPointY >= meterPosition[1] + 7) {
-		coefficientOfSpeed = 2;
+		coefficientOfSpeed = 2 + game_level - 1;
 	} else {
-		coefficientOfSpeed = 1;
+		coefficientOfSpeed = 1 + game_level - 1;
 	}
 //	this->unschedule(schedule_selector(GameScene::countMinusHp));
 //	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );
