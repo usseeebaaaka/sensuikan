@@ -11,6 +11,7 @@ class GameScene : public cocos2d::CCLayer {
 	GamePhysicsContactListener* mGamePhysicsContactListener;
 	bool missileLaunchableFlag;
 	float score_and_Maxplace;												// 整数部は得点で小数部は得点の桁
+	int game_level;
 	int chooseScenario;													// シナリオ
 	int timeCounter;
 	int reloadTime;
@@ -81,13 +82,13 @@ class GameScene : public cocos2d::CCLayer {
 		kTag_Shoot_Vertical,		// 垂直射撃ボタン
 		kTag_Shoot_Horizontal,		// 水平射撃ボタン
 		kTag_Retry,
+		kTag_LivesRemaining,
 		kTag_Switch,
 		kTag_Gear1,					// 1番スピードが遅いギア
 		kTag_Gear2,					// 2番目にスピードが遅いギア
 		kTag_Gear3,					// 3番目にスピードが遅いギア
 		kTag_Gear4,					// 4番目にスピードが遅いギア
 		kTag_Animation,
-		kTag_LivesRemaining,
 		kTag_changeBegan = 100,		// タップ開始
 		kTag_changeEnded = 101,		// タップ終了
 		kTag_Call_Scroll = 200,		// スクロール開始フラグ

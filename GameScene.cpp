@@ -12,6 +12,7 @@ USING_NS_CC;
 // コンストラクタ
 GameScene::GameScene()
 :arrow_key(4),							// 十字キー(４方向)
+ game_level(1),
  missileLaunchableFlag(1),				// 自機がミサイルを撃った撃ってないのフラグ
  reloadMissile(3),						// ミサイル最大保持数
  enemyUnit_num(2),						// 敵の数
@@ -21,7 +22,7 @@ GameScene::GameScene()
  destroyer_VIT(1515),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
  score_and_Maxplace(0.3),				// スコアの数値を保持　少数部は桁数に利用
  dealofScrollSpead(0.2),				// スクロールスピード
- buttons_sum(11),						// タップできるボタンの合計数(全11ボタン)
+ buttons_sum(12),						// タップできるボタンの合計数(全11ボタン)
  playerUnit(NULL),						//
 
  lifepoint(2),							// 自機の残機
@@ -447,8 +448,6 @@ void GameScene::createLife() {
 	}
 }
 
-
-
 //コントローラ下地を作成
 void GameScene::createControllerPanel() {
 	//コントローラ部を作成
@@ -674,7 +673,7 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
 		createLifeCounter();													// ライフ再表示
 		displayScore(50);														// スコア50加算
-		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);		// 敵機を削除
+		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
 	}
 }
 
@@ -1000,10 +999,10 @@ void GameScene::destroyerAI() {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  100)) {											// ランダムでミサイルを発射
+	if(!(rand() %  (200 - 50 * game_level))) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width  * 2 /10) {									// ランダムで移動
-		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.8;		// ユニットの進むべきX座標を計算
+		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(forward, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
@@ -1015,10 +1014,10 @@ void GameScene::destroyerAI2() {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  100)) {										// ランダムでミサイルを発射
+	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 8 / 10) {									// ランダムで移動
-		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.8;		// ユニットの進むべきX座標を計算
+		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(back, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
@@ -1032,7 +1031,7 @@ void GameScene::submarineAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
-	if(!(rand() %  100)) {										// ランダムでミサイルを発射
+	if(!(200 - 50 * game_level)) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float angleBonusSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
@@ -1070,15 +1069,24 @@ void GameScene::submarineAI2() {
 // 船首を上げる関数
 void GameScene::submarineAI3() {
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 	if (unitAngle > -1 * PI / 4) {
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle - 0.01);	// 船首を上げます
+	}
+	if(!(200 - 50 * game_level)) {										// ランダムでミサイルを発射
+		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
 	}
 }
 // 船首を下げる関数
 void GameScene::submarineAI4() {
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
+
 	if (unitAngle < PI / 4) {
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle + 0.01);	// 船首を下げます
+	}
+	if(!(200 - 50 * game_level)) {										// ランダムでミサイルを発射
+		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
 	}
 }
 /*----- 駆逐艦のミサイル(やや右) -----*/
@@ -1089,7 +1097,7 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	pBomb->initWithTexture(bombBatchNode->getTexture());						// を指定位置にセット
 	pBomb->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	bombBatchNode->addChild(pBomb, kZOrder_Missile, kTag_MissileEnemy);
-	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Circle, 0);		// オブジェクトに物理構造を持たせる
+	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Circle, 0.3);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pBomb->getPhysicsBody();
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
@@ -1262,6 +1270,12 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				// stopボタンをタップしたら以下処理
 			} else if(tag_no == kTag_Key_Center && i->boundingBox().containsPoint(loc)) {
 				unscheduleMove();
+			} else if(tag_no == kTag_LivesRemaining && i->boundingBox().containsPoint(loc)) {
+				if(game_level != 3) {
+					game_level++;
+				} else {
+					game_level = 0;
+				}
 			}
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
 			if(touch_judge) {
