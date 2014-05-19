@@ -12,7 +12,7 @@ USING_NS_CC;
 // コンストラクタ
 GameScene::GameScene()
 :arrow_key(4),							// 十字キー(４方向)
- game_level(1),
+ game_level(3),
  missileLaunchableFlag(1),				// 自機がミサイルを撃った撃ってないのフラグ
  reloadMissile(3),						// ミサイル最大保持数
  enemyUnit_num(2),						// 敵の数
@@ -1031,7 +1031,7 @@ void GameScene::submarineAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
-	if(!(200 - 50 * game_level)) {										// ランダムでミサイルを発射
+	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
 	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float angleBonusSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
@@ -1052,7 +1052,7 @@ void GameScene::submarineAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
-	if(!(rand() %  100)) {										// ランダムでミサイルを発射
+	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
 	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
 		float angleBonusSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
@@ -1073,7 +1073,7 @@ void GameScene::submarineAI3() {
 	if (unitAngle > -1 * PI / 4) {
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle - 0.01);	// 船首を上げます
 	}
-	if(!(200 - 50 * game_level)) {										// ランダムでミサイルを発射
+	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
 	}
 }
@@ -1085,7 +1085,7 @@ void GameScene::submarineAI4() {
 	if (unitAngle < PI / 4) {
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle + 0.01);	// 船首を下げます
 	}
-	if(!(200 - 50 * game_level)) {										// ランダムでミサイルを発射
+	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
 		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
 	}
 }
@@ -1274,7 +1274,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				if(game_level != 3) {
 					game_level++;
 				} else {
-					game_level = 0;
+					game_level = 1;
 				}
 			}
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
