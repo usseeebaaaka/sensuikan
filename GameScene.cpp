@@ -421,28 +421,6 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 }
 
 // 残機を表示
-//void GameScene::createLife() {
-//	/* もしすでに残機表示がされていれば
-//	 * その表示を全て削除
-//	 */
-//	if(((CCSprite*)getChildByTag(kTag_Life))) {
-//		((CCSprite*)getChildByTag(kTag_Life))->removeFromParentAndCleanup(true);
-//	}
-//	// 画像ファイルをバッチノード化
-//	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hp.png");
-//	this->addChild(lifeBatchNode, kZOrder_Label, kTag_Life);				// タグとノードを関連づけ
-//	// ライフの数だけ繰り返し
-//	for (int i = 0; i < lifepoint; i++) {
-//		// バッチノードから画像を取得してオブジェクト化
-//		CCSprite* pLife = CCSprite::createWithTexture(lifeBatchNode->getTexture());
-//		// 任意の位置に画像をセット
-//		pLife->setPosition(ccp(getWindowSize().width / 10 * (9.5 - i * 0.8),		// スコアノードの位置を設定
-//				getWindowSize().height / 15 * 14));
-//		lifeBatchNode ->addChild(pLife);		// オブジェクト情報をバッチノードにセット
-//	}
-//}
-
-// 残機を表示
 void GameScene::createLife() {
 	/* もしすでに残機表示がされていれば
 	 * その表示を全て削除
@@ -451,13 +429,12 @@ void GameScene::createLife() {
 		((CCSprite*)getChildByTag(kTag_Life))->removeFromParentAndCleanup(true);
 	}
 	// 画像ファイルをバッチノード化
-	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("player.png");
+	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("remaining.png");
 	this->addChild(lifeBatchNode, kZOrder_Label, kTag_Life);				// タグとノードを関連づけ
 	// ライフの数だけ繰り返し
 	for (int i = 1; i <= lifepoint; i++) {
 		// バッチノードから画像を取得してオブジェクト化
 		CCSprite* pLife = CCSprite::createWithTexture(lifeBatchNode->getTexture());
-		pLife->setScale(0.6);
 		/* 座標のセット
 		 * x座標はlives remaining.pngの中心座標と同じ
 		 * y座標はミサイル残弾数のy座標(値の大きいほう)を基準にし、
