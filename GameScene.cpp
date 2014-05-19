@@ -1067,6 +1067,7 @@ void GameScene::submarineAI2() {
 // 船首を上げる関数
 void GameScene::submarineAI3() {
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 	if (unitAngle > -1 * PI / 4) {
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle - 0.01);	// 船首を上げます
 	}
@@ -1077,6 +1078,8 @@ void GameScene::submarineAI3() {
 // 船首を下げる関数
 void GameScene::submarineAI4() {
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
+
 	if (unitAngle < PI / 4) {
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle + 0.01);	// 船首を下げます
 	}
