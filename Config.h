@@ -8,7 +8,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define PTM_RATIO 128			// 128ピクセルで1メートルの変換
+#define PTM_RATIO 128				// 128ピクセルで1メートルの変換
 
 
 #define TAG_BORDERLINE 28			// 画面枠のタグ
@@ -16,7 +16,7 @@
 #define TAG_PLAYER_UNIT 30 			// 自機のタグ
 #define TAG_SUBMARINE_UNIT 31 		// 敵機のタグ
 #define TAG_DESTROYER_UNIT 32 		// 敵機のタグ
-#define TAG_MISSILE 33 				// ミサイルのタグ
+#define TAG_MISSILE 33 				// 自機ミサイルのタグ
 #define TAG_MISSILE_ENEMY 34		// 敵ミサイル
 #define TAG_COLLISION_PLAYER 35		// 追突タグ
 #define TAG_COLLISION_SUBMARINE 36	// 敵潜水艦の衝突判定タグ

@@ -71,7 +71,7 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 	} else if((tagA== TAG_MISSILE_ENEMY && tagB == TAG_PLAYER_UNIT)
 			|| (tagA == TAG_PLAYER_UNIT && tagB == TAG_MISSILE_ENEMY)) {
 		// ミサイルタグに自機衝突タグをセット
-		tagA == TAG_MISSILE ? actorA->setTag(TAG_COLLISION_PLAYER)
+		tagA == TAG_MISSILE_ENEMY ? actorA->setTag(TAG_COLLISION_PLAYER)
 				: actorB->setTag(TAG_COLLISION_PLAYER);
 
 	// 敵機ミサイルと敵潜水艦もしくは敵機潜水艦と敵機ミサイルの衝突
@@ -129,7 +129,9 @@ void GamePhysicsContactListener::BeginContact(b2Contact* contact) {
 			 || (tagA == TAG_SUBMARINE_UNIT && tagB == TAG_PLAYER_UNIT)){		// 自機と敵潜水艦
 	 		// 敵ミサイルと敵ミサイル
 	 		// 両タグにミサイル除去タグをセット
-	 		actorA->setTag(TAG_DEFEAT_PLAYER);
+			tagA == TAG_PLAYER_UNIT ? actorA->setTag(TAG_DEFEAT_PLAYER)
+					: actorB->setTag(TAG_DEFEAT_PLAYER);
+
 	 			}
 
 }

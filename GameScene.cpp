@@ -11,22 +11,26 @@ USING_NS_CC;
 
 // コンストラクタ
 GameScene::GameScene()
-:arrow_key(4),
- reloadMissile(3),
- enemyUnit_num(2),
- player_VIT(90),
- submarine_VIT(1515),
- destroyer_VIT(1515),
- score_and_Maxplace(0.3),
- dealofScrollSpead(0.2),
- buttons_sum(11),
- playerUnit(NULL),
- lifepoint(2),
- defeatAnimation(8),
- reloadTime(0),
- timeCounter(1260),
- playerAngle(0),
- hitAnimation(14){
+:arrow_key(4),							// 十字キー(４方向)
+ missileLaunchableFlag(1),				// 自機がミサイルを撃った撃ってないのフラグ
+ reloadMissile(3),						// ミサイル最大保持数
+ enemyUnit_num(2),						// 敵の数
+ player_VIT(90),						// 自機を生成する際に基準とするhp
+ missileDamage(30),						// ミサイル当たった際の自機ダメージ
+ submarine_VIT(1515),					// 敵潜水艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ destroyer_VIT(1515),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ score_and_Maxplace(0.3),				// スコアの数値を保持　少数部は桁数に利用
+ dealofScrollSpead(0.2),				// スクロールスピード
+ buttons_sum(11),						// タップできるボタンの合計数(全11ボタン)
+ playerUnit(NULL),						//
+
+ lifepoint(2),							// 自機の残機
+ defeatAnimation(15),					// 機体爆破時のpng枚数(アニメーションを再生する際に使用)
+ reloadTime(0),							// 自機ミサイルのリロードタイムに利用
+ timeCounter(1260),						// 敵AIのシードとして利用
+ playerAngle(0),						// playerの角度を保持
+ chooseScenario(0),						//
+ hitAnimation(14){						// 爆発アニメーションpng枚数(アニメーションを再生する際に使用)
 	scoreText = new CCArray();
 	srand((unsigned int)time(NULL));
 	unitPhysicsData[kTag_PlayerUnit] = playerUnit;
@@ -47,7 +51,6 @@ bool GameScene::init() {
 	if (!CCLayer::init()) {
 		return false;														// シーンオブジェクトの生成に失敗したらfalseを返す
 	}
-	//		sleep(15);
 	initPhysics();
 	createBackground();
 	createControllerPanel();
@@ -152,9 +155,24 @@ void GameScene::createRetryButton() {
 // 14. 5.13 H.U
 // 15秒毎にライフが1減る
 void GameScene::countMinusHp() {
-	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - 1);	// 自分の現在hpから1減らす
+	int minusHp;
+	if ((int)coefficientOfSpeed() == 1) {
+		minusHp = 1;
+	}else if((int)coefficientOfSpeed() == 2) {
+		minusHp = 3;
+	}else if((int)coefficientOfSpeed() == 3) {
+		minusHp = 5;
+	}else{
+		minusHp = 10;
+	}
+
+	// 自機の残りhpから燃料を減らした時、その値がゼロ以上であるならばその値を、
+	// 0未満になるならば0を自機のhpにセットする
+	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - minusHp >= 0 ?
+									unitData[kTag_PlayerUnit]->getHp() - minusHp
+									: 0);	// 自分の現在hpか速度に対応したhpを減らす
 	createLifeCounter();
-	// 自分のhpが1以上であれば以下のhpを1減らす処理に入る
+	// 自分のhpが0であれば以下のhpを1減らす処理に入る
 	if(!(unitData[kTag_PlayerUnit]->getHp())){
 		CCSprite* bombAction = CCSprite::create();									// スプライト生成
 		bombAction->setPosition(unitData[kTag_PlayerUnit]->getPosition());			// playerのオブジェクト(潜水艦)と同じ座標にセット
@@ -250,7 +268,7 @@ void GameScene::createRemainingMissile() {
 }
 void GameScene::initPhysics() {
 	b2Vec2 gravity;															// 重力の設定値を格納するための変数
-	gravity.Set(0, -0.4);													// 重力を設定
+	gravity.Set(0, 0);													// 重力を設定
 
 	world = new b2World(gravity);											// 重力を持った世界を生成
 
@@ -327,6 +345,14 @@ void GameScene::createBackground() {
 			b2Vec2(pBgUnder->getContentSize().width / PTM_RATIO, 0));
 	// 指定した境界線と密度を海底オブジェクトに登録
 	borderlineBody->CreateFixture(&borderlineBox, seabedHeight);
+
+	/*----- 画面の右端より奥に行けなくなるように設定 -----*/
+	/* 一つ目のb2Vec2で左辺のx座標とy座標を
+	 * 二つ目のb2Vec2で右辺のx座標とy座標をセット */
+	borderlineBox.Set(b2Vec2(pBgUnder->getContentSize().width / PTM_RATIO, pBgUnder->getContentSize().height / PTM_RATIO),
+			b2Vec2(pBgUnder->getContentSize().width / PTM_RATIO, 0));
+	// 指定した境界線と密度を海底オブジェクトに登録
+	borderlineBody->CreateFixture(&borderlineBox, seabedHeight);
 }
 
 // ユニットを生成する
@@ -345,7 +371,7 @@ void GameScene::createUnit(int hp, int kTag, int vit, int unit) {
 				bgSize.height * 0.6 /*- (bgSize.height - getWindowSize().height) / 4*/));
 	} else {																		// 潜水艦でない場合
 		pUnit->initWithFile("stage1.png");										// 駆逐艦画像を取得し、オブジェクトに格納
-		pUnit->setPosition(ccp(bgSize.width * 0.5,									// 任意の位置にオブジェクトをセット
+		pUnit->setPosition(ccp(pUnit->getContentSize().width / 2,									// 任意の位置にオブジェクトをセット
 				bgSize.height * 3 / 4 ));
 	}
 	this->addChild(pUnit, kZOrder_Unit, kTag);										// タグとオブジェクトを関連づける
@@ -376,14 +402,14 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 
 	b2PolygonShape PolygonShape;
 	b2CircleShape CircleShape;
-	if (!shape) {																	// shapeが0の場合
-		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.1 / PTM_RATIO,
-				pNode->getContentSize().height * 0.1 / PTM_RATIO);														// 角形の範囲を設定
+	if (shape == 2000) {																	// shapeが0の場合
+		PolygonShape.SetAsBox(pNode->getContentSize().width * 0.45 / PTM_RATIO,
+				pNode->getContentSize().height * 0.45 / PTM_RATIO);														// 角形の範囲を設定
 	} else {																		// shapeが0でない場合
 		CircleShape.m_radius = pNode->getContentSize().width * 0.4 / PTM_RATIO;	// 円形の範囲を設定
 	}
 
-	!shape ? physicsFixturedef.shape = &PolygonShape :
+	shape == 2000 ? physicsFixturedef.shape = &PolygonShape :
 			physicsFixturedef.shape = &CircleShape;
 	physicsFixturedef.density = shape;													// オブジェクトの密度を設定
 	physicsFixturedef.friction = 1;												// オブジェクトの摩擦を設定
@@ -395,28 +421,6 @@ PhysicsSprite* GameScene::createPhysicsBody(int bodyTag, int kTag, PhysicsSprite
 }
 
 // 残機を表示
-//void GameScene::createLife() {
-//	/* もしすでに残機表示がされていれば
-//	 * その表示を全て削除
-//	 */
-//	if(((CCSprite*)getChildByTag(kTag_Life))) {
-//		((CCSprite*)getChildByTag(kTag_Life))->removeFromParentAndCleanup(true);
-//	}
-//	// 画像ファイルをバッチノード化
-//	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("hp.png");
-//	this->addChild(lifeBatchNode, kZOrder_Label, kTag_Life);				// タグとノードを関連づけ
-//	// ライフの数だけ繰り返し
-//	for (int i = 0; i < lifepoint; i++) {
-//		// バッチノードから画像を取得してオブジェクト化
-//		CCSprite* pLife = CCSprite::createWithTexture(lifeBatchNode->getTexture());
-//		// 任意の位置に画像をセット
-//		pLife->setPosition(ccp(getWindowSize().width / 10 * (9.5 - i * 0.8),		// スコアノードの位置を設定
-//				getWindowSize().height / 15 * 14));
-//		lifeBatchNode ->addChild(pLife);		// オブジェクト情報をバッチノードにセット
-//	}
-//}
-
-// 残機を表示
 void GameScene::createLife() {
 	/* もしすでに残機表示がされていれば
 	 * その表示を全て削除
@@ -425,13 +429,12 @@ void GameScene::createLife() {
 		((CCSprite*)getChildByTag(kTag_Life))->removeFromParentAndCleanup(true);
 	}
 	// 画像ファイルをバッチノード化
-	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("player.png");
+	lifeBatchNode = CCSpriteBatchNode::CCSpriteBatchNode::create("remaining.png");
 	this->addChild(lifeBatchNode, kZOrder_Label, kTag_Life);				// タグとノードを関連づけ
 	// ライフの数だけ繰り返し
 	for (int i = 1; i <= lifepoint; i++) {
 		// バッチノードから画像を取得してオブジェクト化
 		CCSprite* pLife = CCSprite::createWithTexture(lifeBatchNode->getTexture());
-		pLife->setScale(0.6);
 		/* 座標のセット
 		 * x座標はlives remaining.pngの中心座標と同じ
 		 * y座標はミサイル残弾数のy座標(値の大きいほう)を基準にし、
@@ -443,6 +446,8 @@ void GameScene::createLife() {
 		lifeBatchNode->addChild(pLife);
 	}
 }
+
+
 
 //コントローラ下地を作成
 void GameScene::createControllerPanel() {
@@ -613,6 +618,7 @@ void GameScene::startGame() {
 	this->setTouchMode(kCCTouchesAllAtOnce);								// マルチタップイベントを受け付ける
 	// 毎フレームupdate( )関数を呼び出すように設定する
 	scheduleUpdate();
+	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );	// 5秒ごとにhpを減らす(初期設定1)
 }
 
 // mod 14. 5.15 H.U
@@ -624,18 +630,21 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		/* 自機の衝突判定があれば自機hpから10ずつ減算する(ダメージ)
 		 * hpが10未満であった場合は残りhpだけダメージを与えゲームオーバに遷移
 	 	 */
-		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() >= 30 ?
-			unitData[kTag_PlayerUnit]->getHp() - 30
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() >= missileDamage ?
+			unitData[kTag_PlayerUnit]->getHp() - missileDamage
 			: unitData[kTag_PlayerUnit]->getHp() - unitData[kTag_PlayerUnit]->getHp());
 		createLifeCounter();													// 自機hpを再表示
 	}else{
 		unit->setHp(unit->getHp() - 1);											// 敵機hpを-1してセット
 	}
-	CCSprite* bombAction = CCSprite::create();									// スプライト生成
-	bombAction->setPosition(unit->getPosition());								// playerのオブジェクト(潜水艦)と同じ座標にセット
-	int anima = unit->getHp() != 0 ? hitAnimation : defeatAnimation;
-	bombAction->runAction(Animation::hitAnimation(anima));						// 被弾時のアニメーションhitAnimationを呼び出す
-	this->addChild(bombAction, kZOrder_Countdown);								// 爆発アニメーションの実装
+
+	if(!(unit->getHp())) {
+		CCSprite* bombAction = CCSprite::create();									// スプライト生成
+		bombAction->setPosition(unit->getPosition());								// playerのオブジェクト(潜水艦)と同じ座標にセット
+		bombAction->runAction(Animation::hitAnimation(defeatAnimation));			// 被弾時のアニメーションhitAnimationを呼び出す
+		this->addChild(bombAction, kZOrder_Countdown);								// 爆発アニメーションの実装
+	}
+
 
 	// 自機あれば以下ブロック
 	if (unit == unitData[kTag_PlayerUnit]) {
@@ -652,18 +661,20 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 	}else if (unit == unitData[kTag_EnemySubmarine] && unit->getHp() == 0) {
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
-		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
-																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
-		displayScore(50);
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
+																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
+		createLifeCounter();													// ライフ再表示
+		displayScore(50);														// スコア50加算
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
 		// hp0になったユニットが敵駆逐艦だったら以下
 	}else if (unit == unitData[kTag_EnemyDestroyer] && unit->getHp() == 0) {
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
-		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > 60 ?
-																player_VIT - unitData[kTag_PlayerUnit]->getHp() : 30);
-		displayScore(50);
-		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
+		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
+																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
+		createLifeCounter();													// ライフ再表示
+		displayScore(50);														// スコア50加算
+		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);		// 敵機を削除
 	}
 }
 
@@ -694,13 +705,19 @@ void GameScene::removeObject(CCNode* pObject, void* body = 0) {
 
 // 終了時clearもしくはgameoverの画像を表示
 void GameScene::finishGame() {
+	this->unschedule(schedule_selector(GameScene::countMinusHp));	// 5秒ごとにhpを減らす(初期設定1)
+	unscheduleMove();					// 自機の動きを止める
+	this->setTouchEnabled(false);		// タップを受け入れないようfalseに設定
 	// update( )関数の呼び出しを停止する
+
 	unscheduleUpdate();
 	const char* fileName = unitData[kTag_PlayerUnit]->getHp() == 0
-			? "gameover.png" : "clear.png";	// lifepointが0であればgameover.pngを、違うならclear.pngで初期化
+			? "gameover.png" : "CLEAR.png";	// lifepointが0であればgameover.pngを、違うならclear.pngで初期化
 
 	// 「Game Over」を表示する
 	CCSprite* gameOver = CCSprite::create(fileName);
+	float a = getWindowSize().width;
+	float b = getWindowSize().height;
 	gameOver->setPosition(ccp(getWindowSize().width * 0.5, getWindowSize().height * 0.5));
 	gameOver->setScale(0);
 	gameOver->runAction(Animation::gameOverAnimation(this, callfunc_selector(GameScene::moveToNextScene)));
@@ -728,6 +745,9 @@ void GameScene::update(float dt) {
 		if (!b->GetUserData()) {
 			continue;													// オブジェクトが見つからない場合は次のループへ
 		}
+		if (!(b->IsAwake())) {
+			b->SetAwake(true);
+		}
 		CCNode* object = (CCNode*)b->GetUserData();						// オブジェクトを取得
 		if (!(object->getTag())) {
 			// オブジェクトのタグを取得
@@ -740,7 +760,7 @@ void GameScene::update(float dt) {
 		} else if (objectTag == kTag_Remove_Missile || objectTag == kTag_explosion_Missile) {
 
 			if(objectTag == kTag_explosion_Missile) {
-				CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
+				CCSprite* explosion = CCSprite::create();						// スプライトを生成
 				explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
 				explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
 				this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
@@ -763,6 +783,11 @@ void GameScene::update(float dt) {
 			//				object->runAction(func);
 			//			}
 		} else if (objectTag == kTag_CollisionPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
+			CCSprite* explosion = CCSprite::create();						// スプライトを生成
+			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
+			explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+			this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+			this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
 			removeObject(object, (void*)b);								// ミサイルを消す
 			//          PhysicsSprite* pObject = (PhysicsSprite*)object;
 			//            if (pObject->getTag() /*!= kTag_PlayerUnit*/) {
@@ -770,7 +795,7 @@ void GameScene::update(float dt) {
 		}  else if (objectTag == kTag_DefeatPlayer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
 			CCSprite* explosion = CCSprite::create();						// hit0.pngを取得
 			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
-			explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+			explosion->runAction(Animation::hitAnimation(defeatAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
 			this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
 			this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
 			unitData[kTag_PlayerUnit]->setHp(0);
@@ -788,11 +813,11 @@ void GameScene::update(float dt) {
 				myUnit->setPositionX(getWindowSize().width * 0.15);
 			} if(myUnit->getPositionY() > getWindowSize().height * 0.7){
 				myUnit->setPositionY(getWindowSize().height * 0.7);
-			} if(myUnit->getPositionY() < getWindowSize().height * 0.3) {
+			} if(myUnit->getPositionY() < getWindowSize().height * 0.31) {
 				// 毎フレームforwardUnit関数を呼び出すように設定
 
 				//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-				myUnit->setPositionY(getWindowSize().height * 0.3);
+				myUnit->setPositionY(getWindowSize().height * 0.31);
 			} if(myUnit->getPositionX() > getWindowSize().width * 0.85){
 				myUnit->setPositionX(getWindowSize().width * 0.85);
 			} if(myUnit->getPositionY() > getWindowSize().height * 2 / 3){
@@ -803,43 +828,63 @@ void GameScene::update(float dt) {
 			}
 		} else if (objectTag == kTag_CollisionSubmarine) {						// 敵潜水艦に衝突判定があれば以下
 			displayScore(10);													// スコアを+10して更新
+			CCSprite* explosion = CCSprite::create();						// スプライトを生成
+			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
+			explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+			this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+			this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
 			removeObject(object, (void*)b);										// ミサイルを消す
 			hitUnit(unitData[kTag_EnemySubmarine]);								// 自機が撃沈される
 		} else if (objectTag == kTag_CollisionDestroyer) {						// 機体同士もしくはプレイヤーが海底に衝突した場合
 			displayScore(10);													// スコアを+10して更新
+			CCSprite* explosion = CCSprite::create();						// スプライトを生成
+			explosion->setPosition(ccp(b->GetPosition().x * PTM_RATIO, b->GetPosition().y * PTM_RATIO));	// playerのオブジェクト(潜水艦)と同じ座標にセット
+			explosion->runAction(Animation::hitAnimation(hitAnimation));						// 被弾時のアニメーションhitAnimationを呼び出す
+			this->addChild(explosion, kZOrder_Countdown);								// 爆発アニメーションの実装
+			this->scheduleOnce(schedule_selector(GameScene::explosionSound), 0);		// 0秒後に爆発エフェクト音を鳴らす
 			removeObject(object, (void*)b);										// ミサイルを消す
 			hitUnit(unitData[kTag_EnemyDestroyer]);								// 自機が撃沈される
 		}
 	}
 	if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter > 629) {
-		destroyerAI();
-	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
 		destroyerAI2();
-	} if (this->getChildByTag(kTag_EnemySubmarine) && (timeCounter > 1140 || (timeCounter > 1020 && timeCounter < 1080)|| (timeCounter > 660 && timeCounter < 780)|| (timeCounter > 300 && timeCounter < 420))) {
+	} else if (this->getChildByTag(kTag_EnemyDestroyer) && timeCounter < 630) {
+		destroyerAI();
+
+	} if (this->getChildByTag(kTag_EnemySubmarine) && !(chooseScenario) && (timeCounter > 1140 || (timeCounter > 1020 && timeCounter < 1080)|| (timeCounter > 660 && timeCounter < 780)|| (timeCounter > 300 && timeCounter < 420))) {
 		submarineAI();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 840 && timeCounter < 960)|| (timeCounter > 420 && timeCounter < 600) || (timeCounter > 240 && timeCounter < 300) || (timeCounter > 0 && timeCounter < 120))) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine) &&  !(chooseScenario) && ((timeCounter > 840 && timeCounter < 960)|| (timeCounter > 420 && timeCounter < 600) || (timeCounter > 240 && timeCounter < 300) || (timeCounter > 0 && timeCounter < 120))) {
 		submarineAI2();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 1080 && timeCounter < 1140) || (timeCounter > 960 && timeCounter < 1020) || (timeCounter > 780 && timeCounter < 840))) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && !(chooseScenario) &&  ((timeCounter > 1080 && timeCounter < 1140) || (timeCounter > 960 && timeCounter < 1020) || (timeCounter > 780 && timeCounter < 840))) {
 		submarineAI3();
-	} else if (this->getChildByTag(kTag_EnemySubmarine) && ((timeCounter > 600 && timeCounter < 660) || (timeCounter > 180 && timeCounter < 240) || (timeCounter > 120 && timeCounter < 180))) {
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && !(chooseScenario) &&  ((timeCounter > 600 && timeCounter < 660) || (timeCounter > 180 && timeCounter < 240) || (timeCounter > 120 && timeCounter < 180))) {
 		submarineAI4();
 	}
+	if (this->getChildByTag(kTag_EnemySubmarine) && chooseScenario == 1 && ((timeCounter > 960 && timeCounter < 1200)|| (timeCounter > 600 && timeCounter < 840) || (timeCounter > 150 && timeCounter < 210))) {
+			submarineAI();
+		} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 1 && ((timeCounter > 240 && timeCounter < 540) || (timeCounter < 150))) {
+			submarineAI2();
+		} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 840 && timeCounter < 960))) {
+			submarineAI3();
+		} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 1200) || (timeCounter > 540 && timeCounter < 600) || (timeCounter > 210 && timeCounter < 240))) {
+			submarineAI4();
+		}
+	if (this->getChildByTag(kTag_EnemySubmarine) && chooseScenario == 2 && ((timeCounter > 900 && timeCounter < 1200)|| (timeCounter > 60 && timeCounter < 120))) {
+				submarineAI();
+			} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 2 && ((timeCounter > 360 && timeCounter < 660) || (timeCounter < 60))) {
+				submarineAI2();
+			} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 780 && timeCounter < 900) || (timeCounter > 240 && timeCounter < 360))) {
+				submarineAI3();
+			} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 660 && timeCounter < 780) || (timeCounter > 120 && timeCounter < 240))) {
+				submarineAI4();
+			}
 	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
 		finishGame();
 	}
 	if (!timeCounter) {
+		chooseScenario == 2 ? chooseScenario = 0 : chooseScenario++;
 		timeCounter += 1260;
 	}
-
-	//	// テスト用コード
-	//	if(this->getChildByTag(kTag_PlayerUnit)) {
-	//		this->schedule(schedule_selector(GameScene::movePlayerBack), 1.0 / 60.0 );
-	//	}else {
-	//		this->unschedule(schedule_selector(GameScene::movePlayerBack));
-	//	}
-	//	this->schedule(schedule_selector(GameScene::moveEnemyBack), 1.0 / 60.0 );
-	//	// ここまで
-
 }
 // スコア部を生成
 void GameScene::createScore() {
@@ -955,10 +1000,10 @@ void GameScene::destroyerAI() {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  200)) {											// ランダムでミサイルを発射
+	if(!(rand() %  100)) {											// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
-	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
-		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.2;		// ユニットの進むべきX座標を計算
+	} else if(destroyerPositions.x > getWindowSize().width  * 2 /10) {									// ランダムで移動
+		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.8;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(forward, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
@@ -970,10 +1015,10 @@ void GameScene::destroyerAI2() {
 	PhysicsSprite* ab = unitData[kTag_EnemyDestroyer];
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
-	if(!(rand() %  200)) {										// ランダムでミサイルを発射
+	if(!(rand() %  100)) {										// ランダムでミサイルを発射
 		createMissile(destroyerPosition, 0);							// ミサイルを発射
-	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
-		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.2;		// ユニットの進むべきX座標を計算
+	}  else if(destroyerPositions.x < getWindowSize().width * 8 / 10) {									// ランダムで移動
+		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.8;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
 		unitData[kTag_EnemyDestroyer]->setPosition(ccp(back, unitData[kTag_EnemyDestroyer]->getPositionY()));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
@@ -996,6 +1041,7 @@ void GameScene::submarineAI() {
 		if (up > getWindowSize().height * 0.65 ) {
 			up = getWindowSize().height * 0.65;
 		}
+		CCPoint a = unitData[kTag_EnemySubmarine]->getPosition();			// 画像の座標を設定
 		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_EnemySubmarine]->GetAngle());
@@ -1043,13 +1089,15 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	pBomb->initWithTexture(bombBatchNode->getTexture());						// を指定位置にセット
 	pBomb->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	bombBatchNode->addChild(pBomb, kZOrder_Missile, kTag_MissileEnemy);
-	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Circle, 1);		// オブジェクトに物理構造を持たせる
+	pBomb = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pBomb, kTag_Circle, 0);		// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pBomb->getPhysicsBody();
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
-	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y - 0.1/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+	rand() % 2 ?
+	position.Set(position.x + rotatedPosition.x - 0.1, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
+	position.Set(position.x - rotatedPosition.x + 0.1, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, unitAngle);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle / 2 - PI / 4));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle / 2 - PI / 8));										// x座標y座標に圧力をかける
 
 }
 
@@ -1062,13 +1110,15 @@ void GameScene::createMissileSubmarine(b2Vec2 position, float unitAngle) {
 	pMissileSubmarine->initWithTexture(enemyMissileBatchNode->getTexture());							// を指定位置にセット
 	pMissileSubmarine->setOpacity(200);																		// 透過設定(0…完全に透過、255…元の画像表示)
 	enemyMissileBatchNode->addChild(pMissileSubmarine, kZOrder_Missile, kTag_MissileEnemy);						// 以上の情報でミサイル画像を生成
-	pMissileSubmarine = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pMissileSubmarine, kTag_Circle, 1);	// オブジェクトに物理構造を持たせる
+	pMissileSubmarine = createPhysicsBody(kTag_DynamicBody, kTag_MissileEnemy, pMissileSubmarine, kTag_Circle, 0);	// オブジェクトに物理構造を持たせる
 	b2Body* missileBody = pMissileSubmarine->getPhysicsBody();											// オブジェクトpMissileのデータメンバ
 	float submarineUnitLength = unitData[kTag_EnemySubmarine]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(submarineUnitLength, unitAngle);
 	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, PI / 2 + unitAngle);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 4, unitAngle * 0.75));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 8, unitAngle * 3 / 8));										// x座標y座標に圧力をかける
+//	missileBody->SetLinearVelocity(b2Vec2(3 / 2 * -(PI + (unitAngle >= 0) ? unitAngle : -unitAngle) * 3, unitAngle));										// x座標y座標に圧力をかける
+
 }
 
 /*----- 自機の左ミサイル発射ボタンに対応 -----*/
@@ -1086,7 +1136,7 @@ void GameScene::createMissileLeft(b2Vec2 position) {
 	b2Vec2 rotatedPosition = trigonometric(playerUnitLength, playerAngle);
 	position.Set(position.x - rotatedPosition.x, position.y - rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, -PI / 2 + playerAngle);												// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-1.5 * PI - playerAngle * 3, -playerAngle * 3));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-3 / 2 * PI + (playerAngle >= 0 ? playerAngle : -playerAngle) * 3, -playerAngle));										// x座標y座標に圧力をかける
 }
 
 /*----- ミサイル左上発射 -----*/
@@ -1104,7 +1154,7 @@ void GameScene::createMissileDiagonal(b2Vec2 position) {
 	b2Vec2 rotatedPosition = trigonometric(playerUnitLength, playerAngle);
 	position.Set(position.x - rotatedPosition.x, position.y - rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, PI + playerAngle);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-playerAngle * 2, PI -playerAngle * 2));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-playerAngle, (PI -playerAngle) / 4));										// x座標y座標に圧力をかける
 }
 /*
  * 関数名:b2Vec2 trigonometric(float length, float radian)
@@ -1186,13 +1236,17 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 			if((tag_no == kTag_Shoot_Vertical || tag_no == kTag_Shoot_Horizontal)
 					&& i->boundingBox().containsPoint(loc)) {
 				b2Vec2 playerPosition = unitPhysicsData[kTag_PlayerUnit]->GetPosition();	//PlayerUnitのスプライトを取得しその座標で初期化
-				if(tag_no == kTag_Shoot_Horizontal && reloadMissile) {
+				if(tag_no == kTag_Shoot_Horizontal && reloadMissile && missileLaunchableFlag) {
 					reloadMissile--;
+					missileLaunchableFlag = 0;
 					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
+					unscheduleMove();
 					createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
-				} else if (reloadMissile){
+				} else if (reloadMissile && missileLaunchableFlag){
 					reloadMissile--;
+					missileLaunchableFlag = 0;
 					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
+					unscheduleMove();
 					createMissileDiagonal(playerPosition);	//MOD 14/5/6 H.U
 					//createMissileDiagonal(unitPhysicsData[kTag_PlayerUnit]);	//MOD 14/5/6 H.U
 				}
@@ -1206,7 +1260,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				GameScene::moveToNextScene();									// moveToNextSceneを呼び出しシーンの再生成
 
 				// stopボタンをタップしたら以下処理
-			} else if(tag_no == kTag_Key_Center) {
+			} else if(tag_no == kTag_Key_Center && i->boundingBox().containsPoint(loc)) {
 				unscheduleMove();
 			}
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
@@ -1272,14 +1326,18 @@ float GameScene::coefficientOfSpeed() {
 	float b = meterPosition[kTag_Gear3 - kTag_Gear1];
 	float c = meterPosition[kTag_Gear2 - kTag_Gear1];
 	if (pSwitchPointY >= meterPosition[3] - 15) {
-		coefficientOfSpeed = 7;
+		coefficientOfSpeed = 4;
 	} else if (pSwitchPointY >= meterPosition[2] + 7) {
-		coefficientOfSpeed = 5;
-	} else if (pSwitchPointY >= meterPosition[1] + 7) {
+
 		coefficientOfSpeed = 3;
+	} else if (pSwitchPointY >= meterPosition[1] + 7) {
+		coefficientOfSpeed = 2;
 	} else {
 		coefficientOfSpeed = 1;
 	}
+//	this->unschedule(schedule_selector(GameScene::countMinusHp));
+//	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );
+
 	return coefficientOfSpeed;
 }
 
@@ -1434,13 +1492,16 @@ void GameScene::changeMissileButton(int tag_no, int change) {
 void GameScene::missileTimer() {
 	reloadTime++;														// リロード時間を計測する
 	if (reloadTime == 90) {												// 90/60秒経ったら数値をリセット
+		missileLaunchableFlag = 1;
 		reloadTime = 0;
 		reloadMissile += 3;												// 発射可能なミサイルの数を3に戻す
 		this->scheduleOnce(schedule_selector(GameScene::createRemainingMissile), 0);	// ミサイル数を3に戻した0秒後に一度だけミサイル表示関数を呼び出す
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// リロード時間の計測をストップ
 	} else if (reloadTime == 12 && reloadMissile){						// 計測から0.2秒経ち、かつミサイルが発射可能な場合(ミサイル発射間隔に0.2秒のラグをつける)
+		missileLaunchableFlag = 1;
 		reloadTime = 0;													// 数値をリセットする
 		this->unschedule(schedule_selector(GameScene::missileTimer));	// 時間計測をストップし、ミサイルを発射可能にする
+
 	}
 }
 
