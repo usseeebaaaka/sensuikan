@@ -69,7 +69,7 @@ CCFiniteTimeAction* Animation::hitAnimation(int count) {
 		}
 		animFrames->addObject(frame);	//インスタンスを配列に追加
 	}
-	CCAnimation* animation = CCAnimation::createWithSpriteFrames(animFrames, 0.1);	//CCSpriteFrameCacheクラスの配列を引数にCCAnimationクラスのインスタンスの生成 第二引数は1フレームの時間
+	CCAnimation* animation = CCAnimation::createWithSpriteFrames(animFrames, 0.05);	//CCSpriteFrameCacheクラスの配列を引数にCCAnimationクラスのインスタンスの生成 第二引数は1フレームの時間
 
 	return CCAnimate::create(animation);	//CCAnimateクラスのアクションを生成して返却
 }

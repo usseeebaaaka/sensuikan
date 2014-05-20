@@ -49,7 +49,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // リソースディレクトリを指定する
     CCFileUtils::sharedFileUtils()->setSearchPaths(searchPath);
-    pDirector->setDisplayStats(true);
+    pDirector->setDisplayStats(false);
     pDirector->setAnimationInterval(1.0 / 60);
     CCScene* pScene = GameScene::scene();
     pDirector->runWithScene(pScene);
