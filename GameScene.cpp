@@ -17,7 +17,7 @@ GameScene::GameScene()
  reloadMissile(3),						// ミサイル最大保持数
  enemyUnit_num(2),						// 敵の数
  player_VIT(90),						// 自機を生成する際に基準とするhp
- missileDamage(30),						// ミサイル当たった際の自機ダメージ
+ missileDamage(1),						// ミサイル当たった際の自機ダメージ
  submarine_VIT(1515),					// 敵潜水艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
  destroyer_VIT(1515),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
  score_and_Maxplace(0.3),				// スコアの数値を保持　少数部は桁数に利用
@@ -1000,7 +1000,7 @@ void GameScene::destroyerAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  (200 - 50 * game_level))) {											// ランダムでミサイルを発射
-		createMissile(destroyerPosition, 0);							// ミサイルを発射
+//		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width  * 2 /10) {									// ランダムで移動
 		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
@@ -1015,7 +1015,7 @@ void GameScene::destroyerAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
-		createMissile(destroyerPosition, 0);							// ミサイルを発射
+//		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 8 / 10) {									// ランダムで移動
 		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
@@ -1027,43 +1027,42 @@ void GameScene::destroyerAI2() {
 
 // 潜水艦AIの作成
 void GameScene::submarineAI() {
-	PhysicsSprite* ab = unitData[kTag_EnemySubmarine];
-	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
-	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
-	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
+	b2Body* submarineBody = unitPhysicsData[kTag_EnemySubmarine];
+	float positionX = submarineBody->GetPosition().x;
+	float positionY = submarineBody->GetPosition().y;
+	float unitAngle = submarineBody->GetAngle();
 	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
-		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
-	}  else if(destroyerPositions.x < getWindowSize().width * 3 / 4) {									// ランダムで移動
+		rand() % 2 ? createMissileSubmarine(b2Vec2(positionX, positionY), unitAngle) : createMissile(b2Vec2(positionX, positionY), unitAngle);
+	}  else if(positionX < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float angleBonusSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
-		float back = unitData[kTag_EnemySubmarine]->getPositionX()  + 0.2 * angleBonusSpeed;		// ユニットの進むべきX座標を計算
-		float up = unitData[kTag_EnemySubmarine]->getPositionY() + 0.2 * PI * unitAngle;		// ユニットの進むべきY座標を計算
+		float back = positionX * PTM_RATIO  + 0.2 * angleBonusSpeed;		// ユニットの進むべきX座標を計算
+		float up = positionY * PTM_RATIO + 0.2 * PI * unitAngle;		// ユニットの進むべきY座標を計算
 		if (up > getWindowSize().height * 0.65 ) {
 			up = getWindowSize().height * 0.65;
 		}
-		CCPoint a = unitData[kTag_EnemySubmarine]->getPosition();			// 画像の座標を設定
-		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
+//		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
-		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_EnemySubmarine]->GetAngle());
+		submarineBody->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitAngle);
 	}
 }
 // 潜水艦AIの作成
 void GameScene::submarineAI2() {
-	PhysicsSprite* ab = unitData[kTag_EnemySubmarine];
-	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
-	CCPoint destroyerPositions = unitData[kTag_EnemySubmarine]->getPosition();
-	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// ユニットの現在角度を取得
+	b2Body* submarineBody = unitPhysicsData[kTag_EnemySubmarine];
+	float positionX = submarineBody->GetPosition().x;
+	float positionY = submarineBody->GetPosition().y;
+	float unitAngle = submarineBody->GetAngle();
 	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
-		rand() % 2 ? createMissileSubmarine(destroyerPosition, unitAngle) : createMissile(destroyerPosition, unitAngle);
-	} else if(destroyerPositions.x > getWindowSize().width / 4) {									// ランダムで移動
+		rand() % 2 ? createMissileSubmarine(b2Vec2(positionX, positionY), unitAngle) : createMissile(b2Vec2(positionX, positionY), unitAngle);
+	}  else if(positionX < getWindowSize().width * 3 / 4) {									// ランダムで移動
 		float angleBonusSpeed = unitAngle > 0 ? PI * (PI / 2 - unitAngle) : PI * (PI / 2 + unitAngle);	// 角度から速度を計算
-		float forward = unitData[kTag_EnemySubmarine]->getPositionX()  - 0.2 * angleBonusSpeed;		// ユニットの進むべきX座標を計算
-		float up = unitData[kTag_EnemySubmarine]->getPositionY() - 0.2 * PI * unitAngle;		// ユニットの進むべきY座標を計算
+		float back = positionX * PTM_RATIO  - 0.2 * angleBonusSpeed;		// ユニットの進むべきX座標を計算
+		float up = positionY * PTM_RATIO - 0.2 * PI * unitAngle;		// ユニットの進むべきY座標を計算
 		if (up > getWindowSize().height * 0.65 ) {
 			up = getWindowSize().height * 0.65;
 		}
-		unitData[kTag_EnemySubmarine]->setPosition(ccp(forward, up));			// 画像の座標を設定
+//		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
-		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(b2Vec2(forward / PTM_RATIO, up / PTM_RATIO), unitPhysicsData[kTag_EnemySubmarine]->GetAngle());
+		submarineBody->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitAngle);
 	}
 }
 // 船首を上げる関数
@@ -1071,6 +1070,7 @@ void GameScene::submarineAI3() {
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 	if (unitAngle > -1 * PI / 4) {
+	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle - 0.01);	// 船首を上げます
 	}
 	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
@@ -1102,10 +1102,19 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
 	rand() % 2 ?
-	position.Set(position.x + rotatedPosition.x - 0.1, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
-	position.Set(position.x - rotatedPosition.x + 0.1, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+	position.Set(position.x + rotatedPosition.x * 1.01, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
+	position.Set(position.x - rotatedPosition.x * 1.01, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+
+//	CCDrawNode* draw = CCDrawNode::create();
+//	draw->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO));
+//	draw->drawDot(ccp(0, 0),                // 中心
+//	              5,                        // 半径
+//	              ccc4FFromccc3B(ccWHITE)   // 色
+//	              );
+//	this->addChild(draw);
 	missileBody->SetTransform(position, unitAngle);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle / 2 - PI / 8));										// x座標y座標に圧力をかける
+//	missileBody->SetLinearVelocity(b2Vec2(-playerAngle, playerAngle));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle * 0.95 / 2 - PI / 8));										// x座標y座標に圧力をかける
 
 }
 
@@ -1124,7 +1133,7 @@ void GameScene::createMissileSubmarine(b2Vec2 position, float unitAngle) {
 	b2Vec2 rotatedPosition = trigonometric(submarineUnitLength, unitAngle);
 	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, PI / 2 + unitAngle);													// 重力世界上の座標と角度を持たせ回転
-	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 8, unitAngle * 3 / 8));										// x座標y座標に圧力をかける
+	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 6, unitAngle * 3 / 6));										// x座標y座標に圧力をかける
 //	missileBody->SetLinearVelocity(b2Vec2(3 / 2 * -(PI + (unitAngle >= 0) ? unitAngle : -unitAngle) * 3, unitAngle));										// x座標y座標に圧力をかける
 
 }
