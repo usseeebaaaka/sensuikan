@@ -1102,8 +1102,8 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
 	rand() % 2 ?
-	position.Set(position.x + rotatedPosition.x * 1.01, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
-	position.Set(position.x - rotatedPosition.x * 1.01, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+	position.Set(position.x + rotatedPosition.x * 0.98, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
+	position.Set(position.x - rotatedPosition.x * 0.98, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 
 //	CCDrawNode* draw = CCDrawNode::create();
 //	draw->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO));
