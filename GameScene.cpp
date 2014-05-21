@@ -17,9 +17,9 @@ GameScene::GameScene()
  reloadMissile(3),						// ミサイル最大保持数
  enemyUnit_num(2),						// 敵の数
  player_VIT(90),						// 自機を生成する際に基準とするhp
- missileDamage(1),						// ミサイル当たった際の自機ダメージ
- submarine_VIT(1515),					// 敵潜水艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
- destroyer_VIT(1515),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ missileDamage(30),						// ミサイル当たった際の自機ダメージ
+ submarine_VIT(1501),					// 敵潜水艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ destroyer_VIT(1501),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
  score_and_Maxplace(0.3),				// スコアの数値を保持　少数部は桁数に利用
  dealofScrollSpead(0.2),				// スクロールスピード
  buttons_sum(11),						// タップできるボタンの合計数(全11ボタン)
@@ -647,7 +647,7 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
 																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
 		createLifeCounter();													// ライフ再表示
-		displayScore(50);														// スコア50加算
+		displayScore(40);														// スコア50加算
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
 		// hp0になったユニットが敵駆逐艦だったら以下
 	}else if (unit == unitData[kTag_EnemyDestroyer] && unit->getHp() == 0) {
@@ -655,9 +655,10 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
 		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
 																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
-		createLifeCounter();													// ライフ再表示
-		displayScore(50);														// スコア50加算
+		createLifeCounter();													// ライフ再表示													// スコア50加算
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
+		unitData[kTag_EnemySubmarine] ? displayScore(90)
+										: displayScore(40);
 	}
 }
 
@@ -1251,31 +1252,31 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 			} else if(tag_no == kTag_Retry && i->boundingBox().containsPoint(loc)) {
 				GameScene::moveToNextScene();									// moveToNextSceneを呼び出しシーンの再生成
 				// stopボタンをタップしたら以下処理
-			} else if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
+			} if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateUpAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-				this->unschedule(schedule_selector(GameScene::forwardUnit));
-				this->unschedule(schedule_selector(GameScene::backUnit));
-			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
+//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+//				this->unschedule(schedule_selector(GameScene::backUnit));
+			} if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateDownAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-				this->unschedule(schedule_selector(GameScene::forwardUnit));
-				this->unschedule(schedule_selector(GameScene::backUnit));
-			} else if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
+//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+//				this->unschedule(schedule_selector(GameScene::backUnit));
+			} if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームforwardUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
-				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::backUnit));
-			} else if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
+			} if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
-				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::forwardUnit));
-			} else if(tag_no == kTag_LivesRemaining && i->boundingBox().containsPoint(loc)) {
+			} if(tag_no == kTag_LivesRemaining && i->boundingBox().containsPoint(loc)) {
 				if(game_level != 3) {
 					game_level++;
 				} else {
@@ -1378,10 +1379,31 @@ void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
-			if(tag_no >= kTag_Key_Up && tag_no <= kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
-				// 毎フレームrotateUpAngle関数を呼び出すように設定する
-				unscheduleMove();
-			}
+			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
+							// 毎フレームrotateUpAngle関数を呼び出すように設定する
+							this->unschedule(schedule_selector(GameScene::rotateUpAngle));
+			//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+			//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+			//				this->unschedule(schedule_selector(GameScene::backUnit));
+						} if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
+							// 毎フレームrotateDownAngle関数を呼び出すように設定する
+							this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+			//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+			//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+			//				this->unschedule(schedule_selector(GameScene::backUnit));
+						} if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
+							// 毎フレームforwardUnit関数を呼び出すように設定する
+							this->unschedule(schedule_selector(GameScene::forwardUnit));
+			//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+			//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+							this->unschedule(schedule_selector(GameScene::backUnit));
+						} if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
+							// 毎フレームbackUnit関数を呼び出すように設定する
+							this->unschedule(schedule_selector(GameScene::backUnit));
+			//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+			//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+			//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+						}
 			// もしtouch_judgeがtrue(離した判定)であれば以下ブロック
 			if(touch_judge) {
 				/* タグの番号と終わりを表す値ををもつ変数を引数に
