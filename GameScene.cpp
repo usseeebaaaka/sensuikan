@@ -22,7 +22,7 @@ GameScene::GameScene()
  destroyer_VIT(1515),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
  score_and_Maxplace(0.3),				// スコアの数値を保持　少数部は桁数に利用
  dealofScrollSpead(0.2),				// スクロールスピード
- buttons_sum(12),						// タップできるボタンの合計数(全11ボタン)
+ buttons_sum(11),						// タップできるボタンの合計数(全11ボタン)
  playerUnit(NULL),						//
 
  lifepoint(2),							// 自機の残機
@@ -462,73 +462,53 @@ void GameScene::createControllerPanel() {
 	CCSprite* pControl = CCSprite::create("control.png");					//control.pngをCCSprite型にし、pControlで初期化
 	pControl->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 2,
 			getCCSprite(kTag_Background)->getContentSize().height / 8));				//座標のセット
-	this->addChild(pControl, kZOrder_Controller_Base);						//配置順kZOrder_Controller_Baseで実装
+	this->addChild(pControl, kZOrder_Controller_Base, ktag_control);						//配置順kZOrder_Controller_Baseで実装
 }
 
 //コントローラ部全ての画像を生成
 void GameScene::createKey() {
-	stopButton();		//ストップボタン生成
 	arrowKey();			//十字キー生成
-	speedMater();		//速度メータ生成
+	speedMeter();		//速度メータ生成
 	missileButton();	//ミサイル発射ボタン生成
 	speedSwitch();		//メータスイッチ生成
 }
 
-//ストップボタン表示の定義
-void GameScene::stopButton() {
-	/*----- STOPボタンの実装 -----*/
-	CCSprite* pStop = CCSprite::create("stop.png");												//stop.pngをCCSprite型で生成
-	pStop->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8));				//座標のセット
-	this->addChild(pStop, kZOrder_Seabed, kTag_Key_Center);										//配置順kZOrder_Labelで実装
-}
-
 //十字キー表示の定義
 void GameScene::arrowKey() {
-	CCSprite* stopSprite = 	(CCSprite*)getChildByTag(kTag_Key_Center);			//オブジェクトstopボタンを取得
-	float stopSize = stopSprite->getContentSize().height;						//stopの高さを取得
-
-	//先ほどの変数が0より大きい間後置デクリメント
-	while(arrow_key-- > 0) {
-
-		CCSprite* pKey = CCSprite::create("arrow.png");							//tri.pngをCCSprite型で生成
-		switch(arrow_key) {
-		//上キーの実装
-		case 3 : pKey->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8 + stopSize));	//座標のセット
-		this->addChild(pKey, kZOrder_Label, kTag_Key_Up);					//配置順kZOrder_Lavelで実装
-		break;
-		//下キーの実装
-		case 2 : pKey->setPosition(ccp(getWindowSize().width / 4, getWindowSize().height / 8 - stopSize));	//座標のセット
-		pKey->setRotation(180);													//180度回転
-		this->addChild(pKey, kZOrder_Label, kTag_Key_Down);						//配置順kZOrder_Lavelで実装
-		break;
 		//左キーの実装
-		case 1 : pKey->setPosition(ccp(getWindowSize().width / 4 - stopSize, getWindowSize().height / 8));	//座標のセット
-		pKey->setRotation(270);													//270度回転
-		this->addChild(pKey, kZOrder_Label, kTag_Key_Left);						//配置順kZOrder_Lavelで実装
-		break;
-		//右キーの実装
-		case 0 : pKey->setPosition(ccp(getWindowSize().width / 4 + stopSize, getWindowSize().height / 8));	//座標のセット
-		pKey->setRotation(90);													//90度回転
-		this->addChild(pKey, kZOrder_Label, kTag_Key_Right);					//配置順kZOrder_Lavelで実装
-		break;
-		}
+		CCSprite* pKey_left = CCSprite::create("button_left.png");								//左進行キー画像をCCSprite型で生成
+		pKey_left->setPosition(ccp(getWindowSize().width / 8, getWindowSize().height / 16 * 3));	//座標のセット
+		this->addChild(pKey_left, kZOrder_Label, kTag_Key_Left);					//配置順kZOrder_Lavelで実装
 
-	}
+		//右キーの実装
+		CCSprite* pKey_right = CCSprite::create("button_right.png");							//右進行キー画像をCCSprite型で生成
+		pKey_right->setPosition(ccp(getWindowSize().width / 8, getWindowSize().height / 16));	//座標のセット
+		this->addChild(pKey_right, kZOrder_Label, kTag_Key_Right);					//配置順kZOrder_Lavelで実装
+
+		//上キーの実装
+		CCSprite* pKey_up = CCSprite::create("button_up.png");									//上進行キー画像をCCSprite型で生成
+		pKey_up->setPosition(ccp(getWindowSize().width / 8 * 3, getWindowSize().height / 16 * 3));	//座標のセット
+		this->addChild(pKey_up, kZOrder_Label, kTag_Key_Up);					//配置順kZOrder_Lavelで実装
+
+		//下キーの実装
+		CCSprite* pKey_down = CCSprite::create("button_down.png");								//下進行キー画像をCCSprite型で生成
+		pKey_down->setPosition(ccp(getWindowSize().width / 8 * 3, getWindowSize().height / 16));	//座標のセット
+		this->addChild(pKey_down, kZOrder_Label, kTag_Key_Down);					//配置順kZOrder_Lavelで実装
+
 }
 
 //スピードメータ表示の定義
-void GameScene::speedMater() {
+void GameScene::speedMeter() {
 
-	CCSprite* stopSprite = 	(CCSprite*)getChildByTag(kTag_Key_Center);			//オブジェクトstopボタンを取得
-	float stopHeight = stopSprite->getPositionY();								//stopのy座標を取得
+	float heightBase = getCCSprite(ktag_control)->getPosition().y / 2;
 
 	CCSprite* pMater2 = CCSprite::create("meter2.png");							//Meter2.pngをCCSprite型で生成
-	pMater2->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight - pMater2->getContentSize().height / 2));		//座標のセット
+	pMater2->setPosition(ccp(getWindowSize().width / 8 * 5, getWindowSize().height / 8  - pMater2->getContentSize().height / 2));		//座標のセット
 	this->addChild(pMater2, kZOrder_Label, kTag_Gear2);							//配置順kZOrderds_Labelで実装
 	float a = pMater2->getPositionY();									// メーターの座標値を取得
 
 	CCSprite* pMater3 = CCSprite::create("meter2.png");							//Meter3.pngをCCSprite型で生成
-	pMater3->setPosition(ccp(getWindowSize().width / 8 * 5, stopHeight + pMater2->getContentSize().height / 2));		//座標のセット
+	pMater3->setPosition(ccp(getWindowSize().width / 8 * 5, getWindowSize().height / 8 + pMater2->getContentSize().height / 2));		//座標のセット
 	this->addChild(pMater3, kZOrder_Label, kTag_Gear3);							//配置順kZOrder_Labelで実装
 
 	CCSprite* pMater1 = CCSprite::create("meter.png");							//Meter1.pngをCCSprite型で生成
@@ -554,14 +534,13 @@ void GameScene::missileButton() {
 	float key_downHeight = Key_Down->getPositionY();								//materのy座標を取得
 
 	/*----- missile 上キーの実装 -----*/
-	CCSprite* pMissileUp = CCSprite::create("MissileButton.png");						//missile_up.pngをCCSprite型で生成
+	CCSprite* pMissileUp = CCSprite::create("button_bomb_up.png");						//missile_up.pngをCCSprite型で生成
 	pMissileUp->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 8 * 7,
 								getCCPoint(kTag_Background).y / 8 * 3));	//座標のセット
 	this->addChild(pMissileUp, kZOrder_Label, kTag_Shoot_Vertical);					//配置順kZOrder_Labelで実装
 
 	/*----- missile 左キーの実装 -----*/
-	CCSprite* pMissileLeft = CCSprite::create("MissileButton.png");					//missile_left.pngをCCSprite型で生成
-	pMissileLeft->setRotation(270);
+	CCSprite* pMissileLeft = CCSprite::create("button_bomb_left.png");					//missile_left.pngをCCSprite型で生成
 	pMissileLeft->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 8 * 7,
 									getCCPoint(kTag_Background).y / 8 * 1));	//座標のセット
 	this->addChild(pMissileLeft, kZOrder_Label, kTag_Shoot_Horizontal);				//配置順kZOrder_Labelで実装
@@ -578,10 +557,7 @@ void GameScene::speedSwitch() {
 	pSwitch->setPosition(ccp(pMater2.x, pMater2.y - Mater2Size / 10 * 9 ));		//座標をセット
 	this->addChild(pSwitch, kZOrder_Countdown, kTag_Switch);					//配置順kZOrder_Labelで実装
 }
-// ストップボタン
-bool GameScene::stopJudge() {
-	return 0;
-}
+
 // ゲーム開始時のカウントダウン
 void GameScene::showCountdown() {
 
@@ -1000,7 +976,7 @@ void GameScene::destroyerAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  (200 - 50 * game_level))) {											// ランダムでミサイルを発射
-//		createMissile(destroyerPosition, 0);							// ミサイルを発射
+		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width  * 2 /10) {									// ランダムで移動
 		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
@@ -1015,7 +991,7 @@ void GameScene::destroyerAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
-//		createMissile(destroyerPosition, 0);							// ミサイルを発射
+		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 8 / 10) {									// ランダムで移動
 		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
@@ -1279,25 +1255,25 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				// 毎フレームrotateUpAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-//				this->unschedule(schedule_selector(GameScene::backUnit));
+				this->unschedule(schedule_selector(GameScene::forwardUnit));
+				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateDownAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-//				this->unschedule(schedule_selector(GameScene::backUnit));
+				this->unschedule(schedule_selector(GameScene::forwardUnit));
+				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームforwardUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
-//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
-//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::forwardUnit));
 			} else if(tag_no == kTag_LivesRemaining && i->boundingBox().containsPoint(loc)) {
 				if(game_level != 3) {
@@ -1452,14 +1428,9 @@ void GameScene::changeButton(int tag_no, int change) {
 	if(tag_no == kTag_Key_Up || tag_no == kTag_Key_Down ||
 			tag_no == kTag_Key_Left || tag_no == kTag_Key_Right) {
 		changeCrosskey(tag_no, change);									// tag_noを引数にし、changeCrosskey関数を呼び出す
-		/* 仮引数の値がストップボタンのタグと同じ値であれば
-		 * 以下のブロック
-		 */
-	}else if(tag_no == kTag_Key_Center) {
-		changeStopButton(tag_no, change);								// tag_noを引数にし、changeStopButton関数を呼び出す
-		/*仮引数の値がミサイル発射上ボタンかもしくは左ボタンであれば
-		 * 以下のブロック
-		 */
+	/*仮引数の値がミサイル発射上ボタンかもしくは左ボタンであれば
+	 * 以下のブロック
+	 */
 	}else if(tag_no == kTag_Shoot_Vertical || tag_no == kTag_Shoot_Horizontal) {
 		changeMissileButton(tag_no, change);							// tag_noを引数にし、changeMissileButton関数を呼び出す
 	}
@@ -1467,48 +1438,69 @@ void GameScene::changeButton(int tag_no, int change) {
 
 
 
-/* 関数名 : changeCrosskey
+/* mod 14.5.21 H.U
+ * 関数名 : changeCrosskey
  * 返却型 : void
  * 仮引数 : int型変数tag_no(tagの番号を受け取る), int型変数change(タップ開始か終了かを受け取る)
  *
  * 概要 : 十字キータップ時画像の入れ替え
  */
 void GameScene::changeCrosskey(int tag_no, int change) {
-	const char* fileName = change == kTag_changeBegan ? "arrow_tap.png" : "arrow.png";
-	CCTexture2D *pTexture = CCTextureCache::sharedTextureCache()->addImage(fileName);
-	CCSprite* pushButton = getCCSprite(tag_no);		// tag_noのスプライトをゲット
-	pushButton->setPosition(getCCPoint(tag_no));
-	pushButton->setRotation(getAngle(tag_no));
-	pushButton->setTexture(pTexture);
+
+	const char* fileName;		// ファイルネームを保持する変数の生成
+
+	// 上キーは以下処理
+	if(tag_no == kTag_Key_Up) {
+		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
+				"button_up_push.png" : "button_up.png";	// 指が離れた時であれば元の上キーファイルネームに戻す
+
+	// 下キーであれば以下処理
+	}else if(tag_no == kTag_Key_Down) {
+		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
+				"button_down_push.png" : "button_down.png";	// 指が離れた時であれば元の下キーファイルネームに戻す
+
+	// 左キーであれば以下処理
+	}else if(tag_no == kTag_Key_Left) {
+		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
+				"button_left_push.png" : "button_left.png";	// 指が離れた時であれば元の左キーファイルネームを代入
+
+	// 右キーであれば以下処理
+	}else if(tag_no == kTag_Key_Right) {
+		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
+				"button_right_push.png" : "button_right.png";	// 指が離れた時であれば元の右キーファイルネームを代入
+	}
+
+	CCTexture2D *pTexture = CCTextureCache::sharedTextureCache()->addImage(fileName);	// 変更するテクスチャ(画像)のキャッシュを生成
+	CCSprite* pushButton = getCCSprite(tag_no);		// タップされた画像をゲット
+	pushButton->setPosition(getCCPoint(tag_no));	// タップされた画像と同じ位置にセット
+	pushButton->setTexture(pTexture);				// テクスチャ(画像)を入れ替える
 }
 
-/* 関数名 : changeStopButton
- * 返却型 : void
- * 仮引数 : int型変数tag_no(tagの番号を受け取る), int型変数change(タップ開始か終了かを受け取る)
- *
- * 概要 : ストップボタンタップ時画像の入れ替え
- */
-void GameScene::changeStopButton(int tag_no, int change) {
-	const char* fileName = change == kTag_changeBegan ? "stop_tap.png" : "stop.png";
-	CCTexture2D *pTexture = CCTextureCache::sharedTextureCache()->addImage(fileName);
-	CCSprite* pushButton = getCCSprite(tag_no);		// tag_noのスプライトをゲット
-	pushButton->setPosition(getCCPoint(tag_no));
-	pushButton->setRotation(getAngle(tag_no));
-	pushButton->setTexture(pTexture);
-}
-/* 関数名 : changeMissleButton
+/* mod 14.5.21 H.U
+ * 関数名 : changeMissleButton
  * 返却型 : void
  * 仮引数 : int型変数tag_no(tagの番号を受け取る), int型変数change(タップ開始か終了かを受け取る)
  *
  * 概要 : ミサイルタップ時画像の入れ替え
  */
 void GameScene::changeMissileButton(int tag_no, int change) {
-	const char* fileName = change == kTag_changeBegan ? "MissileButton_tap.png" : "MissileButton.png";
-	CCTexture2D *pTexture = CCTextureCache::sharedTextureCache()->addImage(fileName);
-	CCSprite* pushButton = getCCSprite(tag_no);		// tag_noのスプライトをゲット
-	pushButton->setPosition(getCCPoint(tag_no));
-	pushButton->setRotation(getAngle(tag_no));
-	pushButton->setTexture(pTexture);
+	const char* fileName;				// ファイルネームを保持する変数
+
+	// ミサイル上キーだったら以下処理
+	if(tag_no == kTag_Shoot_Vertical) {
+		fileName = change == kTag_changeBegan ?		// タップされた時であればタップ時のファイルネームに
+				"button_bomb_up_push.png" : "button_bomb_up.png";	// 指が離れた時であれば元のファイルネームを代入
+
+	// ミサイル左キーだったら以下処理
+	}else{
+		fileName = change == kTag_changeBegan ?		// タップされた時であればタップ時のファイルーネームに
+				"button_bomb_left_push.png" : "button_bomb_left.png";	// 指が離れた時であれば元のファイルネームを代入
+	}
+
+	CCTexture2D *pTexture = CCTextureCache::sharedTextureCache()->addImage(fileName);	// 変更するテクスチャ(画像)のキャッシュを生成
+	CCSprite* pushButton = getCCSprite(tag_no);		// タップされた画像をゲット
+	pushButton->setPosition(getCCPoint(tag_no));	// タップされた画像の座標をセット
+	pushButton->setTexture(pTexture);				// テクスチャを入れ替える
 }
 
 void GameScene::missileTimer() {

@@ -78,7 +78,6 @@ class GameScene : public cocos2d::CCLayer {
 		kTag_Key_Down,				// 下キー
 		kTag_Key_Left,				// 左キー
 		kTag_Key_Right,				// 右キー
-		kTag_Key_Center,			// ストップボタン
 		kTag_Shoot_Vertical,		// 垂直射撃ボタン
 		kTag_Shoot_Horizontal,		// 水平射撃ボタン
 		kTag_Retry,
@@ -99,6 +98,7 @@ class GameScene : public cocos2d::CCLayer {
 		kTag_StockMissile,
 		kTag_FinishMissile,
 		kTag_Polygon = 2000,				// 角形物理構造
+		ktag_control,
 		// テスト用
 		kTag_testPlayerUnit,
 		kTag_testPlayerUnit2,
@@ -127,7 +127,6 @@ public:
 	void createBackground();												// 背景および海底を生成
 	void createUnit(int hp, int kTag, int vit, int unit);				// ユニットを生成
 	virtual void update(float dt);											// 毎フレームごとに衝突判定をチェックする関数
-	bool stopJudge();														// ストップボタン
 	// 物理構造を持ったユニットノードを作成
 	PhysicsSprite* createPhysicsBody(int bodyTag, int kTag, PhysicsSprite* pNode, int shape, int unit);
 	void createScore();														// スコアを生成
@@ -172,14 +171,12 @@ public:
 	//追加
 	void createLife();											// 残機表示
 	void arrowKey();											// 十字キー表示
-	void stopButton();											// stopボタンの表示
-	void speedMater();											// スピードメータの表示
+	void speedMeter();											// スピードメータの表示
 	void missileButton();										// ミサイル発射ボタンの表示
 	void speedSwitch();										// 速度調整スイッチの表示
 	//    void playCountdownSound();								// 開始時カウントダウンの音を出力する(使用するかは未定)
 	void changeButton(int tag_no, int change);				// 十字キー、ストップボタン、発射ボタンタップ時に呼び出される
 	void changeCrosskey(int tag_no, int change);				// 十字キーのスプライトを入れ替える
-	void changeStopButton(int tag_no, int change);			// ストップボタンのスプライトを入れ替える
 	void changeMissileButton(int tag_no, int change);		// ミサイル発射ボタンのスプライトをいれかえる
 	CCSprite* getCCSprite(int tag_no);							// tag_noのオブジェクトのスプライトゲット
 	CCPoint getCCPoint(int tag_no);							// tag_noのオブジェクトの座標をゲット
