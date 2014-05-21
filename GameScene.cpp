@@ -18,8 +18,8 @@ GameScene::GameScene()
  enemyUnit_num(2),						// 敵の数
  player_VIT(90),						// 自機を生成する際に基準とするhp
  missileDamage(30),						// ミサイル当たった際の自機ダメージ
- submarine_VIT(1501),					// 敵潜水艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
- destroyer_VIT(1501),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ submarine_VIT(1515),					// 敵潜水艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
+ destroyer_VIT(1515),					// 駆逐艦のhp　4桁目3桁目で敵2体目のhp、2桁目1桁目で敵一体目のhp
  score_and_Maxplace(0.3),				// スコアの数値を保持　少数部は桁数に利用
  dealofScrollSpead(0.2),				// スクロールスピード
  buttons_sum(11),						// タップできるボタンの合計数(全11ボタン)
