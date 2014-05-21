@@ -976,7 +976,7 @@ void GameScene::destroyerAI() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  (200 - 50 * game_level))) {											// ランダムでミサイルを発射
-//		createMissile(destroyerPosition, 0);							// ミサイルを発射
+		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	} else if(destroyerPositions.x > getWindowSize().width  * 2 /10) {									// ランダムで移動
 		float forward = unitData[kTag_EnemyDestroyer]->getPositionX()  - 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() - 0.2 * PI;		// ユニットの進むべきY座標を計算
@@ -991,7 +991,7 @@ void GameScene::destroyerAI2() {
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemyDestroyer]->GetPosition();
 	CCPoint destroyerPositions = unitData[kTag_EnemyDestroyer]->getPosition();
 	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
-//		createMissile(destroyerPosition, 0);							// ミサイルを発射
+		createMissile(destroyerPosition, 0);							// ミサイルを発射
 	}  else if(destroyerPositions.x < getWindowSize().width * 8 / 10) {									// ランダムで移動
 		float back = unitData[kTag_EnemyDestroyer]->getPositionX()  + 0.6;		// ユニットの進むべきX座標を計算
 		//		float up = unitData[kTag_EnemyDestroyer]->getPositionY() + 0.2 * PI;		// ユニットの進むべきY座標を計算
