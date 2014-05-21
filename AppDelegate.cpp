@@ -15,13 +15,14 @@ AppDelegate::~AppDelegate()
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
+
     CCDirector* pDirector = CCDirector::sharedDirector();
     CCEGLView* pEGLView = CCEGLView::sharedOpenGLView();
 
     pDirector->setOpenGLView(pEGLView);
 
     // デザインサイズの設定
-    pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionNoBorder);
+    pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionShowAll);
 
     CCSize frameSize = pEGLView->getFrameSize();
 
@@ -48,9 +49,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // リソースディレクトリを指定する
     CCFileUtils::sharedFileUtils()->setSearchPaths(searchPath);
-    pDirector->setDisplayStats(true);
+    pDirector->setDisplayStats(false);
     pDirector->setAnimationInterval(1.0 / 60);
-
     CCScene* pScene = GameScene::scene();
     pDirector->runWithScene(pScene);
 
