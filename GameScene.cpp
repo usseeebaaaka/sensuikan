@@ -1279,25 +1279,25 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				// 毎フレームrotateUpAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-				this->unschedule(schedule_selector(GameScene::forwardUnit));
-				this->unschedule(schedule_selector(GameScene::backUnit));
+//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+//				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateDownAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-				this->unschedule(schedule_selector(GameScene::forwardUnit));
-				this->unschedule(schedule_selector(GameScene::backUnit));
+//				this->unschedule(schedule_selector(GameScene::forwardUnit));
+//				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームforwardUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
-				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::backUnit));
 			} else if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
-				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
+//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::forwardUnit));
 			} else if(tag_no == kTag_LivesRemaining && i->boundingBox().containsPoint(loc)) {
 				if(game_level != 3) {
