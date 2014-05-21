@@ -171,7 +171,7 @@ public:
 	//追加
 	void createLife();											// 残機表示
 	void arrowKey();											// 十字キー表示
-	void speedMater();											// スピードメータの表示
+	void speedMeter();											// スピードメータの表示
 	void missileButton();										// ミサイル発射ボタンの表示
 	void speedSwitch();										// 速度調整スイッチの表示
 	//    void playCountdownSound();								// 開始時カウントダウンの音を出力する(使用するかは未定)
