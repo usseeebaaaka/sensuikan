@@ -1,8 +1,11 @@
 #include "AppDelegate.h"
 #include "AppMacros.h"
 #include "GameScene.h"
+#include "SimpleAudioEngine.h"
+#include "TitleScene.h"
 
 USING_NS_CC;
+using namespace CocosDenshion;
 
 AppDelegate::AppDelegate() {
 
@@ -13,13 +16,14 @@ AppDelegate::~AppDelegate()
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
+
     CCDirector* pDirector = CCDirector::sharedDirector();
     CCEGLView* pEGLView = CCEGLView::sharedOpenGLView();
 
     pDirector->setOpenGLView(pEGLView);
 
     // デザインサイズの設定
-    pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionNoBorder);
+    pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionShowAll);
 
     CCSize frameSize = pEGLView->getFrameSize();
 
@@ -46,10 +50,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // リソースディレクトリを指定する
     CCFileUtils::sharedFileUtils()->setSearchPaths(searchPath);
-    pDirector->setDisplayStats(true);
+    pDirector->setDisplayStats(false);
     pDirector->setAnimationInterval(1.0 / 60);
-
-    CCScene* pScene = GameScene::scene();
+    CCScene* pScene = TitleScene::scene();
     pDirector->runWithScene(pScene);
 
     return true;
@@ -61,6 +64,10 @@ void AppDelegate::applicationDidEnterBackground() {
 
     // if you use SimpleAudioEngine, it must be pause
     // SimpleAudioEngine::sharedEngine()->pauseBackgroundMusic();
+
+    // BGM・SE一時停止
+    SimpleAudioEngine::sharedEngine()->pauseBackgroundMusic();
+    SimpleAudioEngine::sharedEngine()->pauseAllEffects();
 }
 
 // this function will be called when the app is active again
@@ -69,4 +76,7 @@ void AppDelegate::applicationWillEnterForeground() {
 
     // if you use SimpleAudioEngine, it must resume here
     // SimpleAudioEngine::sharedEngine()->resumeBackgroundMusic();
+    // BGM・SE再開
+    SimpleAudioEngine::sharedEngine()->resumeBackgroundMusic();
+    SimpleAudioEngine::sharedEngine()->resumeAllEffects();
 }
