@@ -23,7 +23,7 @@ class TitleScene :  public cocos2d::CCLayer {
 	enum kTag {
 		kTag_Background,				// 背景
 		kTag_StartButton,				// スタートボタン
-		kTag_
+		kTag_Menu,
 	};
 
 	// 画像の表示順序のタグ
@@ -33,13 +33,15 @@ class TitleScene :  public cocos2d::CCLayer {
 	};
 
 public:
-//	TitleScene();						// デフォルトコンストラクタ
-	static cocos2d::CCScene* scene();	// 画面の雛型を作成する関数
-	virtual bool init();				// 初期化処理を行う関数
-	void createBackground();			// 背景画像を生成する関数
-	void createStartButton();			// スタートボタンを生成する関数
-//	void createInfoButton();			// インフォボタンを生成する関数
-	void blinkButton();					// ボタンを点滅させる関数
+//	TitleScene();										// デフォルトコンストラクタ
+	static cocos2d::CCScene* scene();					// 画面の雛型を作成する関数
+	virtual bool init();								// 初期化処理を行う関数
+	void createBackground();							// 背景画像を生成する関数
+	void createStartButton();							// スタートボタンを生成する関数
+	void createMenu();									// メニューボタン生成手続き関数
+//	void createInfoButton();							// インフォボタンを生成する関数
+	void blinkSprite(CCSprite* sprite);					// スプライトを点滅させる関数
+    virtual void menuStartCallback(CCObject* pSender);	// スタートボタンの動作を定義する関数
 	CCSize getWindowSize();
 	CREATE_FUNC(TitleScene);			//マクロ
 };

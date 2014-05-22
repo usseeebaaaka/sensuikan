@@ -5,6 +5,7 @@
  *      Author: T.I
  */
 
+#include "GameScene.h"
 #include "TitleScene.h"					// TitleSceneのヘッダをインクルード
 #include "cocos2d.h"
 USING_NS_CC;
@@ -37,6 +38,7 @@ bool TitleScene::init(){
 		return false;							// シーンの初期化に失敗したらfalseを返す
 	}
 
+//	sleep(15);
 	createBackground();							// 背景画像を生成
 	createStartButton();						// スタートボタンを生成
 //	createInfoButton();							// インフォボタンを生成
@@ -53,7 +55,7 @@ bool TitleScene::init(){
  * 作成者:T.I
  */
 void TitleScene::createBackground(){
-	CCSprite* pBgUnder = CCSprite::create("title.png");				// 背景画像を取得し、ノードに格納
+	CCSprite* pBgUnder = CCSprite::create("ssn_d2124_title.png");				// 背景画像を取得し、ノードに格納
 	pBgUnder->setPosition(ccp(getWindowSize().width / 2,
 			getWindowSize().height / 2));							// 背景画像の中心を画面の中心にセット
 	this->addChild(pBgUnder, kZOrder_Background, kTag_Background);	// 背景画像をシーンに登録
@@ -68,16 +70,31 @@ void TitleScene::createBackground(){
  * 作成者:T.I
  */
 void TitleScene::createStartButton(){
-	CCSprite* pStartButton = CCSprite::create("start.png");			// スタートボタン画像を取得し、ノードに格納
+//	CCSprite* a = CCSprite::create("");
+	CCMenuItemImage* pStartButton
+	= CCMenuItemImage::create("button_start.png", "button_start_push.png",
+			this, menu_selector(TitleScene::menuStartCallback));			// 	スタートボタンに画像と機能を実装
 	pStartButton->setPosition(ccp(getWindowSize().width / 2,
-			getWindowSize().height / 2));							// スタートボタンの中心を画面の中心にセット
-	this->addChild(pStartButton, kZOrder_Decoration, kTag_StartButton);	// スタートボタンをシーンに登録
-	CCRepeatForever* rf
-	= CCRepeatForever::create(CCBlink::create(0.3f, 2));
-	rf->setTag(kTag_StartButton);
-	pStartButton->runAction(rf);
-	pStartButton->stopActionByTag(kTag_StartButton);
-	pStartButton->setVisible(true);
+			getWindowSize().height / 2));									// スタートボタンの中心を画面の中心にセット
+	pStartButton->setTag(kTag_StartButton);									// スタートボタンにタグをセット
+    CCMenu* pMenu = CCMenu::create(pStartButton,NULL);
+    pMenu->setPosition(CCPointZero);										// 事前にセットしてあるのでここはゼロでよい
+    pMenu->setTag(kTag_Menu);
+    this->addChild(pMenu, kZOrder_Decoration, kTag_Menu);
+}
+
+/*
+ * 関数名:void menuStartCallback()
+ * 概要  :スタートボタンタップ後の動作を定義
+ * 引数  :CCObject* pSender						= メニューセレクタを受け取る
+ * 戻り値:なし
+ * 作成日:2014.05.22
+ * 作成者:T.I
+ */
+void TitleScene::menuStartCallback(CCObject* pSender){
+    CCScene* scene = GameScene::scene();									// 遷移先のシーン関数を指定
+    CCTransitionJumpZoom* tran = CCTransitionJumpZoom::create(1, scene);	// 遷移アニメーションを指定
+    CCDirector::sharedDirector()->replaceScene(tran);						// 画面遷移を実行
 }
 
 // ウィンドウサイズを返却する

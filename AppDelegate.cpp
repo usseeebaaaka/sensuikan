@@ -2,6 +2,7 @@
 #include "AppMacros.h"
 #include "GameScene.h"
 #include "SimpleAudioEngine.h"
+#include "TitleScene.h"
 
 USING_NS_CC;
 using namespace CocosDenshion;
@@ -51,7 +52,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     CCFileUtils::sharedFileUtils()->setSearchPaths(searchPath);
     pDirector->setDisplayStats(false);
     pDirector->setAnimationInterval(1.0 / 60);
-    CCScene* pScene = GameScene::scene();
+    CCScene* pScene = TitleScene::scene();
     pDirector->runWithScene(pScene);
 
     return true;
