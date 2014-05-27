@@ -72,7 +72,7 @@ bool GameScene::init() {
 	hpBar();																		// hpバーの表示
 	createLifeCounter();
 	createRemainingMissile();
-//	this->schedule(schedule_selector(GameScene::createRemainingMissile), 20.0 / 60.0 );		// 残弾数を表示、1/3秒の毎に更新
+	//	this->schedule(schedule_selector(GameScene::createRemainingMissile), 20.0 / 60.0 );		// 残弾数を表示、1/3秒の毎に更新
 
 	// ミサイルの準備
 	missileBatchNode = CCSpriteBatchNode::create("Missile.png");			// ミサイルの画像をセット
@@ -170,8 +170,8 @@ void GameScene::countMinusHp() {
 	// 自機の残りhpから燃料を減らした時、その値がゼロ以上であるならばその値を、
 	// 0未満になるならば0を自機のhpにセットする
 	unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() - minusHp >= 0 ?
-									unitData[kTag_PlayerUnit]->getHp() - minusHp
-									: 0);	// 自分の現在hpか速度に対応したhpを減らす
+			unitData[kTag_PlayerUnit]->getHp() - minusHp
+			: 0);	// 自分の現在hpか速度に対応したhpを減らす
 	createLifeCounter();
 	// 自分のhpが0であれば以下のhpを1減らす処理に入る
 	if(!(unitData[kTag_PlayerUnit]->getHp())){
@@ -447,9 +447,9 @@ void GameScene::createLife() {
 
 		ccColor3B color = ccc3(155, 213, 240);					// level1の時は水色をセット(rgb基準)
 		if(game_level == 2) {									// level2(デフォルト)の時は
-			 color = ccc3(255, 255, 072);						// 黄色をセット
+			color = ccc3(255, 255, 072);						// 黄色をセット
 		}else if(game_level == 3) {								// level3の時は
-			 color = ccc3(237, 063, 072);						// 赤色をセット
+			color = ccc3(237, 063, 072);						// 赤色をセット
 		}
 		pLife->setColor(color);									// 色をセット
 		lifeBatchNode->addChild(pLife);							// スプライトの実装
@@ -475,25 +475,25 @@ void GameScene::createKey() {
 
 //十字キー表示の定義
 void GameScene::arrowKey() {
-		//左キーの実装
-		CCSprite* pKey_left = CCSprite::create("button_left.png");								//左進行キー画像をCCSprite型で生成
-		pKey_left->setPosition(ccp(getWindowSize().width / 8, getWindowSize().height / 16 * 3));	//座標のセット
-		this->addChild(pKey_left, kZOrder_Label, kTag_Key_Left);					//配置順kZOrder_Lavelで実装
+	//左キーの実装
+	CCSprite* pKey_left = CCSprite::create("button_left.png");								//左進行キー画像をCCSprite型で生成
+	pKey_left->setPosition(ccp(getWindowSize().width / 8, getWindowSize().height / 16 * 3));	//座標のセット
+	this->addChild(pKey_left, kZOrder_Label, kTag_Key_Left);					//配置順kZOrder_Lavelで実装
 
-		//右キーの実装
-		CCSprite* pKey_right = CCSprite::create("button_right.png");							//右進行キー画像をCCSprite型で生成
-		pKey_right->setPosition(ccp(getWindowSize().width / 8, getWindowSize().height / 16));	//座標のセット
-		this->addChild(pKey_right, kZOrder_Label, kTag_Key_Right);					//配置順kZOrder_Lavelで実装
+	//右キーの実装
+	CCSprite* pKey_right = CCSprite::create("button_right.png");							//右進行キー画像をCCSprite型で生成
+	pKey_right->setPosition(ccp(getWindowSize().width / 8, getWindowSize().height / 16));	//座標のセット
+	this->addChild(pKey_right, kZOrder_Label, kTag_Key_Right);					//配置順kZOrder_Lavelで実装
 
-		//上キーの実装
-		CCSprite* pKey_up = CCSprite::create("button_up.png");									//上進行キー画像をCCSprite型で生成
-		pKey_up->setPosition(ccp(getWindowSize().width / 8 * 3, getWindowSize().height / 16 * 3));	//座標のセット
-		this->addChild(pKey_up, kZOrder_Label, kTag_Key_Up);					//配置順kZOrder_Lavelで実装
+	//上キーの実装
+	CCSprite* pKey_up = CCSprite::create("button_up.png");									//上進行キー画像をCCSprite型で生成
+	pKey_up->setPosition(ccp(getWindowSize().width / 8 * 3, getWindowSize().height / 16 * 3));	//座標のセット
+	this->addChild(pKey_up, kZOrder_Label, kTag_Key_Up);					//配置順kZOrder_Lavelで実装
 
-		//下キーの実装
-		CCSprite* pKey_down = CCSprite::create("button_down.png");								//下進行キー画像をCCSprite型で生成
-		pKey_down->setPosition(ccp(getWindowSize().width / 8 * 3, getWindowSize().height / 16));	//座標のセット
-		this->addChild(pKey_down, kZOrder_Label, kTag_Key_Down);					//配置順kZOrder_Lavelで実装
+	//下キーの実装
+	CCSprite* pKey_down = CCSprite::create("button_down.png");								//下進行キー画像をCCSprite型で生成
+	pKey_down->setPosition(ccp(getWindowSize().width / 8 * 3, getWindowSize().height / 16));	//座標のセット
+	this->addChild(pKey_down, kZOrder_Label, kTag_Key_Down);					//配置順kZOrder_Lavelで実装
 
 }
 
@@ -536,13 +536,13 @@ void GameScene::missileButton() {
 	/*----- missile 上キーの実装 -----*/
 	CCSprite* pMissileUp = CCSprite::create("button_bomb_up.png");						//missile_up.pngをCCSprite型で生成
 	pMissileUp->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 8 * 7,
-								getCCPoint(kTag_Background).y / 8 * 3));	//座標のセット
+			getCCPoint(kTag_Background).y / 8 * 3));	//座標のセット
 	this->addChild(pMissileUp, kZOrder_Label, kTag_Shoot_Vertical);					//配置順kZOrder_Labelで実装
 
 	/*----- missile 左キーの実装 -----*/
 	CCSprite* pMissileLeft = CCSprite::create("button_bomb_left.png");					//missile_left.pngをCCSprite型で生成
 	pMissileLeft->setPosition(ccp(getCCSprite(kTag_Background)->getContentSize().width / 8 * 7,
-									getCCPoint(kTag_Background).y / 8 * 1));	//座標のセット
+			getCCPoint(kTag_Background).y / 8 * 1));	//座標のセット
 	this->addChild(pMissileLeft, kZOrder_Label, kTag_Shoot_Horizontal);				//配置順kZOrder_Labelで実装
 }
 
@@ -612,10 +612,10 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 	if(unit == unitData[kTag_PlayerUnit]) {
 		/* 自機の衝突判定があれば自機hpから10ずつ減算する(ダメージ)
 		 * hpが10未満であった場合は残りhpだけダメージを与えゲームオーバに遷移
-	 	 */
+		 */
 		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() >= missileDamage ?
-			unitData[kTag_PlayerUnit]->getHp() - missileDamage
-			: unitData[kTag_PlayerUnit]->getHp() - unitData[kTag_PlayerUnit]->getHp());
+				unitData[kTag_PlayerUnit]->getHp() - missileDamage
+				: unitData[kTag_PlayerUnit]->getHp() - unitData[kTag_PlayerUnit]->getHp());
 		createLifeCounter();													// 自機hpを再表示
 	}else{
 		unit->setHp(unit->getHp() - 1);											// 敵機hpを-1してセット
@@ -645,7 +645,7 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
 		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
-																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
+				player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
 		createLifeCounter();													// ライフ再表示
 		displayScore(50);														// スコア50加算
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemySubmarine]);		// 敵機を削除
@@ -654,7 +654,7 @@ void GameScene::hitUnit(PhysicsSprite* unit){
 		// 自機のhpを30回復させる
 		// もし61以上の場合上限を超えてしまう為必要分だけ回復させる
 		unitData[kTag_PlayerUnit]->setHp(unitData[kTag_PlayerUnit]->getHp() > player_VIT - missileDamage ?
-																player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
+				player_VIT  : unitData[kTag_PlayerUnit]->getHp() + missileDamage);
 		createLifeCounter();													// ライフ再表示
 		displayScore(50);														// スコア50加算
 		removeObject(unit, (void*)unitPhysicsData[kTag_EnemyDestroyer]);
@@ -836,23 +836,23 @@ void GameScene::update(float dt) {
 		submarineAI4();
 	}
 	if (this->getChildByTag(kTag_EnemySubmarine) && chooseScenario == 1 && ((timeCounter > 960 && timeCounter < 1200)|| (timeCounter > 600 && timeCounter < 840) || (timeCounter > 150 && timeCounter < 210))) {
-			submarineAI();
-		} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 1 && ((timeCounter > 240 && timeCounter < 540) || (timeCounter < 150))) {
-			submarineAI2();
-		} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 840 && timeCounter < 960))) {
-			submarineAI3();
-		} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 1200) || (timeCounter > 540 && timeCounter < 600) || (timeCounter > 210 && timeCounter < 240))) {
-			submarineAI4();
-		}
+		submarineAI();
+	} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 1 && ((timeCounter > 240 && timeCounter < 540) || (timeCounter < 150))) {
+		submarineAI2();
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 840 && timeCounter < 960))) {
+		submarineAI3();
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 1 &&  ((timeCounter > 1200) || (timeCounter > 540 && timeCounter < 600) || (timeCounter > 210 && timeCounter < 240))) {
+		submarineAI4();
+	}
 	if (this->getChildByTag(kTag_EnemySubmarine) && chooseScenario == 2 && ((timeCounter > 900 && timeCounter < 1200)|| (timeCounter > 60 && timeCounter < 120))) {
-				submarineAI();
-			} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 2 && ((timeCounter > 360 && timeCounter < 660) || (timeCounter < 60))) {
-				submarineAI2();
-			} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 780 && timeCounter < 900) || (timeCounter > 240 && timeCounter < 360))) {
-				submarineAI3();
-			} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 660 && timeCounter < 780) || (timeCounter > 120 && timeCounter < 240))) {
-				submarineAI4();
-			}
+		submarineAI();
+	} else if (this->getChildByTag(kTag_EnemySubmarine) &&  chooseScenario == 2 && ((timeCounter > 360 && timeCounter < 660) || (timeCounter < 60))) {
+		submarineAI2();
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 780 && timeCounter < 900) || (timeCounter > 240 && timeCounter < 360))) {
+		submarineAI3();
+	} else if (this->getChildByTag(kTag_EnemySubmarine)  && chooseScenario == 2 &&  ((timeCounter > 660 && timeCounter < 780) || (timeCounter > 120 && timeCounter < 240))) {
+		submarineAI4();
+	}
 	if (!(this->getChildByTag(kTag_EnemyDestroyer) || this->getChildByTag(kTag_EnemySubmarine))) {
 		finishGame();
 	}
@@ -1016,7 +1016,7 @@ void GameScene::submarineAI() {
 		if (up > getWindowSize().height * 0.65 ) {
 			up = getWindowSize().height * 0.65;
 		}
-//		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
+		//		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
 		submarineBody->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitAngle);
 	}
@@ -1036,7 +1036,7 @@ void GameScene::submarineAI2() {
 		if (up > getWindowSize().height * 0.65 ) {
 			up = getWindowSize().height * 0.65;
 		}
-//		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
+		//		unitData[kTag_EnemySubmarine]->setPosition(ccp(back, up));			// 画像の座標を設定
 		// 物理オブジェクトの座標を設定
 		submarineBody->SetTransform(b2Vec2(back / PTM_RATIO, up / PTM_RATIO), unitAngle);
 	}
@@ -1046,7 +1046,7 @@ void GameScene::submarineAI3() {
 	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
 	b2Vec2 destroyerPosition = unitPhysicsData[kTag_EnemySubmarine]->GetPosition();
 	if (unitAngle > -1 * PI / 4) {
-	float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
+		float unitAngle = unitPhysicsData[kTag_EnemySubmarine]->GetAngle();		// 角度を変えるためにプレイヤーの潜水艦オブジェクトを呼びます
 		unitPhysicsData[kTag_EnemySubmarine]->SetTransform(unitPhysicsData[kTag_EnemySubmarine]->GetPosition(), unitAngle - 0.01);	// 船首を上げます
 	}
 	if(!(rand() %  (200 - 50 * game_level))) {										// ランダムでミサイルを発射
@@ -1078,18 +1078,18 @@ void GameScene::createMissile(b2Vec2 position, float unitAngle) {									// を
 	float destroyerUnitLength = unitData[kTag_EnemyDestroyer]->getContentSize().width / PTM_RATIO / 2;
 	b2Vec2 rotatedPosition = trigonometric(destroyerUnitLength, unitAngle);
 	rand() % 2 ?
-	position.Set(position.x + rotatedPosition.x * 0.98, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
-	position.Set(position.x - rotatedPosition.x * 0.98, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
+			position.Set(position.x + rotatedPosition.x * 0.98, position.y + rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/):
+			position.Set(position.x - rotatedPosition.x * 0.98, position.y - rotatedPosition.y - 0.3/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 
-//	CCDrawNode* draw = CCDrawNode::create();
-//	draw->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO));
-//	draw->drawDot(ccp(0, 0),                // 中心
-//	              5,                        // 半径
-//	              ccc4FFromccc3B(ccWHITE)   // 色
-//	              );
-//	this->addChild(draw);
+	//	CCDrawNode* draw = CCDrawNode::create();
+	//	draw->setPosition(ccp(position.x * PTM_RATIO, position.y * PTM_RATIO));
+	//	draw->drawDot(ccp(0, 0),                // 中心
+	//	              5,                        // 半径
+	//	              ccc4FFromccc3B(ccWHITE)   // 色
+	//	              );
+	//	this->addChild(draw);
 	missileBody->SetTransform(position, unitAngle);													// 重力世界上の座標と角度を持たせ回転
-//	missileBody->SetLinearVelocity(b2Vec2(-playerAngle, playerAngle));										// x座標y座標に圧力をかける
+	//	missileBody->SetLinearVelocity(b2Vec2(-playerAngle, playerAngle));										// x座標y座標に圧力をかける
 	missileBody->SetLinearVelocity(b2Vec2(unitAngle / 2, unitAngle * 0.95 / 2 - PI / 8));										// x座標y座標に圧力をかける
 
 }
@@ -1110,7 +1110,7 @@ void GameScene::createMissileSubmarine(b2Vec2 position, float unitAngle) {
 	position.Set(position.x + rotatedPosition.x, position.y + rotatedPosition.y/*position.x, position.y + PI / 10)+ PTM_RATIO * 0.4) / PTM_RATIO*/);			// 重力世界の座標をセット
 	missileBody->SetTransform(position, PI / 2 + unitAngle);													// 重力世界上の座標と角度を持たせ回転
 	missileBody->SetLinearVelocity(b2Vec2(-(-1.5 * PI - unitAngle * 3) / 6, unitAngle * 3 / 6));										// x座標y座標に圧力をかける
-//	missileBody->SetLinearVelocity(b2Vec2(3 / 2 * -(PI + (unitAngle >= 0) ? unitAngle : -unitAngle) * 3, unitAngle));										// x座標y座標に圧力をかける
+	//	missileBody->SetLinearVelocity(b2Vec2(3 / 2 * -(PI + (unitAngle >= 0) ? unitAngle : -unitAngle) * 3, unitAngle));										// x座標y座標に圧力をかける
 
 }
 
@@ -1215,10 +1215,12 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 
 	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {	// タッチ位置を順に探索
 		CCTouch* touch  = (CCTouch *)(*it);									// 取得した値をノードと照合するためccTouch型に変換
+		int id = touch->getID();
 		bool touch_judge = 0;											// 返り値として渡すためのタッチ判定フラグ
 		tag_no = this->kTag_Key_Up;										// 各種ボタンの先頭のタグを取得
 		CCPoint loc = touch->getLocation();								// タッチ位置を取得
-
+		m_touchesAt[id] = touch->getLocation();
+		m_touchButton[id] = 0;
 		// 各ボタンのタッチ判定を繰り返し
 		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
@@ -1233,14 +1235,19 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 					reloadMissile--;
 					missileLaunchableFlag = 0;
 					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
+					m_touchButton[id] = tag_no;
 					unscheduleMove();
 					createMissileLeft(playerPosition);	//自機の座標とタップした発射ボタンを引数にし、createMissile関数を呼び出す
+					changeButton(tag_no, kTag_changeBegan);
 				} else if (reloadMissile && missileLaunchableFlag){
 					reloadMissile--;
 					missileLaunchableFlag = 0;
 					this->schedule(schedule_selector(GameScene::missileTimer), 1.0 / 60.0 );
 					unscheduleMove();
+					m_touchButton[id] = tag_no;
 					createMissileDiagonal(playerPosition);	//MOD 14/5/6 H.U
+					changeButton(tag_no, kTag_changeBegan);
+
 					//createMissileDiagonal(unitPhysicsData[kTag_PlayerUnit]);	//MOD 14/5/6 H.U
 				}
 				this->scheduleOnce(schedule_selector(GameScene::createRemainingMissile), 0);		// ミサイル発射した0秒後にミサイル表示関数を一度だけ呼ぶ
@@ -1255,27 +1262,26 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				// 毎フレームrotateUpAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateUpAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-//				this->unschedule(schedule_selector(GameScene::backUnit));
+				m_touchButton[id] = tag_no;
 			} if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームrotateDownAngle関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::rotateDownAngle), 1.0 / 60.0 );
 				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-//				this->unschedule(schedule_selector(GameScene::backUnit));
+				m_touchButton[id] = tag_no;
 			} if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームforwardUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::forwardUnit), 1.0 / 60.0 );
-//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::backUnit));
+				m_touchButton[id] = tag_no;
 			} if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
 				// 毎フレームbackUnit関数を呼び出すように設定する
 				this->schedule(schedule_selector(GameScene::backUnit), 1.0 / 60.0 );
-//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
 				this->unschedule(schedule_selector(GameScene::forwardUnit));
-			} if(tag_no == kTag_LivesRemaining && i->boundingBox().containsPoint(loc)) {
+				m_touchButton[id] = tag_no;
+			} if(tag_no == kTag_Switch && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームbackUnit関数を呼び出すように設定する
+				m_touchButton[id] = tag_no;
+			}if(tag_no == kTag_LivesRemaining && i->boundingBox().containsPoint(loc)) {
 				if(game_level != 3) {
 					game_level++;
 				} else {
@@ -1284,7 +1290,7 @@ void GameScene::ccTouchesBegan(CCSet* touches, CCEvent* pEvent ) {
 				createLife();
 			}
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
-			if(touch_judge) {
+			if(touch_judge && !(tag_no == kTag_Shoot_Horizontal || tag_no == kTag_Shoot_Vertical)) {
 				changeButton(tag_no, kTag_changeBegan);
 			}
 			m_touchFlag[tag_no] = touch_judge;							// tag_no番目の配列にタッチしているかしていないかを代入
@@ -1307,34 +1313,56 @@ void GameScene::ccTouchesMoved(CCSet* touches, CCEvent* pEvent ) {
 	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
 		CCTouch *touch = (CCTouch *)(*it);						// タッチボタンの取得
 		tag_no = this->kTag_Key_Up;								// 一番小さい数値が入っているkTag_Key_Upをtag_noに代入
-
+		int id = touch->getID();
+		m_touchesAt[id] = touch->getLocation();
 		// tag_noとkTag_Key_Upの差がボタンの合計数未満の間、tag_noを後置インクリメントしながらループ
-		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
-			m_touchAt[tag_no]  = touch->getLocation();								// タッチ位置を更新
-			CCPoint loc = m_touchAt[tag_no];										// タッチ座標の取得
-			CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);		// オブジェクトkTag_Switchを取得しCCSprite*型変数を初期化
-
-			if(kTag_Key_Up <= tag_no && tag_no <= kTag_Shoot_Horizontal) {
-				CCPoint objPoint = getCCPoint(tag_no);					// タップされたオブジェの中心座標を取得
-				CCSize objSize = getCCSprite(tag_no)->getContentSize();	// タップされたオブジェの幅と高さを取得
-				float obj_left   = objPoint.x - objSize.width / 2;		// オブジェクトの左辺を取得
-				float obj_right  = objPoint.x + objSize.width / 2;		//      〃     の右辺を取得
-				float obj_bottom = objPoint.y - objSize.height / 2;		//      〃     の下辺を取得
-				float obj_top    = objPoint.y + objSize.height / 2;		//      〃     の上辺を取得
-				/* タップ時取得座標がオブジェクト外の座標を取得した時
-				 * スプライトを非タップ時のスプライトに差し替える
-				 */
-				if((loc.x < obj_left || obj_right < loc.x)
-						|| (loc.y < obj_bottom || obj_top < loc.y)) {
-					changeButton(tag_no, kTag_changeEnded);
-				}
-			}
-			//もしtag_noとkTag_Switchが同値であり、かつスイッチオブジェクトをタップしていて、かつタッチ座標がGear4のy座標未満であれば以下ブロック
-			if( (tag_no == kTag_Switch && pSwitch->boundingBox().containsPoint(loc) ) && (pMeter1 < loc.y && loc.y < pMeter4)) {
-				pSwitch->setPosition(ccp(pSwitch->getPositionX(), loc.y));			// スイッチをx座標は同じ座標、y座標はタッチされた座標にセット
-				break;																// ブレイク
+		//		for (CCNode* i; tag_no - this->kTag_Key_Up < buttons_sum; tag_no++) {
+		if (m_touchButton[id] < kTag_Key_Up || m_touchButton[id] > kTag_Switch) {
+			break;
+		}
+		m_touchAt[tag_no]  = touch->getLocation();								// タッチ位置を更新
+		CCPoint loc = m_touchAt[tag_no];										// タッチ座標の取得
+		CCSprite* pSwitch = (CCSprite*)this->getChildByTag(kTag_Switch);		// オブジェクトkTag_Switchを取得しCCSprite*型変数を初期化
+		if(kTag_Key_Up <= tag_no && tag_no <= kTag_Shoot_Horizontal) {
+			CCPoint objPoint = getCCPoint(m_touchButton[id]);					// タップされたオブジェの中心座標を取得
+			CCSize objSize = getCCSprite(m_touchButton[id])->getContentSize();	// タップされたオブジェの幅と高さを取得
+			float obj_left   = objPoint.x - objSize.width / 2;		// オブジェクトの左辺を取得
+			float obj_right  = objPoint.x + objSize.width / 2;		//      〃     の右辺を取得
+			float obj_bottom = objPoint.y - objSize.height / 2;		//      〃     の下辺を取得
+			float obj_top    = objPoint.y + objSize.height / 2;		//      〃     の上辺を取得
+			/* タップ時取得座標がオブジェクト外の座標を取得した時
+			 * スプライトを非タップ時のスプライトに差し替える
+			 */
+			if((loc.x < obj_left || obj_right < loc.x)
+					|| (loc.y < obj_bottom || obj_top < loc.y)) {
+				if(m_touchButton[id] == kTag_Key_Up) {
+					// 毎フレームrotateUpAngle関数を呼び出すように設定する
+					this->unschedule(schedule_selector(GameScene::rotateUpAngle));
+					changeButton(m_touchButton[id], 0);
+				} if(m_touchButton[id] == kTag_Key_Down) {
+					// 毎フレームrotateDownAngle関数を呼び出すように設定する
+					this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+					changeButton(m_touchButton[id], 0);
+				} if(m_touchButton[id] == kTag_Key_Left) {
+					// 毎フレームforwardUnit関数を呼び出すように設定する
+					this->unschedule(schedule_selector(GameScene::forwardUnit));
+					changeButton(m_touchButton[id], 0);
+				} if(m_touchButton[id] == kTag_Key_Right) {
+					// 毎フレームbackUnit関数を呼び出すように設定する
+					this->unschedule(schedule_selector(GameScene::backUnit));
+					changeButton(m_touchButton[id], 0);
+				} if(m_touchButton[id] == kTag_Shoot_Horizontal) {
+					changeButton(m_touchButton[id], 0);
+				} if(m_touchButton[id] == kTag_Shoot_Vertical) {
+					changeButton(m_touchButton[id], 0);				}
 			}
 		}
+		//もしtag_noとkTag_Switchが同値であり、かつスイッチオブジェクトをタップしていて、かつタッチ座標がGear4のy座標未満であれば以下ブロック
+		if( (m_touchButton[id] == kTag_Switch && pSwitch->boundingBox().containsPoint(loc) ) && (pMeter1 < loc.y && loc.y < pMeter4)) {
+			pSwitch->setPosition(ccp(pSwitch->getPositionX(), loc.y));			// スイッチをx座標は同じ座標、y座標はタッチされた座標にセット
+			break;																// ブレイク
+		}
+		//		}
 	}
 }
 // スピード倍率を返す関数
@@ -1355,8 +1383,8 @@ float GameScene::coefficientOfSpeed() {
 	} else {
 		coefficientOfSpeed = 1 + game_level - 1;
 	}
-//	this->unschedule(schedule_selector(GameScene::countMinusHp));
-//	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );
+	//	this->unschedule(schedule_selector(GameScene::countMinusHp));
+	//	this->schedule(schedule_selector(GameScene::countMinusHp), 300.0 / 60.0 );
 
 	return coefficientOfSpeed;
 }
@@ -1370,6 +1398,7 @@ void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
 
 	for (CCSetIterator it = touches->begin(); it != touches->end(); ++it) {
 		CCTouch* touch  = (CCTouch *)(*it);
+		int id = touch->getID();
 		bool touch_judge = 0;											// 返り値として渡すためのタッチ判定フラグ
 		tag_no = this->kTag_Key_Up;										// 各種ボタンの先頭のタグを取得
 		CCPoint loc = touch->getLocation();								// タッチ位置を取得
@@ -1379,38 +1408,33 @@ void GameScene::ccTouchesEnded(CCSet* touches, CCEvent* pEvent ) {
 			i = this->getChildByTag(tag_no);							// 各種ハンドルオブジェクトでiを初期化し、タップ可能にする
 			touch_judge = i->boundingBox().containsPoint(loc);			// タグの座標がタッチされたかの判定を行う
 			if(tag_no == kTag_Key_Up && i->boundingBox().containsPoint(loc)) {
-							// 毎フレームrotateUpAngle関数を呼び出すように設定する
-							this->unschedule(schedule_selector(GameScene::rotateUpAngle));
-			//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-			//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-			//				this->unschedule(schedule_selector(GameScene::backUnit));
-						} if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
-							// 毎フレームrotateDownAngle関数を呼び出すように設定する
-							this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-			//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-			//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-			//				this->unschedule(schedule_selector(GameScene::backUnit));
-						} if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
-							// 毎フレームforwardUnit関数を呼び出すように設定する
-							this->unschedule(schedule_selector(GameScene::forwardUnit));
-			//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-			//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-							this->unschedule(schedule_selector(GameScene::backUnit));
-						} if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
-							// 毎フレームbackUnit関数を呼び出すように設定する
-							this->unschedule(schedule_selector(GameScene::backUnit));
-			//				this->unschedule(schedule_selector(GameScene::rotateUpAngle));	// 上キーから指が離れた場合は船首上げ関数の呼び出しをストップ
-			//				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
-			//				this->unschedule(schedule_selector(GameScene::forwardUnit));
-						}
+				// 毎フレームrotateUpAngle関数を呼び出すように設定する
+				this->unschedule(schedule_selector(GameScene::rotateUpAngle));
+			} if(tag_no == kTag_Key_Down && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームrotateDownAngle関数を呼び出すように設定する
+				this->unschedule(schedule_selector(GameScene::rotateDownAngle));
+			} if(tag_no == kTag_Key_Left && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームforwardUnit関数を呼び出すように設定する
+				this->unschedule(schedule_selector(GameScene::forwardUnit));
+				this->unschedule(schedule_selector(GameScene::backUnit));
+			} if(tag_no == kTag_Key_Right && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームbackUnit関数を呼び出すように設定する
+				this->unschedule(schedule_selector(GameScene::backUnit));
+			} if(tag_no == kTag_Shoot_Vertical && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームbackUnit関数を呼び出すように設定する
+				changeButton(m_touchButton[id], 0);
+			} if(tag_no == kTag_Shoot_Horizontal && i->boundingBox().containsPoint(loc)) {
+				// 毎フレームbackUnit関数を呼び出すように設定する
+				changeButton(m_touchButton[id], 0);
+			}
 			// もしtouch_judgeがtrue(離した判定)であれば以下ブロック
 			if(touch_judge) {
 				/* タグの番号と終わりを表す値ををもつ変数を引数に
 				 * changeButton関数を呼び出す
 				 */
-				changeButton(tag_no, kTag_changeEnded);
 			}
-			m_touchFlag[tag_no] = !(touch_judge);		// 各判定を配列に代入していく
+			m_touchFlag[id] = 0;		// 各判定を配列に代入していく
+			changeButton(m_touchButton[id], 0);
 		}
 	}
 }
@@ -1449,9 +1473,9 @@ void GameScene::changeButton(int tag_no, int change) {
 	if(tag_no == kTag_Key_Up || tag_no == kTag_Key_Down ||
 			tag_no == kTag_Key_Left || tag_no == kTag_Key_Right) {
 		changeCrosskey(tag_no, change);									// tag_noを引数にし、changeCrosskey関数を呼び出す
-	/*仮引数の値がミサイル発射上ボタンかもしくは左ボタンであれば
-	 * 以下のブロック
-	 */
+		/*仮引数の値がミサイル発射上ボタンかもしくは左ボタンであれば
+		 * 以下のブロック
+		 */
 	}else if(tag_no == kTag_Shoot_Vertical || tag_no == kTag_Shoot_Horizontal) {
 		changeMissileButton(tag_no, change);							// tag_noを引数にし、changeMissileButton関数を呼び出す
 	}
@@ -1475,17 +1499,17 @@ void GameScene::changeCrosskey(int tag_no, int change) {
 		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
 				"button_up_push.png" : "button_up.png";	// 指が離れた時であれば元の上キーファイルネームに戻す
 
-	// 下キーであれば以下処理
+		// 下キーであれば以下処理
 	}else if(tag_no == kTag_Key_Down) {
 		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
 				"button_down_push.png" : "button_down.png";	// 指が離れた時であれば元の下キーファイルネームに戻す
 
-	// 左キーであれば以下処理
+		// 左キーであれば以下処理
 	}else if(tag_no == kTag_Key_Left) {
 		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
 				"button_left_push.png" : "button_left.png";	// 指が離れた時であれば元の左キーファイルネームを代入
 
-	// 右キーであれば以下処理
+		// 右キーであれば以下処理
 	}else if(tag_no == kTag_Key_Right) {
 		fileName = change == kTag_changeBegan ?			// タップ時であればタップ時のファイルネームに
 				"button_right_push.png" : "button_right.png";	// 指が離れた時であれば元の右キーファイルネームを代入
@@ -1512,7 +1536,7 @@ void GameScene::changeMissileButton(int tag_no, int change) {
 		fileName = change == kTag_changeBegan ?		// タップされた時であればタップ時のファイルネームに
 				"button_bomb_up_push.png" : "button_bomb_up.png";	// 指が離れた時であれば元のファイルネームを代入
 
-	// ミサイル左キーだったら以下処理
+		// ミサイル左キーだったら以下処理
 	}else{
 		fileName = change == kTag_changeBegan ?		// タップされた時であればタップ時のファイルーネームに
 				"button_bomb_left_push.png" : "button_bomb_left.png";	// 指が離れた時であれば元のファイルネームを代入

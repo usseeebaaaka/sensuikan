@@ -32,12 +32,16 @@ class GameScene : public cocos2d::CCLayer {
 	float playerAngle;
 	CCArray* scoreText;														// スコアの各位のテキスト
 	map<int, CCPoint> m_touchAt;											// タッチ座標
+	map<int, CCPoint> m_touchesAt;											// タッチ座標
 	map<int, bool> m_touchFlag;												// タッチフラグ
 	map<int, PhysicsSprite*> unitData;										// ユニットのデータ群
 	map<int, b2Body*> unitPhysicsData;
 	map<int, b2Vec2> unitPhysicsPoint;										// ユニットの物理構造体群
 	vector<float> meterPosition;											// スピードメーターのめもり位置
 	vector<CCPoint> playerPoint;											// 自機の座標を保持する配列(可変長)
+	// タッチした指を追跡するための構造体
+//		vector<CCPoint> m_touchesAt;									// タッチした指の位置
+		map<int, int> m_touchButton;									// タッチしたボタン
 	b2Body* playerUnit;														// 自機の実体
 	b2Body* enemyDestroyer;													// 敵駆逐艦の実体
 	b2Body* enemySubmarine;													// 敵潜水艦の実体
@@ -50,6 +54,7 @@ class GameScene : public cocos2d::CCLayer {
 	CCSpriteBatchNode* hpGreenBatchNode;
 	CCSpriteBatchNode* hpYellowBatchNode;
 	CCSpriteBatchNode* hpRedBatchNode;
+
 
 	// 各種オブジェクト等をタグで管理
 	enum kTag {
@@ -89,7 +94,6 @@ class GameScene : public cocos2d::CCLayer {
 		kTag_Gear4,					// 4番目にスピードが遅いギア
 		kTag_Animation,
 		kTag_changeBegan = 100,		// タップ開始
-		kTag_changeEnded = 101,		// タップ終了
 		kTag_Call_Scroll = 200,		// スクロール開始フラグ
 		kTag_HpBar,
 		kTag_Fuel,

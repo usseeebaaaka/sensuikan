@@ -20,7 +20,7 @@ USING_NS_CC;
  */
 CCScene* TitleScene::scene(){
 	CCScene* scene = CCScene::create();			// 背景の雛型となるオブジェクトを生成
-	TitleScene* layer = TitleScene::create();		// 背景に処理を重ねるためのオブジェクトを生成
+	TitleScene* layer = TitleScene::create();	// 背景に処理を重ねるためのオブジェクトを生成
 	scene->addChild(layer);						// 雛型にレイヤーを埋め込む
 	return scene;								// 作成した雛型を返却
 }
@@ -55,7 +55,7 @@ bool TitleScene::init(){
  * 作成者:T.I
  */
 void TitleScene::createBackground(){
-	CCSprite* pBgUnder = CCSprite::create("ssn_d2124_title.png");				// 背景画像を取得し、ノードに格納
+	CCSprite* pBgUnder = CCSprite::create("ssn_d2124_title.png");	// 背景画像を取得し、ノードに格納
 	pBgUnder->setPosition(ccp(getWindowSize().width / 2,
 			getWindowSize().height / 2));							// 背景画像の中心を画面の中心にセット
 	this->addChild(pBgUnder, kZOrder_Background, kTag_Background);	// 背景画像をシーンに登録
@@ -70,17 +70,16 @@ void TitleScene::createBackground(){
  * 作成者:T.I
  */
 void TitleScene::createStartButton(){
-//	CCSprite* a = CCSprite::create("");
 	CCMenuItemImage* pStartButton
 	= CCMenuItemImage::create("button_start.png", "button_start_push.png",
 			this, menu_selector(TitleScene::menuStartCallback));			// 	スタートボタンに画像と機能を実装
 	pStartButton->setPosition(ccp(getWindowSize().width / 2,
 			getWindowSize().height / 2));									// スタートボタンの中心を画面の中心にセット
 	pStartButton->setTag(kTag_StartButton);									// スタートボタンにタグをセット
-    CCMenu* pMenu = CCMenu::create(pStartButton,NULL);
+    CCMenu* pMenu = CCMenu::create(pStartButton,NULL);						// スタートボタン機能をメニューに登録
     pMenu->setPosition(CCPointZero);										// 事前にセットしてあるのでここはゼロでよい
-    pMenu->setTag(kTag_Menu);
-    this->addChild(pMenu, kZOrder_Decoration, kTag_Menu);
+    pMenu->setTag(kTag_Menu);												// 番号を振ります
+    this->addChild(pMenu, kZOrder_Decoration, kTag_Menu);					// メニューをシーンに登録
 }
 
 /*
@@ -93,7 +92,7 @@ void TitleScene::createStartButton(){
  */
 void TitleScene::menuStartCallback(CCObject* pSender){
     CCScene* scene = GameScene::scene();									// 遷移先のシーン関数を指定
-    CCTransitionJumpZoom* tran = CCTransitionJumpZoom::create(1, scene);	// 遷移アニメーションを指定
+    CCTransitionCrossFade* tran = CCTransitionCrossFade::create(1, scene);	// 遷移アニメーションを指定
     CCDirector::sharedDirector()->replaceScene(tran);						// 画面遷移を実行
 }
 
